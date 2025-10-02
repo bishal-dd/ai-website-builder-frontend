@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
+import { WebsiteWizard } from "@/features/wizard/website-wizard";
 
-export default function Page() {
-  redirect("/home");
+export default function Home() {
+  return <WebsiteWizard />
 }
-
