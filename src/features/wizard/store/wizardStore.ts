@@ -1,43 +1,15 @@
 import { create } from "zustand"
+import { WizardState } from "../types"
 
-export type WebsiteType = "portfolio" | "blog" | "ecommerce" | "landing"
-export type PageType = "home" | "about" | "contact" | "blog" | "services" | "products"
-
-export interface PageContent {
-  page: PageType
-  headline: string
-  description: string
-  imageUrl?: string
-}
-
-export interface WizardState {
-  currentStep: number
-  websiteType: WebsiteType | null
-  selectedPages: PageType[]
-  websiteName: string
-  tagline: string
-  ownerName: string
-  ownerEmail: string
-  primaryColor: string
-  secondaryColor: string
-  pageContents: PageContent[]
-
-  setCurrentStep: (step: number) => void
-  setWebsiteType: (type: WebsiteType) => void
-  togglePage: (page: PageType) => void
-  setWebsiteInfo: (info: {
-    websiteName: string
-    tagline: string
-    ownerName: string
-    ownerEmail: string
-    primaryColor: string
-    secondaryColor: string
-  }) => void
-  updatePageContent: (page: PageType, content: Partial<PageContent>) => void
-  resetWizard: () => void
-}
-
-export const useWizardStore = create<WizardState>((set) => ({
+// 📝 Define all your default values ONCE here
+const initialState: Omit<WizardState, 
+  "setCurrentStep" | 
+  "setWebsiteType" | 
+  "togglePage" | 
+  "setWebsiteInfo" | 
+  "updatePageContent" | 
+  "resetWizard"
+> = {
   currentStep: 1,
   websiteType: null,
   selectedPages: [],
@@ -48,6 +20,10 @@ export const useWizardStore = create<WizardState>((set) => ({
   primaryColor: "#8b5cf6",
   secondaryColor: "#6366f1",
   pageContents: [],
+}
+
+export const useWizardStore = create<WizardState>((set) => ({
+  ...initialState,
 
   setCurrentStep: (step) => set({ currentStep: step }),
 
@@ -84,17 +60,5 @@ export const useWizardStore = create<WizardState>((set) => ({
       return { pageContents: newPageContents }
     }),
 
-  resetWizard: () =>
-    set({
-      currentStep: 1,
-      websiteType: null,
-      selectedPages: [],
-      websiteName: "",
-      tagline: "",
-      ownerName: "",
-      ownerEmail: "",
-      primaryColor: "#8b5cf6",
-      secondaryColor: "#6366f1",
-      pageContents: [],
-    }),
+  resetWizard: () => set(initialState),
 }))
