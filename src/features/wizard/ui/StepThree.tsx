@@ -3,16 +3,19 @@
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { useWizardStore } from "@/features/wizard/store/wizardStore"
+import { DESIGN_TYPES, WEBSITE_TYPES } from "../constants"
+
 export function StepThree() {
-  const { websiteName, tagline, ownerName, ownerEmail, primaryColor, secondaryColor, setWebsiteInfo } = useWizardStore()
+  const { websiteName, tagline, designType, type, primaryColor, secondaryColor, setWebsiteInfo } = useWizardStore()
 
   const handleChange = (field: string, value: string) => {
     setWebsiteInfo({
       websiteName,
       tagline,
-      ownerName,
-      ownerEmail,
+      designType,
+      type,
       primaryColor,
       secondaryColor,
       [field]: value,
@@ -51,28 +54,42 @@ export function StepThree() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Dropdown for Design Type */}
             <div className="space-y-2">
-              <Label htmlFor="ownerName">Your Name *</Label>
-              <Input
-                id="ownerName"
-                placeholder="John Doe"
-                value={ownerName}
-                onChange={(e) => handleChange("ownerName", e.target.value)}
-              />
+              <Label htmlFor="designType">Design Type *</Label>
+              <Select value={designType} onValueChange={(value) => handleChange("designType", value)}>
+                <SelectTrigger id="designType">
+                  <SelectValue placeholder="Select design type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DESIGN_TYPES.map((dt) => (
+                    <SelectItem key={dt} value={dt}>
+                      {dt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
+            {/* Dropdown for Website Type */}
             <div className="space-y-2">
-              <Label htmlFor="ownerEmail">Your Email *</Label>
-              <Input
-                id="ownerEmail"
-                type="email"
-                placeholder="john@example.com"
-                value={ownerEmail}
-                onChange={(e) => handleChange("ownerEmail", e.target.value)}
-              />
+              <Label htmlFor="type">Type *</Label>
+              <Select value={type} onValueChange={(value) => handleChange("type", value)}>
+                <SelectTrigger id="type">
+                  <SelectValue placeholder="Select website type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {WEBSITE_TYPES.map((wt) => (
+                    <SelectItem key={wt} value={wt}>
+                      {wt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
+          {/* Color pickers remain unchanged */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="primaryColor">Primary Color *</Label>

@@ -6,7 +6,7 @@ import { ProgressBarProps } from "../types"
 import { STEPS } from "../constants";
 
 
-export function ProgressBar({ currentStep, totalSteps }: ProgressBarProps) {
+export function ProgressBar({ currentStep }: ProgressBarProps) {
   return (
     <div className="w-full mb-8">
       <div className="flex items-center justify-between">

@@ -3,22 +3,29 @@
 import { Card } from "@/components/ui/card"
 import { useWizardStore } from "@/features/wizard/store/wizardStore"
 import { cn } from "@/lib/utils"
-import { pageOptions } from "../constants"
+import { pageOptions, websitePagesMap } from "../constants"
 import { Check } from "lucide-react"
 
-
 export function StepTwo() {
-  const { selectedPages, togglePage } = useWizardStore()
+  const { websiteType, selectedPages, togglePage } = useWizardStore()
+
+  // Avoid rendering until websiteType is selected
+  if (!websiteType) return null
+
+  const availablePages = websitePagesMap[websiteType] || []
+  const filteredOptions = pageOptions.filter((page) => availablePages.includes(page.type))
 
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold text-balance">Select Your Pages</h2>
-        <p className="text-muted-foreground text-pretty">Choose which pages you want to include in your website</p>
+        <p className="text-muted-foreground text-pretty">
+          Choose which pages you want to include in your website
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
-        {pageOptions.map((page) => {
+        {filteredOptions.map((page) => {
           const Icon = page.icon
           const isSelected = selectedPages.includes(page.type)
 

@@ -3,12 +3,12 @@
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight, Check } from "lucide-react"
-import { ProgressBar } from "./ui/progress-file"
+import { ProgressBar } from "./ui/ProgressFile"
 import { useWebsiteWizard } from "./hooks/useWebsiteWizard"
-import { StepFour } from "./ui/step-four"
-import { StepOne } from "./ui/step-one"
-import { StepThree } from "./ui/step-three"
-import { StepTwo } from "./ui/step-two"
+import { StepFour } from "./ui/StepFour"
+import { StepOne } from "./ui/StepOne"
+import { StepThree } from "./ui/StepThree"
+import { StepTwo } from "./ui/StepTwo"
 
 const TOTAL_STEPS = 4
 

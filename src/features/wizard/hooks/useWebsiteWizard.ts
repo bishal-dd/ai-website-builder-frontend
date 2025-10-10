@@ -8,8 +8,8 @@ export const useWebsiteWizard = (totalSteps: number) => {
     selectedPages,
     websiteName,
     tagline,
-    ownerName,
-    ownerEmail,
+    designType,
+    type,
     pageContents,
   } = useWizardStore()
 
@@ -23,13 +23,13 @@ export const useWebsiteWizard = (totalSteps: number) => {
         return (
           websiteName.trim() !== "" &&
           tagline.trim() !== "" &&
-          ownerName.trim() !== "" &&
-          ownerEmail.trim() !== ""
+          designType.trim() !== "" &&
+          type.trim() !== ""
         )
       case 4:
         return selectedPages.every((page) => {
           const content = pageContents.find((pc) => pc.page === page)
-          return content && content.headline.trim() && content.description.trim()
+          return content && content.sections.length > 0
         })
       default:
         return false

@@ -1,29 +1,30 @@
 import { create } from "zustand"
 import { WizardState } from "../types"
 
-// 📝 Define all your default values ONCE here
-const initialState: Omit<WizardState, 
-  "setCurrentStep" | 
-  "setWebsiteType" | 
-  "togglePage" | 
-  "setWebsiteInfo" | 
-  "updatePageContent" | 
-  "resetWizard"
-> = {
+const defaultState: Omit<WizardState,
+  | "setCurrentStep"
+  | "setWebsiteType"
+  | "togglePage"
+  | "setWebsiteInfo"
+  | "addSection"
+  | "updateSection"
+  | "deleteSection"
+  | "reorderSections"
+  | "resetWizard"> = {
   currentStep: 1,
   websiteType: null,
   selectedPages: [],
   websiteName: "",
   tagline: "",
-  ownerName: "",
-  ownerEmail: "",
+  designType: "",
+  type: "",
   primaryColor: "#8b5cf6",
   secondaryColor: "#6366f1",
   pageContents: [],
 }
 
 export const useWizardStore = create<WizardState>((set) => ({
-  ...initialState,
+  ...defaultState,
 
   setCurrentStep: (step) => set({ currentStep: step }),
 
@@ -38,27 +39,65 @@ export const useWizardStore = create<WizardState>((set) => ({
 
   setWebsiteInfo: (info) => set(info),
 
-  updatePageContent: (page, content) =>
+  addSection: (page, section) =>
     set((state) => {
-      const existingIndex = state.pageContents.findIndex((pc) => pc.page === page)
+      const existingPageIndex = state.pageContents.findIndex((pc) => pc.page === page)
       const newPageContents = [...state.pageContents]
 
-      if (existingIndex >= 0) {
-        newPageContents[existingIndex] = {
-          ...newPageContents[existingIndex],
-          ...content,
+      if (existingPageIndex >= 0) {
+        newPageContents[existingPageIndex] = {
+          ...newPageContents[existingPageIndex],
+          sections: [...newPageContents[existingPageIndex].sections, section],
         }
       } else {
         newPageContents.push({
           page,
-          headline: "",
-          description: "",
-          ...content,
+          sections: [section],
         })
       }
 
       return { pageContents: newPageContents }
     }),
 
-  resetWizard: () => set(initialState),
+  updateSection: (page, sectionId, updates) =>
+    set((state) => {
+      const pageIndex = state.pageContents.findIndex((pc) => pc.page === page)
+      if (pageIndex < 0) return state
+
+      const newPageContents = [...state.pageContents]
+      const sectionIndex = newPageContents[pageIndex].sections.findIndex((s) => s.id === sectionId)
+
+      if (sectionIndex >= 0) {
+        newPageContents[pageIndex].sections[sectionIndex] = {
+          ...newPageContents[pageIndex].sections[sectionIndex],
+          ...updates,
+        }
+      }
+
+      return { pageContents: newPageContents }
+    }),
+
+  deleteSection: (page, sectionId) =>
+    set((state) => {
+      const pageIndex = state.pageContents.findIndex((pc) => pc.page === page)
+      if (pageIndex < 0) return state
+
+      const newPageContents = [...state.pageContents]
+      newPageContents[pageIndex].sections = newPageContents[pageIndex].sections.filter((s) => s.id !== sectionId)
+
+      return { pageContents: newPageContents }
+    }),
+
+  reorderSections: (page, sections) =>
+    set((state) => {
+      const pageIndex = state.pageContents.findIndex((pc) => pc.page === page)
+      if (pageIndex < 0) return state
+
+      const newPageContents = [...state.pageContents]
+      newPageContents[pageIndex].sections = sections
+
+      return { pageContents: newPageContents }
+    }),
+
+  resetWizard: () => set({ ...defaultState }),
 }))
