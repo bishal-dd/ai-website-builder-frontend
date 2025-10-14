@@ -1,1 +1,1 @@
-export type WebsiteType = "portfolio" | "restaurant" | "hotel" | "travel agency" | "shop" | "marketing page"
+export type WebsiteType = "portfolio" | "restaurant" | "hotel" | "travel agency" | "marketing page"

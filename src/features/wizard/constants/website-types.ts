@@ -27,12 +27,6 @@ export const websiteTypes = [
     icon: Globe,
   },
   {
-    type: "shop" as WebsiteType,
-    label: "Shop",
-    description: "Showcase your products and offerings",
-    icon: ShoppingCart,
-  },
-  {
     type: "marketing page" as WebsiteType,
     label: "Marketing Page",
     description: "Promote a product or service",
@@ -40,5 +34,4 @@ export const websiteTypes = [
   },
 ]
 
-export const DESIGN_TYPES = ["Modern", "Minimalist", "Classic", "Creative", "Corporate"]
-export const WEBSITE_TYPES = ["Portfolio", "Restaurant", "Hotel", "Travel Agency", "Marketing Page"]
+export const DESIGN_TYPES = ["Modern", "Creative", "Corporate"]

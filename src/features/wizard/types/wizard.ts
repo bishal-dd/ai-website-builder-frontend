@@ -7,9 +7,8 @@ export interface WizardState {
   websiteType: WebsiteType | null
   selectedPages: PageType[]
   websiteName: string
-  tagline: string
+  tagline?: string
   designType: string
-  type: string
   primaryColor: string
   secondaryColor: string
   pageContents: PageContent[]
@@ -17,14 +16,13 @@ export interface WizardState {
   setCurrentStep: (step: number) => void
   setWebsiteType: (type: WebsiteType) => void
   togglePage: (page: PageType) => void
-  setWebsiteInfo: (info: {
+  setWebsiteInfo: (info: Partial<{
     websiteName: string
     tagline: string
     designType: string
-    type: string
     primaryColor: string
     secondaryColor: string
-  }) => void
+  }>) => void
   addSection: (page: PageType, section: Section) => void
   updateSection: (page: PageType, sectionId: string, updates: Partial<Section>) => void
   deleteSection: (page: PageType, sectionId: string) => void

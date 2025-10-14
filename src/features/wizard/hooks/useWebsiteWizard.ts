@@ -9,7 +9,6 @@ export const useWebsiteWizard = (totalSteps: number) => {
     websiteName,
     tagline,
     designType,
-    type,
     pageContents,
   } = useWizardStore()
 
@@ -22,9 +21,7 @@ export const useWebsiteWizard = (totalSteps: number) => {
       case 3:
         return (
           websiteName.trim() !== "" &&
-          tagline.trim() !== "" &&
-          designType.trim() !== "" &&
-          type.trim() !== ""
+          (designType || "").trim() !== ""
         )
       case 4:
         return selectedPages.every((page) => {

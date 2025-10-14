@@ -34,8 +34,8 @@ export function SectionEditor({
 
   return (
     <Card key={section.id} className="p-6">
+      {/* Header */}
       <div className="flex items-start justify-between mb-4">
-        {/* Section Header */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <Icon className="w-5 h-5 text-primary" />
@@ -61,36 +61,35 @@ export function SectionEditor({
       </div>
 
       <div className="space-y-4">
+        
+
         {/* Content */}
         <div className="space-y-2">
           <Label htmlFor={`${section.id}-content`}>Content *</Label>
           <Textarea
             id={`${section.id}-content`}
-            placeholder={
-              section.placeholder ||
-              "Start writing your section content here..."
-            }
+            placeholder={section.placeholder || "Start writing your section content here..."}
             value={section.content}
             onChange={(e) => onUpdate(section.id, { content: e.target.value })}
             rows={3}
+            disabled={section.aiGenerated}
+            className={section.aiGenerated ? "bg-gray-100 cursor-not-allowed" : ""}
           />
         </div>
 
-        {/* Image URL (optional) */}
-        {(section.type === "hero" ||
-          section.type === "cta" ||
-          section.type === "gallery") && (
-          <div className="space-y-2">
-            <Label htmlFor={`${section.id}-image`}>Image URL (optional)</Label>
-            <Input
-              id={`${section.id}-image`}
-              type="url"
-              placeholder="https://example.com/image.jpg"
-              value={section.imageUrl || ""}
-              onChange={(e) => onUpdate(section.id, { imageUrl: e.target.value })}
-            />
-          </div>
-        )}
+        {/* AI Toggle */}
+        <div className="flex items-center gap-2 mb-2">
+          <input
+            type="checkbox"
+            id={`${section.id}-ai`}
+            checked={section.aiGenerated || false}
+            onChange={(e) => onUpdate(section.id, { aiGenerated: e.target.checked })}
+            className="accent-primary"
+          />
+          <label htmlFor={`${section.id}-ai`} className="text-sm text-muted-foreground">
+            Generate content with AI
+          </label>
+        </div>
 
         {/* Items */}
         {section.items && (

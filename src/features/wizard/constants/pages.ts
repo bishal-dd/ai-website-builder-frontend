@@ -125,130 +125,132 @@ export const pageSectionsMap: Record<PageType, SectionType[]> = {
 }
 
 
-export const defaultPagePlaceholders: Record<PageType, Section[]> = {
-  // 🏠 Home — left empty so user picks from dropdown
+export const defaultPagePlaceholders: Record<PageType, Omit<Section, "id">[]> = {
   home: [],
 
-  // 🌍 Core Pages
   about: [
     {
-      id: "about-1",
       type: "content",
       content: "",
-      placeholder: "👋 Tell visitors who you are, your story, mission, and what makes your business or project special.",
+      placeholder:
+        "👋 Tell visitors who you are, your story, mission, and what makes your business or project special.",
     },
   ],
+
   contact: [
     {
-      id: "contact-1",
       type: "content",
       content: "",
-      placeholder: "📞 Add your contact details here — address, phone number, email, or a form link so people can reach you easily.",
+      placeholder:
+        "📞 Add your contact details here — address, phone number, email, or a form link so people can reach you easily.",
     },
   ],
 
-  // 💼 Portfolio & Business
   projects: [
     {
-      id: "projects-1",
       type: "content",
       content: "",
-      placeholder: "🧠 Highlight your best projects or case studies. Include a short description, results, or what made them special.",
+      placeholder:
+        "🧠 Highlight your best projects or case studies. Include a short description, results, or what made them special.",
     },
   ],
+
   services: [
     {
-      id: "services-1",
       type: "content",
       content: "",
-      placeholder: "💼 Describe the services you offer and how they help your clients. Be clear and confident.",
+      placeholder:
+        "💼 Describe the services you offer and how they help your clients. Be clear and confident.",
     },
   ],
+
   team: [
     {
-      id: "team-1",
       type: "content",
-      content: "",                
-      placeholder: "👥 Introduce your team members. Mention their roles, skills, and what makes them awesome.",
+      content: "",
+      placeholder:
+        "👥 Introduce your team members. Mention their roles, skills, and what makes them awesome.",
     },
   ],
 
-  // 🛍️ E-commerce
   products: [
     {
-      id: "products-1",
       type: "content",
       content: "",
-      placeholder: "🛒 Showcase your main products. Describe features, benefits, and why people should love them.",
+      placeholder:
+        "🛒 Showcase your main products. Describe features, benefits, and why people should love them.",
     },
   ],
+
   shop: [
     {
-      id: "shop-1",
       type: "content",
       content: "",
-      placeholder: "🛍️ Welcome visitors to your shop. Describe what kind of products you sell and what makes them unique.",
+      placeholder:
+        "🛍️ Welcome visitors to your shop. Describe what kind of products you sell and what makes them unique.",
     },
   ],
 
-  // 🍽️ Restaurant
   menu: [
     {
-      id: "menu-1",
       type: "content",
       content: "",
-      placeholder: "🍴 Add your restaurant’s menu highlights — signature dishes, specials, or must-try meals.",
-    },
-  ],
-  // 🏨 Hotel & Travel
-  rooms: [
-    {
-      id: "rooms-1",
-      type: "content",
-      content: "",
-      placeholder: "🛏️ Describe your rooms — comfort, style, and what guests can expect. Mention any special amenities.",
-    },
-  ],
-  amenities: [
-    {
-      id: "amenities-1",
-      type: "content",
-      content: "",
-      placeholder: "🏊 Highlight your hotel’s facilities — pool, gym, spa, free WiFi, breakfast, and anything else guests will love.",
-    },
-  ],
-  location: [
-    {
-      id: "location-1",
-      type: "content",
-      content: "",
-      placeholder: "📍 Tell visitors where you’re located and why it’s great — nearby attractions, transport links, or scenic views.",
-    },
-  ],
-  tours: [
-    {
-      id: "tours-1",
-      type: "content",
-      content: "",
-      placeholder: "🗺️ Describe your available tours or travel packages. Mention what travelers can experience and enjoy.",
+      placeholder:
+        "🍴 Add your restaurant’s menu highlights — signature dishes, specials, or must-try meals.",
     },
   ],
 
-  // ⚙️ Service Pages
-  process: [
+  rooms: [
     {
-      id: "process-1",
       type: "content",
       content: "",
-      placeholder: "🧩 Explain your workflow or process. Walk visitors through how you deliver your product or service.",
+      placeholder:
+        "🛏️ Describe your rooms — comfort, style, and what guests can expect. Mention any special amenities.",
     },
   ],
-  pricing: [
+
+  amenities: [
     {
-      id: "pricing-1",
       type: "content",
       content: "",
-      placeholder: "💰 Outline your pricing plans or packages. Be transparent about what’s included and who it’s for.",
+      placeholder:
+        "🏊 Highlight your hotel’s facilities — pool, gym, spa, free WiFi, breakfast, and anything else guests will love.",
+    },
+  ],
+
+  location: [
+    {
+      type: "content",
+      content: "",
+      placeholder:
+        "📍 Tell visitors where you’re located and why it’s great — nearby attractions, transport links, or scenic views.",
+    },
+  ],
+
+  tours: [
+    {
+      type: "content",
+      content: "",
+      placeholder:
+        "🗺️ Describe your available tours or travel packages. Mention what travelers can experience and enjoy.",
+    },
+  ],
+
+  process: [
+    {
+      type: "content",
+      content: "",
+      placeholder:
+        "🧩 Explain your workflow or process. Walk visitors through how you deliver your product or service.",
+    },
+  ],
+
+  pricing: [
+    {
+      type: "content",
+      content: "",
+      placeholder:
+        "💰 Outline your pricing plans or packages. Be transparent about what’s included and who it’s for.",
     },
   ],
 }

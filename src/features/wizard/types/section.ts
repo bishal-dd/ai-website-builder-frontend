@@ -27,6 +27,8 @@ export interface Section {
   imageUrl?: string
   items?: string[] // For features, testimonials, gallery, team members, products, FAQ, etc.
   placeholder?: string
+  aiGenerated?: boolean // <--- new
+
 }
 
 /**

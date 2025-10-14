@@ -5,17 +5,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { useWizardStore } from "@/features/wizard/store/wizardStore"
-import { DESIGN_TYPES, WEBSITE_TYPES } from "../constants"
+import { DESIGN_TYPES } from "../constants"
 
 export function StepThree() {
-  const { websiteName, tagline, designType, type, primaryColor, secondaryColor, setWebsiteInfo } = useWizardStore()
+  const { websiteName, tagline, designType, primaryColor, secondaryColor, setWebsiteInfo } = useWizardStore()
 
   const handleChange = (field: string, value: string) => {
     setWebsiteInfo({
       websiteName,
       tagline,
       designType,
-      type,
       primaryColor,
       secondaryColor,
       [field]: value,
@@ -43,7 +42,7 @@ export function StepThree() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tagline">Tagline *</Label>
+              <Label htmlFor="tagline">Tagline</Label>
               <Input
                 id="tagline"
                 placeholder="Building the future"
@@ -70,29 +69,12 @@ export function StepThree() {
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Dropdown for Website Type */}
-            <div className="space-y-2">
-              <Label htmlFor="type">Type *</Label>
-              <Select value={type} onValueChange={(value) => handleChange("type", value)}>
-                <SelectTrigger id="type">
-                  <SelectValue placeholder="Select website type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {WEBSITE_TYPES.map((wt) => (
-                    <SelectItem key={wt} value={wt}>
-                      {wt}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           {/* Color pickers remain unchanged */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="primaryColor">Primary Color *</Label>
+              <Label htmlFor="primaryColor">Primary Color</Label>
               <div className="flex gap-2">
                 <Input
                   id="primaryColor"
@@ -112,7 +94,7 @@ export function StepThree() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="secondaryColor">Secondary Color *</Label>
+              <Label htmlFor="secondaryColor">Secondary Color</Label>
               <div className="flex gap-2">
                 <Input
                   id="secondaryColor"

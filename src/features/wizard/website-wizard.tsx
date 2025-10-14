@@ -9,6 +9,8 @@ import { StepFour } from "./ui/StepFour"
 import { StepOne } from "./ui/StepOne"
 import { StepThree } from "./ui/StepThree"
 import { StepTwo } from "./ui/StepTwo"
+import { useWizardStore } from "./store/wizardStore"
+import { buildFullWebsitePrompt } from "./prompts/promptBuilder"
 
 const TOTAL_STEPS = 4
 
@@ -60,7 +62,15 @@ export function WebsiteWizard() {
                 Next <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             ) : (
-              <Button disabled={!canProceed()}>
+              <Button 
+              disabled={!canProceed()}
+              onClick={() => {
+                const state = useWizardStore.getState()
+                const fullPrompt = buildFullWebsitePrompt(state)
+
+                console.log("=== Full Website AI Prompt ===");
+                console.log(fullPrompt);
+              }}>
                 <Check className="w-4 h-4 mr-2" />
                 Complete
               </Button>
