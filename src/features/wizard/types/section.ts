@@ -21,6 +21,7 @@ export type SectionType =
  * A single section in a page.
  */
 export interface Section {
+  tag: string
   id: string
   type: SectionType
   content: string

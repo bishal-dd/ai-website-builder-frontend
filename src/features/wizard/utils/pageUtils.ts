@@ -1,28 +1,39 @@
-import { PageType } from "../types"
-import { SectionType } from "../types/section"
+import { PageContent, PageType } from "../types"
+import { Section } from "../types/section"
 import { pageSectionsMap, defaultPagePlaceholders } from "../constants"
 import { createSection } from "./sectionUtils"
-import { Section } from "../types/section"
 
-export const initializePageSections = (
+/**
+ * Initialize sections for a page
+ * - Home page gets a default hero section
+ * - Other pages use placeholders or default mapping
+ */
+export function initializePageSections(
   page: PageType,
   hydrated: boolean,
-  pageContents: { page: PageType; sections: Section[] }[],
+  pageContents: PageContent[],
   addSection: (page: PageType, section: Section) => void
-) => {
-  if (!hydrated) return
-
-  const existing = pageContents.find((pc) => pc.page === page)
+) {
+  const existing = pageContents.find(pc => pc.page === page)
   if (existing && existing.sections.length > 0) return
 
-  const placeholders = defaultPagePlaceholders[page]
-  if (placeholders?.length) {
-    placeholders.forEach((section) =>
+  // Home page gets default hero
+  if (page === "home") {
+    addSection(
+      "home",
+      createSection("home", "hero", hydrated, "Welcome to your website! Enter hero content here.")
+    )
+  }
+
+  // Page-specific placeholders
+  const placeholders = defaultPagePlaceholders[page] || []
+  if (placeholders.length > 0) {
+    placeholders.forEach(section =>
       addSection(page, createSection(page, section.type, hydrated, section.placeholder))
     )
   } else {
     const defaultTypes = pageSectionsMap[page] || []
-    defaultTypes.forEach((type: SectionType) =>
+    defaultTypes.forEach(type =>
       addSection(page, createSection(page, type, hydrated))
     )
   }

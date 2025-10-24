@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react"
 import { useWizardStore } from "../store/wizardStore"
 import { PageType } from "../types"
-import { Section } from "../types/section"
+import { Section, SectionType } from "../types/section"
 import { initializePageSections } from "../utils/pageUtils"
+import { createSection } from "../utils/sectionUtils"
 
 export function useStepFourLogic() {
   const { selectedPages, pageContents, addSection, updateSection, deleteSection } =
@@ -33,6 +34,15 @@ export function useStepFourLogic() {
     (sectionId: string, updates: Partial<Section>) =>
       updateSection(activeTab, sectionId, updates),
     [activeTab, updateSection]
+  )
+
+  const handleAddSection = useCallback(
+    (type: SectionType) => {
+      if (!hydrated) return
+      const section = createSection(activeTab, type, hydrated) // you'll need to import createSection from utils
+      addSection(activeTab, section)
+    },
+   [activeTab, addSection, hydrated]
   )
 
   const handleDeleteSection = useCallback(
@@ -71,6 +81,7 @@ export function useStepFourLogic() {
     getCurrentPageContent,
     handleUpdateSection,
     handleDeleteSection,
+    handleAddSection,
     handleAddItem,
     handleUpdateItem,
     handleDeleteItem,

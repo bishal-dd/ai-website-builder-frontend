@@ -5,6 +5,7 @@ import { SectionEditor } from "./SectionEditor"
 import { Card } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SectionType, sectionTypes } from "../types/section"
+import { useState } from "react"
 
 export function StepFour() {
   const {
@@ -19,6 +20,8 @@ export function StepFour() {
     handleUpdateItem,
     handleDeleteItem,
   } = useStepFourLogic()
+  
+  const [selectedSection, setSelectedSection] = useState("")
 
   if (selectedPages.length === 0) {
     return (
@@ -54,30 +57,6 @@ export function StepFour() {
 
       {/* Section List */}
       <div className="space-y-4 max-w-3xl mx-auto">
-        {isHomePage && currentPageContent.sections.length === 0 && (
-          <Card className="p-8 text-center">
-            <p className="text-muted-foreground mb-4">No sections added yet. Start building your page!</p>
-            <Select onValueChange={(value: string) => handleAddSection(value as SectionType)}>
-              <SelectTrigger className="w-full max-w-xs mx-auto">
-                <SelectValue placeholder="Choose a section type" />
-              </SelectTrigger>
-              <SelectContent>
-                {sectionTypes.map((type) => {
-                  const Icon = type.icon
-                  return (
-                    <SelectItem key={type.value} value={type.value}>
-                      <div className="flex items-center gap-2">
-                        <Icon className="w-4 h-4" />
-                        <span>{type.label}</span>
-                      </div>
-                    </SelectItem>
-                  )
-                })}
-              </SelectContent>
-            </Select>
-          </Card>
-        )}
-
         {currentPageContent.sections.map((section) => (
           <SectionEditor
             key={section.id}
@@ -94,7 +73,12 @@ export function StepFour() {
         {/* Add section button only for home page */}
         {isHomePage && (
           <Card className="p-4 border-dashed">
-            <Select onValueChange={(value: string) => handleAddSection(value as SectionType)}>
+            <Select 
+              value={selectedSection}
+              onValueChange={(value: string) => {
+                handleAddSection(value as SectionType)
+                setSelectedSection("")
+              }}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Add another section" />
               </SelectTrigger>

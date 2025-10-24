@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight, Check } from "lucide-react"
@@ -10,12 +11,14 @@ import { StepOne } from "./ui/StepOne"
 import { StepThree } from "./ui/StepThree"
 import { StepTwo } from "./ui/StepTwo"
 import { useWizardStore } from "./store/wizardStore"
-import { buildFullWebsitePrompt } from "./prompts/promptBuilder"
-import { generateAIContent } from "@/lib/api"
+import { buildFullWebsitePromptJSON } from "./prompts/promptBuilder"
+import { getAIResponse } from "@/lib/api/ai/generate"
 
 const TOTAL_STEPS = 4
 
 export function WebsiteWizard() {
+  const [isLoading, setIsLoading] = useState(false)
+
   const { currentStep, canProceed, handleNext, handleBack } = useWebsiteWizard(TOTAL_STEPS)
 
   const renderStep = () => {
@@ -30,6 +33,26 @@ export function WebsiteWizard() {
         return <StepFour />
       default:
         return null
+    }
+  }
+
+  const handleComplete = async () => {
+    setIsLoading(true)
+    try {
+      const state = useWizardStore.getState()
+      const fullPrompt = buildFullWebsitePromptJSON(state)
+
+      console.log("=== Full Website AI Prompt ===")
+      console.log(fullPrompt)
+
+      const aiResponse = await getAIResponse(fullPrompt)
+
+      console.log("=== AI Response ===")
+      console.log(aiResponse)
+    } catch (error) {
+      console.error("Error generating AI content:", error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -64,35 +87,17 @@ export function WebsiteWizard() {
               </Button>
             ) : (
               <Button 
-              disabled={!canProceed()}
-              onClick={async () => {
-                try {
-                const state = useWizardStore.getState()
-                const fullPrompt = buildFullWebsitePrompt(state)
-
-                console.log("=== Full Website AI Prompt ===");
-                console.log(fullPrompt);
-
-                const aiResponse = await generateAIContent(fullPrompt)
-
-                console.log("=== AI Response ===");
-                console.log(aiResponse);
-
-                const res = await fetch("/api/save-file", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ content: aiResponse}),
-                })
-                const data = await res.json()
-                if (data.error) throw new Error(data.error)
-
-                window.open(data.url, "_blank")
-                } catch (error) {
-                  console.error("Error generating AI content:", error);
-                }
-              }}>
-                <Check className="w-4 h-4 mr-2" />
-                Complete
+                disabled={!canProceed() || isLoading}
+                onClick={handleComplete}
+              >
+                {isLoading ? (
+                  "Generating..."
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 mr-2" />
+                    Complete
+                  </>
+                )}
               </Button>
             )}
           </div>
