@@ -1,0 +1,102 @@
+import { create } from "zustand"
+import { WizardState } from "../types"
+
+const defaultState: Omit<WizardState,
+  | "setCurrentStep"
+  | "setWebsiteType"
+  | "togglePage"
+  | "setWebsiteInfo"
+  | "addSection"
+  | "updateSection"
+  | "deleteSection"
+  | "reorderSections"
+  | "resetWizard"> = {
+  currentStep: 1,
+  websiteType: null,
+  selectedPages: [],
+  websiteName: "",
+  tagline: "",
+  designType: "",
+  primaryColor: "#8b5cf6",
+  secondaryColor: "#6366f1",
+  pageContents: [],
+}
+
+export const useWizardStore = create<WizardState>((set) => ({
+  ...defaultState,
+
+  setCurrentStep: (step) => set({ currentStep: step }),
+
+  setWebsiteType: (type) => set({ websiteType: type }),
+
+  togglePage: (page) =>
+    set((state) => ({
+      selectedPages: state.selectedPages.includes(page)
+        ? state.selectedPages.filter((p) => p !== page)
+        : [...state.selectedPages, page],
+    })),
+
+  setWebsiteInfo: (info) => set(info),
+
+  addSection: (page, section) =>
+    set((state) => {
+      const existingPageIndex = state.pageContents.findIndex((pc) => pc.page === page)
+      const newPageContents = [...state.pageContents]
+
+      if (existingPageIndex >= 0) {
+        newPageContents[existingPageIndex] = {
+          ...newPageContents[existingPageIndex],
+          sections: [...newPageContents[existingPageIndex].sections, section],
+        }
+      } else {
+        newPageContents.push({
+          page,
+          sections: [section],
+        })
+      }
+
+      return { pageContents: newPageContents }
+    }),
+
+  updateSection: (page, sectionId, updates) =>
+    set((state) => {
+      const pageIndex = state.pageContents.findIndex((pc) => pc.page === page)
+      if (pageIndex < 0) return state
+
+      const newPageContents = [...state.pageContents]
+      const sectionIndex = newPageContents[pageIndex].sections.findIndex((s) => s.id === sectionId)
+
+      if (sectionIndex >= 0) {
+        newPageContents[pageIndex].sections[sectionIndex] = {
+          ...newPageContents[pageIndex].sections[sectionIndex],
+          ...updates,
+        }
+      }
+
+      return { pageContents: newPageContents }
+    }),
+
+  deleteSection: (page, sectionId) =>
+    set((state) => {
+      const pageIndex = state.pageContents.findIndex((pc) => pc.page === page)
+      if (pageIndex < 0) return state
+
+      const newPageContents = [...state.pageContents]
+      newPageContents[pageIndex].sections = newPageContents[pageIndex].sections.filter((s) => s.id !== sectionId)
+
+      return { pageContents: newPageContents }
+    }),
+
+  reorderSections: (page, sections) =>
+    set((state) => {
+      const pageIndex = state.pageContents.findIndex((pc) => pc.page === page)
+      if (pageIndex < 0) return state
+
+      const newPageContents = [...state.pageContents]
+      newPageContents[pageIndex].sections = sections
+
+      return { pageContents: newPageContents }
+    }),
+
+  resetWizard: () => set({ ...defaultState }),
+}))
