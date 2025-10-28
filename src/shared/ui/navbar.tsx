@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Wand2, Home, FileText, Settings, LogOut, User } from "lucide-react"
+import { Wand2, Settings, LogOut, User } from "lucide-react"
 import Link from "next/link"
 
 export function Navbar() {

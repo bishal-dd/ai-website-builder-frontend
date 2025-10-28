@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Plus, Trash2, FileText } from "lucide-react"
-import { Section, SectionType, sectionTypes } from "../types/section"
+import { Section, sectionTypes } from "../types/section"
 import { PageType } from "../types"
 
 interface SectionEditorProps {

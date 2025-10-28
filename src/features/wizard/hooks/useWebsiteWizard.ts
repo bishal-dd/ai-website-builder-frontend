@@ -7,7 +7,6 @@ export const useWebsiteWizard = (totalSteps: number) => {
     websiteType,
     selectedPages,
     websiteName,
-    tagline,
     designType,
     pageContents,
   } = useWizardStore()

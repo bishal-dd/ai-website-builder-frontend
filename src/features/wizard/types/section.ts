@@ -1,4 +1,5 @@
 import { Sparkles, Grid3x3, MessageSquare, Megaphone, Images, FileText, HelpCircle, Users, Package, BookOpen, Shield } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
 /**
  * Section types that can be used in a page.
@@ -21,7 +22,6 @@ export type SectionType =
  * A single section in a page.
  */
 export interface Section {
-  tag: string
   id: string
   type: SectionType
   content: string
@@ -35,7 +35,7 @@ export interface Section {
 /**
  * Meta info for each section type, used for UI dropdowns or mapping.
  */
-export const sectionTypes: { value: SectionType; label: string; icon: any; description: string }[] = [
+export const sectionTypes: { value: SectionType; label: string; icon: LucideIcon; description: string }[] = [
   { value: "hero", label: "Hero Section", icon: Sparkles, description: "Large banner with headline and CTA" },
   { value: "features", label: "Features", icon: Grid3x3, description: "Highlight key features or services" },
   { value: "testimonials", label: "Testimonials", icon: MessageSquare, description: "Customer reviews and social proof" },

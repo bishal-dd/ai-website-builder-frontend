@@ -1,4 +1,9 @@
-export const pageConfigs: Record<string, any> = {
+type PageConfig =
+  | { hasItems: true; itemLabel: string }
+  | { hasSections: true }
+  | { hasContactInfo: true }
+
+export const pageConfigs: Record<string, PageConfig> = {
   services: { hasItems: true, itemLabel: "Service" },
   products: { hasItems: true, itemLabel: "Product" },
   team: { hasItems: true, itemLabel: "Team Member" },

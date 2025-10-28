@@ -50,9 +50,14 @@ export function WebsiteWizard() {
       }
 
       console.log("✅ Website saved with ID:", result.websiteId);
-    } catch (err: any) {
-      console.error("❌ Error completing website:", err);
-      setErrorMessage(err?.message || "Something went wrong");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("❌ Error completing website:", err);
+        setErrorMessage(err.message || "Something went wrong");
+      } else {
+        console.error("❌ Unknown error completing website:", err);
+        setErrorMessage("An unknown error occurred");
+      }
     } finally {
       setIsLoading(false);
     }
