@@ -1,3 +1,5 @@
+import { Section } from "./section";
+
 export type WebsiteType = "portfolio" | "restaurant" | "hotel" | "travel agency" | "marketing page"
 
 export type WizardStateForAPI = {
@@ -6,7 +8,10 @@ export type WizardStateForAPI = {
   designType?: string;
   primaryColor?: string;
   secondaryColor?: string;
-  pageContents?: any[]; 
+  pageContents?: {
+    page: string;
+    sections: Section[];
+  }[]; 
 };
 
 export type CreateWebsiteResponse = {

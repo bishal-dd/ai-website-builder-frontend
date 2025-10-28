@@ -11,7 +11,6 @@ import {
   ShoppingCart,
   Shield,
   Coffee,
-  Image,
   Bed,
   Heart,
   Map,
