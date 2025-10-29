@@ -23,7 +23,7 @@ type WebElement = {
   children?: WebElement[];
 };
 
-// slack test
+// slack test 2
 // 🧱 Example JSON-based website structure
 const sampleWebsite: WebElement[] = [
   {
