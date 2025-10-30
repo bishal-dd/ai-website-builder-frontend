@@ -1,4 +1,4 @@
-import { Preview } from "@/features/preview/preview";
+import Preview from "@/features/preview/Preview";
 
 export default function Home() {
   return <Preview />;
