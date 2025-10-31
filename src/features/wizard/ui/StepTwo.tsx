@@ -1,19 +1,21 @@
-"use client"
+"use client";
 
-import { Card } from "@/components/ui/card"
-import { useWizardStore } from "@/features/wizard/store/wizardStore"
-import { cn } from "@/lib/utils"
-import { pageOptions, websitePagesMap } from "../constants"
-import { Check } from "lucide-react"
+import { Card } from "@/components/ui/card";
+import { useWizardStore } from "@/features/wizard/store/wizardStore";
+import { cn } from "@/lib/utils";
+import { pageOptions, websitePagesMap } from "../constants";
+import { Check } from "lucide-react";
 
 export function StepTwo() {
-  const { websiteType, selectedPages, togglePage } = useWizardStore()
+  const { websiteType, selectedPages, togglePage } = useWizardStore();
 
-  // Avoid rendering until websiteType is selected
-  if (!websiteType) return null
+  // test slack
+  if (!websiteType) return null;
 
-  const availablePages = websitePagesMap[websiteType] || []
-  const filteredOptions = pageOptions.filter((page) => availablePages.includes(page.type))
+  const availablePages = websitePagesMap[websiteType] || [];
+  const filteredOptions = pageOptions.filter((page) =>
+    availablePages.includes(page.type),
+  );
 
   return (
     <div className="space-y-6">
@@ -26,15 +28,17 @@ export function StepTwo() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
         {filteredOptions.map((page) => {
-          const Icon = page.icon
-          const isSelected = selectedPages.includes(page.type)
+          const Icon = page.icon;
+          const isSelected = selectedPages.includes(page.type);
 
           return (
             <Card
               key={page.type}
               className={cn(
                 "p-5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] relative",
-                isSelected ? "ring-2 ring-primary bg-primary/5" : "hover:border-primary/50",
+                isSelected
+                  ? "ring-2 ring-primary bg-primary/5"
+                  : "hover:border-primary/50",
               )}
               onClick={() => togglePage(page.type)}
             >
@@ -47,20 +51,24 @@ export function StepTwo() {
                 <div
                   className={cn(
                     "w-11 h-11 rounded-lg flex items-center justify-center transition-colors",
-                    isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                    isSelected
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground",
                   )}
                 >
                   <Icon className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="font-semibold">{page.label}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{page.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {page.description}
+                  </p>
                 </div>
               </div>
             </Card>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }
