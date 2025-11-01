@@ -37,7 +37,7 @@ export default function Preview() {
 
   useEffect(() => {
     setWebsiteData(sample);
-  }, [websiteData]);
+  }, []);
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-background flex flex-col">
