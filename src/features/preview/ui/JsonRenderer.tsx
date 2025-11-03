@@ -3,13 +3,7 @@
 import type React from "react";
 
 import type { WebElement } from "../types/webElement";
-import {
-  createElement,
-  type ReactElement,
-  useState,
-  useRef,
-  useEffect,
-} from "react";
+import { createElement, useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ImageIcon } from "lucide-react";
 
@@ -63,7 +57,7 @@ export function JsonRenderer({ elements, onUpdateElement }: JsonRendererProps) {
     }
   };
 
-  const renderElement = (element: WebElement): any => {
+  const renderElement = (element: WebElement): React.ReactNode => {
     const {
       id,
       tag,
@@ -86,14 +80,18 @@ export function JsonRenderer({ elements, onUpdateElement }: JsonRendererProps) {
         key: id,
         ref: inputRef,
         value: editValue,
-        onChange: (e: any) => setEditValue(e.target.value),
+        onChange: (
+          e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+        ) => setEditValue(e.target.value),
         onBlur: () => handleTextSave(id),
-        onKeyDown: (e: any) => handleTextKeyDown(e, id),
+        onKeyDown: (
+          e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+        ) => handleTextKeyDown(e, id),
         className: `${className || ""} outline-2 outline-primary outline-dashed bg-primary/10`,
         ...(isMultiline && { rows: 3 }),
       });
     }
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const props: any = {
       key: id,
       className: className || undefined,
@@ -101,7 +99,7 @@ export function JsonRenderer({ elements, onUpdateElement }: JsonRendererProps) {
     };
 
     if (isTextElement && onUpdateElement) {
-      props.onClick = (e: any) => {
+      props.onClick = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation();
         handleTextClick(element);
       };

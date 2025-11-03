@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ChatPanelJson } from "./ui/ChatPanelJson";
 import { PreviewPanelJson } from "./ui/PreviewPanelJson";
 import { Button } from "@/components/ui/button";

@@ -9,7 +9,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Sparkles, User, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
-  WebElement,
   WebsiteData,
   WebPages,
 } from "@/features/preview/types/webElement";
