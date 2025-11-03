@@ -63,8 +63,16 @@ export function JsonRenderer({ elements, onUpdateElement }: JsonRendererProps) {
     }
   };
 
-  const renderElement = (element: WebElement): ReactElement => {
-    const { id, tag, class: className, content, type, children } = element;
+  const renderElement = (element: WebElement): any => {
+    const {
+      id,
+      tag,
+      class: className,
+      content,
+      type,
+      children,
+      attributes,
+    } = element;
 
     const isEditing = editingId === id;
     const isTextElement = content && !children && tag !== "img";
@@ -78,24 +86,22 @@ export function JsonRenderer({ elements, onUpdateElement }: JsonRendererProps) {
         key: id,
         ref: inputRef,
         value: editValue,
-        onChange: (
-          e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-        ) => setEditValue(e.target.value),
+        onChange: (e: any) => setEditValue(e.target.value),
         onBlur: () => handleTextSave(id),
-        onKeyDown: (e: React.KeyboardEvent) => handleTextKeyDown(e, id),
+        onKeyDown: (e: any) => handleTextKeyDown(e, id),
         className: `${className || ""} outline-2 outline-primary outline-dashed bg-primary/10`,
         ...(isMultiline && { rows: 3 }),
       });
     }
 
-    const props: Record<string, unknown> = {
+    const props: any = {
       key: id,
       className: className || undefined,
       ...(type && { type }),
     };
 
     if (isTextElement && onUpdateElement) {
-      props.onClick = (e: React.MouseEvent) => {
+      props.onClick = (e: any) => {
         e.stopPropagation();
         handleTextClick(element);
       };
@@ -112,8 +118,8 @@ export function JsonRenderer({ elements, onUpdateElement }: JsonRendererProps) {
         >
           {createElement(tag, {
             ...props,
-            src: content,
-            alt: content || "Image",
+            src: attributes?.src,
+            alt: attributes?.alt,
           })}
           {hoveredImageId === id && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity">

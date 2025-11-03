@@ -3,27 +3,38 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Monitor,
   Smartphone,
   Tablet,
   ExternalLink,
   RefreshCw,
+  FileText,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { JsonRenderer } from "./JsonRenderer";
-import type { WebElement } from "../types/webElement";
+import type { WebElement, WebsiteData } from "../types/webElement";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
 interface PreviewPanelJsonProps {
-  websiteData: WebElement[];
-  onUpdateElement?: (id: number, updates: Partial<WebElement>) => void;
+  websiteData: WebsiteData;
+  onUpdateElement?: (
+    pageId: number,
+    elementId: number,
+    updates: Partial<WebElement>,
+  ) => void;
+  onPageChange: (pageId: number) => void;
+  currentPageId: number;
 }
 
 export function PreviewPanelJson({
   websiteData,
   onUpdateElement,
+  onPageChange,
+  currentPageId,
 }: PreviewPanelJsonProps) {
   const [device, setDevice] = useState<DeviceType>("desktop");
   const [key, setKey] = useState(0);
@@ -38,7 +49,8 @@ export function PreviewPanelJson({
     mobile: "w-[375px] h-full",
   };
 
-  const hasContent = websiteData && websiteData.length > 0;
+  const currentPage = websiteData.elements.find((p) => p.id === currentPageId);
+  const hasContent = currentPage && currentPage.pageContent.length > 0;
 
   return (
     <div className="flex h-full flex-col bg-muted">
@@ -76,6 +88,25 @@ export function PreviewPanelJson({
         </div>
       </div>
 
+      <div className="border-b border-border bg-card px-6 py-2">
+        <ScrollArea className="w-full">
+          <div className="flex gap-2 pb-2">
+            {websiteData.elements.map((page) => (
+              <Button
+                key={page.id}
+                variant={currentPageId === page.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => onPageChange(page.id)}
+                className="gap-2 whitespace-nowrap"
+              >
+                <FileText className="h-3 w-3" />
+                {page.title}
+              </Button>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
+
       <div className="flex flex-1 items-center justify-center overflow-auto p-6">
         <div
           className={cn(
@@ -87,27 +118,17 @@ export function PreviewPanelJson({
           {hasContent ? (
             <div key={key} className="w-full h-full overflow-auto">
               <JsonRenderer
-                elements={websiteData}
-                onUpdateElement={onUpdateElement}
+                elements={currentPage.pageContent}
+                onUpdateElement={(elementId, updates) =>
+                  onUpdateElement?.(currentPageId, elementId, updates)
+                }
               />
             </div>
           ) : (
             <div className="flex h-full min-h-[400px] items-center justify-center p-8">
               <div className="text-center">
                 <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/20">
-                  <svg
-                    className="h-10 w-10 text-primary"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                    />
-                  </svg>
+                  <Sparkles className="h-10 w-10 text-primary" />
                 </div>
                 <h2 className="mb-2 text-2xl font-bold text-foreground">
                   Your Website Preview
@@ -124,7 +145,11 @@ export function PreviewPanelJson({
 
       <div className="border-t border-border bg-card px-6 py-2">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>{hasContent ? "Website generated" : "Ready to generate"}</span>
+          <span>
+            {hasContent
+              ? `Viewing: ${currentPage?.title}`
+              : "Ready to generate"}
+          </span>
           <span className="flex items-center gap-2">
             <span
               className={cn(
