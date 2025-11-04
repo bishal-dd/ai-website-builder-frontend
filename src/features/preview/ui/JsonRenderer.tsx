@@ -140,7 +140,7 @@ export function JsonRenderer({
 
     if (isLinkElement && onNavigate) {
       props.onClick = (e: React.MouseEvent) => {
-        handleLinkClick(e, attributes?.href!);
+        handleLinkClick(e, attributes?.href ?? "#");
       };
     }
 
