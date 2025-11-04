@@ -1,6 +1,7 @@
 export type WebElement = {
   id: number;
-  tag: keyof HTMLElementTagNameMap | "svg" | "path";
+  tag: keyof HTMLElementTagNameMap | "svg" | "path" | "el-dropdown" | "el-menu";
+
   class?: string;
   attributes?: Record<string, string>;
   content?: string;

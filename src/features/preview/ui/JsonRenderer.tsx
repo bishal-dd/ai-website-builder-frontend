@@ -2,20 +2,34 @@
 
 import type React from "react";
 
-import type { WebElement } from "../types/webElement";
-import { createElement, useState, useRef, useEffect } from "react";
+import type { WebElement } from "@/features/preview/types";
+import {
+  createElement,
+  type ReactElement,
+  useState,
+  useRef,
+  useEffect,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { ImageIcon } from "lucide-react";
 
 interface JsonRendererProps {
   elements: WebElement[];
   onUpdateElement?: (id: number, updates: Partial<WebElement>) => void;
+  onNavigate?: (path: string) => void;
 }
 
-export function JsonRenderer({ elements, onUpdateElement }: JsonRendererProps) {
+export function JsonRenderer({
+  elements,
+  onUpdateElement,
+  onNavigate,
+}: JsonRendererProps) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
   const [hoveredImageId, setHoveredImageId] = useState<number | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<{
+    [key: number]: boolean;
+  }>({});
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -57,7 +71,14 @@ export function JsonRenderer({ elements, onUpdateElement }: JsonRendererProps) {
     }
   };
 
-  const renderElement = (element: WebElement): React.ReactNode => {
+  const handleLinkClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    if (onNavigate) {
+      onNavigate(href);
+    }
+  };
+
+  const renderElement = (element: WebElement): ReactElement => {
     const {
       id,
       tag,
@@ -71,6 +92,9 @@ export function JsonRenderer({ elements, onUpdateElement }: JsonRendererProps) {
     const isEditing = editingId === id;
     const isTextElement = content && !children && tag !== "img";
     const isImageElement = tag === "img";
+    const isLinkElement = tag === "a";
+    const isHamburgerButton = tag === "button" && content === "☰";
+    const isMobileMenu = className?.includes("md:hidden hidden flex-col");
 
     if (isEditing && isTextElement) {
       const isMultiline = content && content.length > 50;
@@ -84,22 +108,44 @@ export function JsonRenderer({ elements, onUpdateElement }: JsonRendererProps) {
           e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
         ) => setEditValue(e.target.value),
         onBlur: () => handleTextSave(id),
-        onKeyDown: (
-          e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
-        ) => handleTextKeyDown(e, id),
+        onKeyDown: (e: React.KeyboardEvent) => handleTextKeyDown(e, id),
         className: `${className || ""} outline-2 outline-primary outline-dashed bg-primary/10`,
         ...(isMultiline && { rows: 3 }),
       });
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const props: any = {
+
+    const props: Record<string, unknown> = {
       key: id,
       className: className || undefined,
       ...(type && { type }),
+      ...(attributes?.href && { href: attributes?.href }),
     };
 
+    if (isHamburgerButton) {
+      props.onClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setMobileMenuOpen((prev) => ({
+          ...prev,
+          [id]: !prev[id],
+        }));
+      };
+    }
+
+    if (isMobileMenu) {
+      const isOpen = mobileMenuOpen[id - 1];
+      props.className = isOpen
+        ? className?.replace("hidden", "flex")
+        : className;
+    }
+
+    if (isLinkElement && onNavigate) {
+      props.onClick = (e: React.MouseEvent) => {
+        handleLinkClick(e, attributes?.href!);
+      };
+    }
+
     if (isTextElement && onUpdateElement) {
-      props.onClick = (e: React.MouseEvent<HTMLDivElement>) => {
+      props.onClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         handleTextClick(element);
       };
@@ -116,8 +162,8 @@ export function JsonRenderer({ elements, onUpdateElement }: JsonRendererProps) {
         >
           {createElement(tag, {
             ...props,
-            src: attributes?.src,
-            alt: attributes?.alt,
+            src: content,
+            alt: content || "Image",
           })}
           {hoveredImageId === id && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity">

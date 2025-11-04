@@ -2,233 +2,253 @@ import { WebsiteData } from "../types";
 
 export const sampleWebsite: WebsiteData = {
   elements: [
-    // ==============================
-    // HOME PAGE
-    // ==============================
     {
       page: "home",
       id: 1,
-      title: "Home",
-      description: "Welcome to Wanderlust Travels",
-      theme: "default",
+      title: "Wanderly Travels | Explore the World",
+      description: "Discover breathtaking destinations with Wanderly Travels.",
+      theme: "light",
       pageContent: [
         {
-          id: 1,
-          tag: "div",
-          class: "min-h-screen bg-gray-50 flex flex-col",
+          id: 101,
+          tag: "nav",
+          class: "bg-white border-b border-gray-200",
           children: [
             {
-              id: 2,
-              tag: "header",
-              class:
-                "bg-white/90 backdrop-blur-md shadow-md p-6 flex justify-between items-center sticky top-0 z-50",
-              children: [
-                {
-                  id: 3,
-                  tag: "h1",
-                  class: "text-2xl font-bold text-blue-700",
-                  content: "Wanderlust Travels",
-                },
-                {
-                  id: 4,
-                  tag: "button",
-                  class: "md:hidden text-gray-700 focus:outline-none",
-                  attributes: {
-                    type: "button",
-                    "aria-label": "Toggle menu",
-                    onclick:
-                      "document.getElementById('mobile-menu').classList.toggle('hidden')",
-                  },
-                  children: [
-                    {
-                      id: 5,
-                      tag: "svg",
-                      class: "w-6 h-6",
-                      attributes: {
-                        fill: "none",
-                        stroke: "currentColor",
-                        viewBox: "0 0 24 24",
-                        xmlns:
-                          "[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)",
-                      },
-                      children: [
-                        {
-                          id: 6,
-                          tag: "path",
-                          attributes: {
-                            "stroke-linecap": "round",
-                            "stroke-linejoin": "round",
-                            "stroke-width": "2",
-                            d: "M4 6h16M4 12h16M4 18h16",
-                          },
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  id: 7,
-                  tag: "nav",
-                  class: "hidden md:flex space-x-6 text-gray-700 font-medium",
-                  children: [
-                    {
-                      id: 8,
-                      tag: "a",
-                      class: "hover:text-blue-600",
-                      content: "Home",
-                      attributes: { href: "/" },
-                    },
-                    {
-                      id: 9,
-                      tag: "a",
-                      class: "hover:text-blue-600",
-                      content: "Destinations",
-                      attributes: { href: "/destinations" },
-                    },
-                    {
-                      id: 10,
-                      tag: "a",
-                      class: "hover:text-blue-600",
-                      content: "Services",
-                      attributes: { href: "/services" },
-                    },
-                    {
-                      id: 11,
-                      tag: "a",
-                      class: "hover:text-blue-600",
-                      content: "About",
-                      attributes: { href: "/about" },
-                    },
-                    {
-                      id: 12,
-                      tag: "a",
-                      class: "hover:text-blue-600",
-                      content: "Contact",
-                      attributes: { href: "/contact" },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              id: 13,
+              id: 102,
               tag: "div",
               class:
-                "md:hidden hidden flex-col space-y-2 bg-white shadow-md absolute top-full right-0 w-48 py-4 px-4 z-40",
-              attributes: { id: "mobile-menu" },
+                "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16",
               children: [
                 {
-                  id: 14,
+                  id: 103,
                   tag: "a",
-                  class: "block py-2 px-3 hover:bg-gray-100 rounded",
-                  content: "Home",
-                  attributes: { href: "/" },
+                  class: "text-2xl font-bold text-blue-600",
+                  attributes: {
+                    href: "/",
+                  },
+                  content: "Wanderly Travels",
                 },
                 {
-                  id: 15,
-                  tag: "a",
-                  class: "block py-2 px-3 hover:bg-gray-100 rounded",
-                  content: "Destinations",
-                  attributes: { href: "/destinations" },
+                  id: 104,
+                  tag: "div",
+                  class: "hidden md:flex space-x-6",
+                  children: [
+                    {
+                      id: 105,
+                      tag: "a",
+                      class: "text-gray-700 hover:text-blue-600",
+                      attributes: { href: "/" },
+                      content: "Home",
+                    },
+                    {
+                      id: 106,
+                      tag: "a",
+                      class: "text-gray-700 hover:text-blue-600",
+                      attributes: { href: "/destinations" },
+                      content: "Destinations",
+                    },
+                    {
+                      id: 107,
+                      tag: "a",
+                      class: "text-gray-700 hover:text-blue-600",
+                      attributes: { href: "/packages" },
+                      content: "Packages",
+                    },
+                    {
+                      id: 108,
+                      tag: "a",
+                      class: "text-gray-700 hover:text-blue-600",
+                      attributes: { href: "/about" },
+                      content: "About",
+                    },
+                    {
+                      id: 109,
+                      tag: "a",
+                      class: "text-gray-700 hover:text-blue-600",
+                      attributes: { href: "/contact" },
+                      content: "Contact",
+                    },
+                  ],
                 },
                 {
-                  id: 16,
-                  tag: "a",
-                  class: "block py-2 px-3 hover:bg-gray-100 rounded",
-                  content: "Services",
-                  attributes: { href: "/services" },
-                },
-                {
-                  id: 17,
-                  tag: "a",
-                  class: "block py-2 px-3 hover:bg-gray-100 rounded",
-                  content: "About",
-                  attributes: { href: "/about" },
-                },
-                {
-                  id: 18,
-                  tag: "a",
-                  class: "block py-2 px-3 hover:bg-gray-100 rounded",
-                  content: "Contact",
-                  attributes: { href: "/contact" },
+                  id: 110,
+                  tag: "button",
+                  class: "md:hidden text-gray-700",
+                  attributes: {
+                    "aria-label": "Toggle menu",
+                  },
+                  content: "☰",
                 },
               ],
             },
-            // ... rest of your home page content remains unchanged
+          ],
+        },
+        {
+          id: 111,
+          tag: "section",
+          class: "bg-blue-50 py-20 text-center",
+          children: [
+            {
+              id: 112,
+              tag: "h1",
+              class: "text-4xl font-bold text-gray-800 mb-4",
+              content: "Discover the World with Wanderly Travels",
+            },
+            {
+              id: 113,
+              tag: "p",
+              class: "text-gray-600 text-lg mb-6",
+              content:
+                "Your adventure starts here. Explore exotic destinations and unique travel experiences.",
+            },
+            {
+              id: 114,
+              tag: "a",
+              class:
+                "bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700",
+              attributes: { href: "/packages" },
+              content: "View Packages",
+            },
           ],
         },
       ],
     },
-    // ==============================
-    // DESTINATIONS PAGE
-    // ==============================
     {
       page: "destinations",
       id: 2,
-      title: "Destinations",
-      description: "Explore our top travel spots",
-      theme: "default",
+      title: "Top Destinations | Wanderly Travels",
+      description: "Explore our curated list of popular travel destinations.",
+      theme: "light",
       pageContent: [
         {
-          id: 100,
-          tag: "div",
-          class: "min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-10",
+          id: 201,
+          tag: "section",
+          class: "max-w-6xl mx-auto py-12 px-4",
           children: [
             {
-              id: 101,
-              tag: "h1",
-              class: "text-4xl font-bold text-center text-gray-900 mb-12",
-              content: "Top Destinations Around the World",
+              id: 202,
+              tag: "h2",
+              class: "text-3xl font-bold text-center mb-8 text-gray-800",
+              content: "Top Destinations",
             },
             {
-              id: 102,
+              id: 203,
               tag: "div",
-              class: "grid md:grid-cols-3 gap-10 max-w-6xl mx-auto",
+              class: "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8",
               children: [
                 {
-                  id: 103,
+                  id: 204,
                   tag: "div",
-                  class:
-                    "rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition group",
+                  class: "bg-white shadow rounded-lg overflow-hidden",
                   children: [
                     {
-                      id: 104,
+                      id: 205,
                       tag: "img",
-                      class:
-                        "w-full h-64 object-cover group-hover:scale-105 transition-transform",
-                      attributes: {
-                        src: "[https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80](https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80)",
-                        alt: "Paris city view",
-                      },
+                      class: "w-full h-48 object-cover",
+                      attributes: { src: "/images/paris.jpg", alt: "Paris" },
                     },
                     {
-                      id: 105,
+                      id: 206,
                       tag: "div",
-                      class: "p-6",
+                      class: "p-4",
                       children: [
                         {
-                          id: 106,
-                          tag: "h4",
-                          class: "text-xl font-semibold text-gray-800 mb-2",
+                          id: 207,
+                          tag: "h3",
+                          class: "text-lg font-semibold mb-2",
                           content: "Paris, France",
                         },
                         {
-                          id: 107,
+                          id: 208,
                           tag: "p",
                           class: "text-gray-600",
                           content:
-                            "Experience romance and culture in the city of lights.",
+                            "Experience the romance and beauty of the City of Lights.",
                         },
                       ],
                     },
                   ],
                 },
-                // ... add other destinations here
+                {
+                  id: 209,
+                  tag: "div",
+                  class: "bg-white shadow rounded-lg overflow-hidden",
+                  children: [
+                    {
+                      id: 210,
+                      tag: "img",
+                      class: "w-full h-48 object-cover",
+                      attributes: { src: "/images/tokyo.jpg", alt: "Tokyo" },
+                    },
+                    {
+                      id: 211,
+                      tag: "div",
+                      class: "p-4",
+                      children: [
+                        {
+                          id: 212,
+                          tag: "h3",
+                          class: "text-lg font-semibold mb-2",
+                          content: "Tokyo, Japan",
+                        },
+                        {
+                          id: 213,
+                          tag: "p",
+                          class: "text-gray-600",
+                          content:
+                            "A fusion of tradition and cutting-edge innovation.",
+                        },
+                      ],
+                    },
+                  ],
+                },
               ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      page: "about",
+      id: 3,
+      title: "About Us | Wanderly Travels",
+      description: "Learn more about Wanderly Travels and our mission.",
+      theme: "light",
+      pageContent: [
+        {
+          id: 301,
+          tag: "section",
+          class: "max-w-4xl mx-auto py-16 px-6",
+          children: [
+            {
+              id: 302,
+              tag: "h2",
+              class: "text-3xl font-bold mb-6 text-gray-800 text-center",
+              content: "Our Story",
+            },
+            {
+              id: 303,
+              tag: "p",
+              class: "text-gray-600 mb-4",
+              content:
+                "Founded in 2020, Wanderly Travels was created to make travel accessible and enjoyable for everyone. Our passion lies in helping travelers discover new experiences around the globe.",
+            },
+            {
+              id: 304,
+              tag: "p",
+              class: "text-gray-600",
+              content:
+                "We partner with trusted agencies worldwide to provide safe, curated, and memorable adventures.",
             },
           ],
         },
       ],
     },
   ],
+  metadata: {
+    title: "Wanderly Travels",
+    description: "A modern travel agency website powered by JSON rendering.",
+    theme: "light",
+  },
 };
