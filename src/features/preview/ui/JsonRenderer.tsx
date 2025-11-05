@@ -138,17 +138,29 @@ export function JsonRenderer({
         : className;
     }
 
-    if (isLinkElement && onNavigate) {
-      props.onClick = (e: React.MouseEvent) => {
-        handleLinkClick(e, attributes?.href ?? "#");
-      };
-    }
-
-    if (isTextElement && onUpdateElement) {
+    if (isTextElement) {
       props.onClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        handleTextClick(element);
+        e.preventDefault();
+
+        // If the element is a link, don't navigate while editing
+        if (isLinkElement && onUpdateElement) {
+          handleTextClick(element);
+          return;
+        }
+
+        // Enter edit mode for any editable text
+        if (onUpdateElement) {
+          handleTextClick(element);
+          return;
+        }
+
+        // Navigate only when not editing
+        if (isLinkElement && onNavigate && !onUpdateElement) {
+          handleLinkClick(e, attributes?.href ?? "#");
+        }
       };
+
       props.className = `${className || ""} cursor-text hover:outline hover:outline-2 hover:outline-primary/50 transition-all`;
     }
 

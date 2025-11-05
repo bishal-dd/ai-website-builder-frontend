@@ -23,14 +23,10 @@ interface Message {
 
 interface ChatPanelJsonProps {
   onClose?: () => void;
-  onWebsiteGenerated: (elements: WebsiteData) => void;
   onPageAdded: (page: WebPages) => void;
 }
 
-export function ChatPanelJson({
-  onClose,
-  onWebsiteGenerated,
-}: ChatPanelJsonProps) {
+export function ChatPanelJson({ onClose }: ChatPanelJsonProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -75,7 +71,6 @@ export function ChatPanelJson({
       };
       setMessages((prev) => [...prev, aiMessage]);
 
-      onWebsiteGenerated(sampleWebsite);
       setIsLoading(false);
     }, 2000);
   };

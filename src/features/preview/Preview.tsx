@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChatPanelJson } from "./ui/ChatPanelJson";
 import { PreviewPanelJson } from "./ui/PreviewPanelJson";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import type {
   WebsiteData,
   WebPages,
 } from "@/features/preview/types/webElement";
+import { sampleWebsite } from "@/features/preview/constants/sampleJsonWebsite";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -65,6 +66,10 @@ export default function Preview() {
     }));
   };
 
+  useEffect(() => {
+    handleWebsiteGenerated(sampleWebsite);
+  }, []);
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-background flex flex-col">
       <main className="flex-1 relative overflow-hidden">
@@ -88,7 +93,6 @@ export default function Preview() {
             <div className="pointer-events-auto h-[600px] w-full max-w-md m-4 rounded-lg shadow-2xl border border-border overflow-hidden">
               <ChatPanelJson
                 onClose={() => setIsChatOpen(false)}
-                onWebsiteGenerated={handleWebsiteGenerated}
                 onPageAdded={handlePageAdded}
               />
             </div>
