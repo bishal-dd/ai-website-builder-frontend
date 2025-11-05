@@ -1,7 +1,6 @@
 export type WebElement = {
   id: number;
   tag: keyof HTMLElementTagNameMap | "svg" | "path" | "el-dropdown" | "el-menu";
-
   class?: string;
   attributes?: Record<string, string>;
   content?: string;
@@ -11,11 +10,12 @@ export type WebElement = {
 
 export type WebPages = {
   page: string;
-  id: number;
+  id: string;
   title: string;
   description: string;
   theme: string;
   pageContent: WebElement[];
+  page_id: string;
 };
 
 export type WebsiteData = {

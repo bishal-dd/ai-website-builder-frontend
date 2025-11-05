@@ -8,9 +8,9 @@ import { MessageSquare } from "lucide-react";
 import type {
   WebElement,
   WebsiteData,
-  WebPages,
 } from "@/features/preview/types/webElement";
-import { sampleWebsite } from "@/features/preview/constants/sampleJsonWebsite";
+import useGetGeneratedWebsite from "@/features/preview/hooks/useGetGeneratedWebsite";
+import { mapApiToWebsiteData } from "@/features/preview/utils/mapApiToWebsiteData";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -18,26 +18,27 @@ export default function Preview() {
     elements: [],
     metadata: {},
   });
-  const [currentPageId, setCurrentPageId] = useState<number>(1);
+  const [currentPageId, setCurrentPageId] = useState<string>("");
+  const websiteId = "665d2c87-e0a7-4116-ae21-176dc4e83d54";
+
+  const { data: generatedWebsite } = useGetGeneratedWebsite(websiteId);
+
+  useEffect(() => {
+    if (generatedWebsite) {
+      const websiteDataFormatted = mapApiToWebsiteData(generatedWebsite);
+      handleWebsiteGenerated(websiteDataFormatted);
+    }
+  }, [generatedWebsite]);
 
   const handleWebsiteGenerated = (data: WebsiteData) => {
-    console.log(data);
     setWebsiteData(data);
     if (data.elements.length > 0) {
-      setCurrentPageId(data.elements[0].id);
+      setCurrentPageId(data.elements[0].page_id);
     }
   };
 
-  const handlePageAdded = (page: WebPages) => {
-    setWebsiteData((prev) => ({
-      ...prev,
-      elements: [...prev.elements, page],
-    }));
-    setCurrentPageId(page.id);
-  };
-
   const handleUpdateElement = (
-    pageId: number,
+    pageId: string,
     elementId: number,
     updates: Partial<WebElement>,
   ) => {
@@ -66,10 +67,6 @@ export default function Preview() {
     }));
   };
 
-  useEffect(() => {
-    handleWebsiteGenerated(sampleWebsite);
-  }, []);
-
   return (
     <div className="h-screen w-screen overflow-hidden bg-background flex flex-col">
       <main className="flex-1 relative overflow-hidden">
@@ -91,10 +88,7 @@ export default function Preview() {
         {isChatOpen && (
           <div className="fixed inset-0 z-50 flex items-end justify-end pointer-events-none">
             <div className="pointer-events-auto h-[600px] w-full max-w-md m-4 rounded-lg shadow-2xl border border-border overflow-hidden">
-              <ChatPanelJson
-                onClose={() => setIsChatOpen(false)}
-                onPageAdded={handlePageAdded}
-              />
+              <ChatPanelJson onClose={() => setIsChatOpen(false)} />
             </div>
           </div>
         )}

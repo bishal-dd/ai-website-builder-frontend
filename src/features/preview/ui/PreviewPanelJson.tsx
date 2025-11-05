@@ -22,12 +22,12 @@ type DeviceType = "desktop" | "tablet" | "mobile";
 interface PreviewPanelJsonProps {
   websiteData: WebsiteData;
   onUpdateElement?: (
-    pageId: number,
+    pageId: string,
     elementId: number,
     updates: Partial<WebElement>,
   ) => void;
-  onPageChange: (pageId: number) => void;
-  currentPageId: number;
+  onPageChange: (pageId: string) => void;
+  currentPageId: string;
 }
 
 export function PreviewPanelJson({
@@ -48,8 +48,9 @@ export function PreviewPanelJson({
     tablet: "w-[768px] h-full",
     mobile: "w-[375px] h-full",
   };
-
-  const currentPage = websiteData.elements.find((p) => p.id === currentPageId);
+  const currentPage = websiteData.elements.find(
+    (p) => p.page_id === currentPageId,
+  );
   const hasContent = currentPage && currentPage.pageContent.length > 0;
 
   return (

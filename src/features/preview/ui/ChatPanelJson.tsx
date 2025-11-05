@@ -8,11 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Sparkles, User, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type {
-  WebsiteData,
-  WebPages,
-} from "@/features/preview/types/webElement";
-import { sampleWebsite } from "@/features/preview/constants/sampleJsonWebsite";
 
 interface Message {
   id: string;
@@ -23,7 +18,6 @@ interface Message {
 
 interface ChatPanelJsonProps {
   onClose?: () => void;
-  onPageAdded: (page: WebPages) => void;
 }
 
 export function ChatPanelJson({ onClose }: ChatPanelJsonProps) {

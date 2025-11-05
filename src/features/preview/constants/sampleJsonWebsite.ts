@@ -3,8 +3,9 @@ import { WebsiteData } from "../types";
 export const sampleWebsite: WebsiteData = {
   elements: [
     {
+      page_id: "1",
       page: "home",
-      id: 1,
+      id: "1",
       title: "Wanderly Travels | Explore the World",
       description: "Discover breathtaking destinations with Wanderly Travels.",
       theme: "light",
@@ -115,8 +116,10 @@ export const sampleWebsite: WebsiteData = {
       ],
     },
     {
+      page_id: "2",
+
       page: "destinations",
-      id: 2,
+      id: "2",
       title: "Top Destinations | Wanderly Travels",
       description: "Explore our curated list of popular travel destinations.",
       theme: "light",
@@ -210,8 +213,9 @@ export const sampleWebsite: WebsiteData = {
       ],
     },
     {
+      page_id: "3",
       page: "about",
-      id: 3,
+      id: "",
       title: "About Us | Wanderly Travels",
       description: "Learn more about Wanderly Travels and our mission.",
       theme: "light",
