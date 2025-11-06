@@ -13,12 +13,12 @@ interface ApiData {
 }
 
 export const mapApiToWebsiteData = (apiData: ApiData): WebsiteData => {
-  const elements: WebPages[] = apiData.pages.flatMap((page) =>
-    page.content.map((contentItem) => ({
-      ...contentItem,
-      page_id: page.id, // add page_id to each WebPages
-    })),
-  );
+  const elements: WebPages[] = apiData.pages.flatMap((page) => {
+    return {
+      ...page.content,
+      page_id: page.id,
+    };
+  });
   return {
     elements,
     metadata: {
