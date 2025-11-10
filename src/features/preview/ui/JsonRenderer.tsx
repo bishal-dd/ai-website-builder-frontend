@@ -11,7 +11,6 @@ import {
   useEffect,
 } from "react";
 import { Button } from "@/components/ui/button";
-import { ImageIcon } from "lucide-react";
 
 interface JsonRendererProps {
   elements: WebElement[];
@@ -31,6 +30,7 @@ export function JsonRenderer({
     [key: number]: boolean;
   }>({});
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (editingId !== null && inputRef.current) {
@@ -64,10 +64,35 @@ export function JsonRenderer({
     }
   };
 
-  const handleImageChange = (id: number) => {
-    const newImageUrl = prompt("Enter new image URL:");
-    if (newImageUrl && onUpdateElement) {
-      onUpdateElement(id, { content: newImageUrl });
+  const handleImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    id: number,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const response = await fetch("/api/upload-presigned-url", {
+        method: "POST",
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const { url, cloudfrontUrl } = await response.json();
+
+      await fetch(url, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": file.type },
+      });
+
+      onUpdateElement?.(id, { content: cloudfrontUrl });
+    } catch (err) {
+      console.error("Image upload failed:", err);
+    } finally {
+      event.target.value = "";
     }
   };
 
@@ -174,22 +199,19 @@ export function JsonRenderer({
         >
           {createElement(tag, {
             ...props,
-            src: content,
-            alt: content || "Image",
+            src: attributes?.src,
+            alt: attributes?.alt || "Image",
           })}
           {hoveredImageId === id && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity">
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleImageChange(id);
-                }}
-                variant="secondary"
-                size="sm"
-                className="gap-2"
-              >
-                <ImageIcon className="h-4 w-4" />
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity w-xl">
+              <Button variant="secondary" size="sm" className="gap-2">
                 Change Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleImageChange(e, id)}
+                />
               </Button>
             </div>
           )}
