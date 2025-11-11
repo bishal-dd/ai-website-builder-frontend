@@ -1,6 +1,11 @@
 import { Section } from "./section";
 
-export type WebsiteType = "portfolio" | "restaurant" | "hotel" | "travel agency" | "marketing page"
+export type WebsiteType =
+  | "portfolio"
+  | "restaurant"
+  | "hotel"
+  | "travel agency"
+  | "marketing page";
 
 export type WizardStateForAPI = {
   websiteName: string;
@@ -11,7 +16,7 @@ export type WizardStateForAPI = {
   pageContents?: {
     page: string;
     sections: Section[];
-  }[]; 
+  }[];
 };
 
 export type CreateWebsiteResponse = {

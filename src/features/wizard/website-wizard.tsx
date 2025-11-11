@@ -15,7 +15,7 @@ import { createWebsiteAPI } from "@/features/wizard/api/createWebsite";
 
 const TOTAL_STEPS = 4;
 
-export function WebsiteWizard() {
+export default function WebsiteWizard() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { currentStep, canProceed, handleNext, handleBack } =
@@ -67,9 +67,7 @@ export function WebsiteWizard() {
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-balance mb-2">
-            Create Your Website
-          </h1>
+          <h1 className="text-4xl font-bold mb-2">Create Your Website</h1>
           <p className="text-lg text-muted-foreground">
             Generate your perfect website in just a few steps
           </p>
