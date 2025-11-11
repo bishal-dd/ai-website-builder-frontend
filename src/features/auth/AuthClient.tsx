@@ -1,27 +1,82 @@
 "use client";
 
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useForm } from "react-hook-form";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Mail, Lock, User } from "lucide-react";
-import { useAuth } from "./hooks/use-auth";
+import { Loader2, Mail, Lock } from "lucide-react";
+import { authClient } from "@/shared/helper/auth/authClient";
+
+// Zod schema for validation
+const authSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type AuthFormValues = z.infer<typeof authSchema>;
 
 export default function AuthClientPage() {
+  const [isSignIn, setIsSignIn] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const {
-    isSignIn,
-    email,
-    password,
-    name,
-    isLoading,
-    error,
-    setEmail,
-    setPassword,
-    setName,
-    handleSocialAuth,
-    handleEmailAuth,
-    toggleAuthMode,
-  } = useAuth();
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<AuthFormValues>({
+    resolver: zodResolver(authSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (data: AuthFormValues) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      if (isSignIn) {
+        await authClient.signIn.email({
+          email: data.email,
+          password: data.password,
+        });
+      } else {
+        await authClient.signUp.email({
+          email: data.email,
+          password: data.password,
+          name: "user",
+        });
+      }
+
+      window.location.href = "/wizard";
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Authentication failed");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSocialAuth = async (provider: string) => {
+    try {
+      await authClient.signIn.social({
+        provider,
+        callbackURL: "http://localhost:3000/wizard",
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50">
@@ -38,7 +93,6 @@ export default function AuthClientPage() {
             </p>
           </div>
 
-          {/* Error Display */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="flex">
@@ -63,7 +117,7 @@ export default function AuthClientPage() {
           )}
 
           <Card className="p-8 shadow-xl border-border/50 backdrop-blur-sm bg-white/80">
-            {/* Social Authentication */}
+            {/* Social Auth */}
             <div className="space-y-3 mb-6">
               <button
                 onClick={() => handleSocialAuth("google")}
@@ -104,30 +158,7 @@ export default function AuthClientPage() {
             </div>
 
             {/* Email/Password Form */}
-            <form onSubmit={handleEmailAuth} className="space-y-4">
-              {!isSignIn && (
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="name"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Full Name
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="John Doe"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required={!isSignIn}
-                      className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
-                    />
-                  </div>
-                </div>
-              )}
-
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
@@ -141,11 +172,14 @@ export default function AuthClientPage() {
                     id="email"
                     type="email"
                     placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                    {...register("email")}
                     className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
                   />
+                  {errors.email && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -162,11 +196,14 @@ export default function AuthClientPage() {
                     id="password"
                     type="password"
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                    {...register("password")}
                     className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
                   />
+                  {errors.password && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -188,11 +225,10 @@ export default function AuthClientPage() {
               </Button>
             </form>
 
-            {/* Toggle between Sign In and Sign Up */}
             <div className="mt-6 text-center">
               <button
                 type="button"
-                onClick={toggleAuthMode}
+                onClick={() => setIsSignIn(!isSignIn)}
                 className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
               >
                 {isSignIn
@@ -201,10 +237,6 @@ export default function AuthClientPage() {
               </button>
             </div>
           </Card>
-
-          <p className="text-center text-xs text-gray-500 mt-6">
-            By continuing, you agree to our Terms of Service and Privacy Policy
-          </p>
         </div>
       </div>
     </div>

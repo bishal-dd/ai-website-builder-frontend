@@ -1,4 +1,4 @@
-import WebsiteWizard from "@/features/wizard/website-wizard";
+import WebsiteWizard from "@/features/wizard/WebsiteWizard";
 import { getSession } from "@/lib/actions/auth-actions";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";

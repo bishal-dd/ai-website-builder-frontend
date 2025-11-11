@@ -95,7 +95,7 @@ export const authClient = {
     return response.json();
   },
 
-  getSocialAuthUrl(provider: "google" | "github") {
+  getSocialAuthUrl(provider: "google") {
     return `${BACKEND_URL}/api/auth/oauth/${provider}?callbackURL=${window.location.origin}/wizard`;
   },
 };

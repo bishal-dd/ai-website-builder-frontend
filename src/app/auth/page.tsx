@@ -1,4 +1,4 @@
-import AuthClientPage from "./auth-client";
+import AuthClientPage from "../../features/auth/AuthClient";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/actions/auth-actions";
 import { headers } from "next/headers";
