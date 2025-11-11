@@ -28,7 +28,7 @@ interface BackendSession {
   expires?: string;
 }
 
-export default function Navigation({
+export default function Navbar({
   session,
 }: {
   session: BackendSession | null;
