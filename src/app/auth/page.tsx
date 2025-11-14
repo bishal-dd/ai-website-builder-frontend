@@ -1,16 +1,10 @@
 import AuthenticationPage from "../../features/auth/AuthenticationPage";
-import { redirect } from "next/navigation";
-import { getSession } from "@/lib/actions/auth-actions";
-import { headers } from "next/headers";
+import { RedirectIfAuthenticatedRoute } from "@/shared/routes";
 
-export default async function AuthPage() {
-  const cookieHeader = (await headers()).get("cookie") || "";
-
-  const session = await getSession(cookieHeader);
-
-  if (session.user) {
-    redirect("/wizard");
-  }
-
-  return <AuthenticationPage />;
+export default function AuthPage() {
+  return (
+    <RedirectIfAuthenticatedRoute>
+      <AuthenticationPage />
+    </RedirectIfAuthenticatedRoute>
+  );
 }

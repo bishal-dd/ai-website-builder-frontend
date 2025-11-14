@@ -1,8 +1,6 @@
 "use client";
 
-import { signOut } from "@/lib/actions/auth-actions";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,33 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Wand2, Settings, LogOut, User } from "lucide-react";
+import { Wand2, LogOut } from "lucide-react";
+import { useSession } from "@/shared/session/useSession";
 
-interface BackendSession {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    image?: string | null;
-    emailVerified: boolean;
-    createdAt: string;
-    updatedAt: string;
-  };
-  expires?: string;
-}
-
-export default function Navbar({
-  session,
-}: {
-  session: BackendSession | null;
-}) {
-  const pathname = usePathname();
-
-  const isActive = (path: string) => pathname === path;
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
+export default function Navbar() {
+  const { user, signOut } = useSession();
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
@@ -57,34 +33,18 @@ export default function Navbar({
           </span>
         </Link>
 
-        {/* Navigation Links - Show wizard link when authenticated */}
-        <nav className="hidden md:flex items-center space-x-6">
-          {session?.user && (
-            <Link
-              href="/wizard"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive("/wizard")
-                  ? "text-primary bg-primary/10"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              Wizard
-            </Link>
-          )}
-        </nav>
-
         {/* Profile Dropdown - only show if authenticated */}
-        {session?.user ? (
+        {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
                   <AvatarImage
-                    src={session.user.image || "/placeholder.svg"}
-                    alt={session.user.name}
+                    src={user.image || "/placeholder.svg"}
+                    alt={user.name}
                   />
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    {session.user.name?.[0]?.toUpperCase() || "U"}
+                    {user.name?.[0]?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -93,27 +53,15 @@ export default function Navbar({
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium leading-none">
-                    {session.user.name}
+                    {user.name}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {session.user.email}
+                    {user.email}
                   </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={handleSignOut}
-              >
+              <DropdownMenuItem className="text-destructive" onClick={signOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
@@ -121,14 +69,16 @@ export default function Navbar({
           </DropdownMenu>
         ) : (
           // If not authenticated, show login/signup buttons instead
-          <div className="flex gap-2">
-            <Link href="/auth">
-              <Button variant="ghost">Login</Button>
-            </Link>
-            <Link href="/auth">
-              <Button>Create Account</Button>
-            </Link>
-          </div>
+          <Link href="/auth">
+            <Button
+              variant="default"
+              className="px-5 py-2 text-sm font-medium bg-primary text-primary-foreground
+                         hover:bg-primary/90 hover:scale-105 active:scale-95
+                          transition-colors shadow-md rounded-lg"
+            >
+              Login
+            </Button>
+          </Link>
         )}
       </div>
     </nav>

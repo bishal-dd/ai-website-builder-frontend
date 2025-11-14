@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/shared/ui/Navbar";
-import { getSession } from "@/lib/actions/auth-actions";
-import { headers } from "next/headers";
 import { Providers } from "./providers";
 
 const geistSans = Geist({
@@ -26,16 +24,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieHeader = (await headers()).get("cookie") || "";
-  const session = await getSession(cookieHeader);
-
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          <Navbar session={session} />
+          <Navbar />
           {children}
         </Providers>
       </body>
