@@ -1,4 +1,4 @@
-import AuthClientPage from "../../features/auth/AuthClient";
+import AuthenticationPage from "../../features/auth/AuthenticationPage";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/actions/auth-actions";
 import { headers } from "next/headers";
@@ -12,5 +12,5 @@ export default async function AuthPage() {
     redirect("/wizard");
   }
 
-  return <AuthClientPage />;
+  return <AuthenticationPage />;
 }

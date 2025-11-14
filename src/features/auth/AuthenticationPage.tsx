@@ -1,82 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useForm } from "react-hook-form";
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Mail, Lock } from "lucide-react";
-import { authClient } from "@/shared/helper/auth/authClient";
+import { useAuthForm } from "@/features/auth/hooks/useAuthForm";
+import { useAuthActions } from "@/features/auth/hooks/useAuthActions";
+import { useAuthStore } from "@/features/auth/store/authStore";
 
-// Zod schema for validation
-const authSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-type AuthFormValues = z.infer<typeof authSchema>;
-
-export default function AuthClientPage() {
-  const [isSignIn, setIsSignIn] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<AuthFormValues>({
-    resolver: zodResolver(authSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  const onSubmit = async (data: AuthFormValues) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      if (isSignIn) {
-        await authClient.signIn.email({
-          email: data.email,
-          password: data.password,
-        });
-      } else {
-        await authClient.signUp.email({
-          email: data.email,
-          password: data.password,
-          name: "user",
-        });
-      }
-
-      window.location.href = "/wizard";
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Authentication failed");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSocialAuth = async (provider: string) => {
-    try {
-      await authClient.signIn.social({
-        provider,
-        callbackURL: "http://localhost:3000/wizard",
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  };
+export default function AuthenticationPage() {
+  const { isSignIn, isLoading, error, setSignIn } = useAuthStore();
+  const { handleEmailAuth, handleSocialAuth } = useAuthActions();
+  const { register, handleSubmit, errors } = useAuthForm();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50">
@@ -158,7 +94,10 @@ export default function AuthClientPage() {
             </div>
 
             {/* Email/Password Form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={handleSubmit(handleEmailAuth)}
+              className="space-y-4"
+            >
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
@@ -228,8 +167,8 @@ export default function AuthClientPage() {
             <div className="mt-6 text-center">
               <button
                 type="button"
-                onClick={() => setIsSignIn(!isSignIn)}
-                className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+                onClick={() => setSignIn(!isSignIn)}
+                className="text-gray-700 hover:text-black/80 text-sm font-medium transition-colors"
               >
                 {isSignIn
                   ? "Don't have an account? Sign up"
