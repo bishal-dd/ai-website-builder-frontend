@@ -171,8 +171,15 @@ export default function AuthenticationPage() {
                 className="text-gray-700 hover:text-black/80 text-sm font-medium transition-colors"
               >
                 {isSignIn
-                  ? "Don't have an account? Sign up"
-                  : "Already have an account? Sign in"}
+                  ? "Don't have an account? "
+                  : "Already have an account? "}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSignIn(!isSignIn)}
+                className="text-indigo-600 hover:text-indigo-700 text-sm font-medium transition-colors"
+              >
+                {isSignIn ? " Sign up" : " Sign in"}
               </button>
             </div>
           </Card>
