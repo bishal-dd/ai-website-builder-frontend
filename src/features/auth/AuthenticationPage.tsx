@@ -4,24 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Mail, Lock, User } from "lucide-react";
-import { useAuth } from "./hooks/use-auth";
+import { Loader2, Mail, Lock } from "lucide-react";
+import { useAuthForm } from "@/features/auth/hooks/useAuthForm";
+import { useAuthActions } from "@/features/auth/hooks/useAuthActions";
+import { useAuthStore } from "@/features/auth/store/authStore";
 
-export default function AuthClientPage() {
-  const {
-    isSignIn,
-    email,
-    password,
-    name,
-    isLoading,
-    error,
-    setEmail,
-    setPassword,
-    setName,
-    handleSocialAuth,
-    handleEmailAuth,
-    toggleAuthMode,
-  } = useAuth();
+export default function AuthenticationPage() {
+  const { isSignIn, isLoading, error, setSignIn } = useAuthStore();
+  const { handleEmailAuth, handleSocialAuth } = useAuthActions();
+  const { register, handleSubmit, errors } = useAuthForm();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50">
@@ -38,7 +29,6 @@ export default function AuthClientPage() {
             </p>
           </div>
 
-          {/* Error Display */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="flex">
@@ -63,7 +53,7 @@ export default function AuthClientPage() {
           )}
 
           <Card className="p-8 shadow-xl border-border/50 backdrop-blur-sm bg-white/80">
-            {/* Social Authentication */}
+            {/* Social Auth */}
             <div className="space-y-3 mb-6">
               <button
                 onClick={() => handleSocialAuth("google")}
@@ -104,30 +94,10 @@ export default function AuthClientPage() {
             </div>
 
             {/* Email/Password Form */}
-            <form onSubmit={handleEmailAuth} className="space-y-4">
-              {!isSignIn && (
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="name"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Full Name
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="John Doe"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required={!isSignIn}
-                      className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
-                    />
-                  </div>
-                </div>
-              )}
-
+            <form
+              onSubmit={handleSubmit(handleEmailAuth)}
+              className="space-y-4"
+            >
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
@@ -141,11 +111,14 @@ export default function AuthClientPage() {
                     id="email"
                     type="email"
                     placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                    {...register("email")}
                     className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
                   />
+                  {errors.email && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -162,11 +135,14 @@ export default function AuthClientPage() {
                     id="password"
                     type="password"
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                    {...register("password")}
                     className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
                   />
+                  {errors.password && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -188,23 +164,25 @@ export default function AuthClientPage() {
               </Button>
             </form>
 
-            {/* Toggle between Sign In and Sign Up */}
             <div className="mt-6 text-center">
               <button
                 type="button"
-                onClick={toggleAuthMode}
-                className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+                onClick={() => setSignIn(!isSignIn)}
+                className="text-gray-700 hover:text-black/80 text-sm font-medium transition-colors"
               >
                 {isSignIn
-                  ? "Don't have an account? Sign up"
-                  : "Already have an account? Sign in"}
+                  ? "Don't have an account? "
+                  : "Already have an account? "}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSignIn(!isSignIn)}
+                className="text-indigo-600 hover:text-indigo-700 text-sm font-medium transition-colors"
+              >
+                {isSignIn ? " Sign up" : " Sign in"}
               </button>
             </div>
           </Card>
-
-          <p className="text-center text-xs text-gray-500 mt-6">
-            By continuing, you agree to our Terms of Service and Privacy Policy
-          </p>
         </div>
       </div>
     </div>
