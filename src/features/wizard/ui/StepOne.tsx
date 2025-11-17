@@ -9,28 +9,6 @@ import { handleUpload } from "@/features/wizard/utils/handleUpload";
 
 export function StepOne() {
   const { websiteType, setWebsiteType } = useWizardStore();
-  const [uploading, setUploading] = useState(false);
-  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setUploading(true);
-      const { cloudFrontUrl } = await handleUpload(
-        file,
-        "132822ee-299e-4f93-b836-7a7199c525c8"
-      );
-      setUploadedUrl(cloudFrontUrl);
-    } catch (err) {
-      console.error(err);
-      alert("Upload failed!");
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -79,23 +57,6 @@ export function StepOne() {
             </Card>
           );
         })}
-      </div>
-
-      {/* Upload button */}
-      <div className="mt-6 text-center">
-        <label className="cursor-pointer inline-block bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/80">
-          {uploading ? "Uploading..." : "Upload Test File"}
-          <input type="file" className="hidden" onChange={handleFileUpload} />
-        </label>
-
-        {uploadedUrl && (
-          <p className="mt-2 text-sm text-green-600">
-            Uploaded!{" "}
-            <a href={uploadedUrl} target="_blank" className="underline">
-              View File
-            </a>
-          </p>
-        )}
       </div>
     </div>
   );
