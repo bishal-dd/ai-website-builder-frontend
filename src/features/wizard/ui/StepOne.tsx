@@ -4,8 +4,6 @@ import { Card } from "@/components/ui/card";
 import { useWizardStore } from "@/features/wizard/store/wizardStore";
 import { cn } from "@/lib/utils";
 import { websiteTypes } from "../constants";
-import { useState } from "react";
-import { handleUpload } from "@/features/wizard/utils/handleUpload";
 
 export function StepOne() {
   const { websiteType, setWebsiteType } = useWizardStore();
