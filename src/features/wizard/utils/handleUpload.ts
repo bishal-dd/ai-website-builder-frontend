@@ -10,7 +10,8 @@ export async function handleUpload(file: File, pageId: string) {
   await uploadToS3(sanitizedName, file, file.type);
 
   // 3️⃣ Build CloudFront URL
-  const cloudFrontUrl = `https://d28hne0rpm84ao.cloudfront.net/previews/images/${sanitizedName}`;
+  const cloudFrontBaseUrl = process.env.NEXT_PUBLIC_CLOUDFRONT_URL;
+  const cloudFrontUrl = `${cloudFrontBaseUrl}/previews/images/${sanitizedName}`;
 
   // 4️⃣ Build metadata payload
   const metadata = {
