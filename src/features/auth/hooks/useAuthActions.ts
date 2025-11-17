@@ -16,6 +16,7 @@ export const useAuthActions = () => {
       ? await authClient.signIn.email({
           email: data.email,
           password: data.password,
+          callbackURL: "/wizard",
         })
       : await authClient.signUp.email({
           email: data.email,
