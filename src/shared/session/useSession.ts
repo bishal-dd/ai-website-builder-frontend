@@ -14,7 +14,7 @@ export function useSession() {
   const signOut = async () => {
     await authClient.signOut();
     setSession(null);
-    router.push("/auth");
+    router.push("/auth/login");
     router.refresh();
   };
   return {

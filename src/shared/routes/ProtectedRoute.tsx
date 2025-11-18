@@ -9,7 +9,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!loading && !authenticated) {
-      router.push("/auth"); // redirect to login
+      router.push("/auth/login"); // redirect to login
     }
   }, [authenticated, loading, router]);
 

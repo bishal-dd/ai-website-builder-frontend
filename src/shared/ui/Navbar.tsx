@@ -69,7 +69,7 @@ export default function Navbar() {
           </DropdownMenu>
         ) : (
           // If not authenticated, show login/signup buttons instead
-          <Link href="/auth">
+          <Link href="/auth/login">
             <Button
               variant="default"
               className="px-5 py-2 text-sm font-medium bg-primary text-primary-foreground

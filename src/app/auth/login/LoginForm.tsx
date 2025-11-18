@@ -5,14 +5,15 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Mail, Lock } from "lucide-react";
-import { useAuthForm } from "@/features/auth/hooks/useAuthForm";
 import { useAuthActions } from "@/features/auth/hooks/useAuthActions";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import Link from "next/link";
+import { useLoginForm } from "@/features/auth/hooks/useLoginForm";
 
-export default function AuthenticationPage() {
-  const { isSignIn, isLoading, error, setSignIn } = useAuthStore();
+export default function LoginForm() {
+  const { isLoading, error } = useAuthStore();
   const { handleEmailAuth, handleSocialAuth } = useAuthActions();
-  const { register, handleSubmit, errors } = useAuthForm();
+  const { register, handleSubmit, errors } = useLoginForm();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50">
@@ -20,13 +21,9 @@ export default function AuthenticationPage() {
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {isSignIn ? "Welcome Back" : "Create Account"}
+              Welcome Back
             </h1>
-            <p className="text-gray-600">
-              {isSignIn
-                ? "Sign in to your account to continue"
-                : "Sign up to get started with Website Wizard"}
-            </p>
+            <p className="text-gray-600">Sign in to your account to continue</p>
           </div>
 
           {error && (
@@ -88,7 +85,7 @@ export default function AuthenticationPage() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">
-                  Or continue with
+                  Or continue with email
                 </span>
               </div>
             </div>
@@ -154,33 +151,24 @@ export default function AuthenticationPage() {
                 {isLoading ? (
                   <div className="flex items-center">
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    {isSignIn ? "Signing in..." : "Creating account..."}
+                    Signing in...
                   </div>
-                ) : isSignIn ? (
-                  "Sign In"
                 ) : (
-                  "Create Account"
+                  "Sign In"
                 )}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
-              <button
-                type="button"
-                onClick={() => setSignIn(!isSignIn)}
-                className="text-gray-700 hover:text-black/80 text-sm font-medium transition-colors"
-              >
-                {isSignIn
-                  ? "Don't have an account? "
-                  : "Already have an account? "}
-              </button>
-              <button
-                type="button"
-                onClick={() => setSignIn(!isSignIn)}
-                className="text-indigo-600 hover:text-indigo-700 text-sm font-medium transition-colors"
-              >
-                {isSignIn ? " Sign up" : " Sign in"}
-              </button>
+              <p className="text-gray-700 text-sm">
+                Don't have an account?{" "}
+                <Link
+                  href="/auth/signup"
+                  className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+                >
+                  Sign up
+                </Link>
+              </p>
             </div>
           </Card>
         </div>

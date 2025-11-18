@@ -1,21 +1,17 @@
 import { create } from "zustand";
 
-interface AuthState {
-  isSignIn: boolean;
+interface AuthStore {
   isLoading: boolean;
-  error: string | null | undefined;
-
-  setSignIn: (value: boolean) => void;
+  error: string | null;
   setLoading: (loading: boolean) => void;
-  setError: (err: string | null | undefined) => void;
+  setError: (error: string | null) => void;
+  clearError: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  isSignIn: true,
+export const useAuthStore = create<AuthStore>((set) => ({
   isLoading: false,
   error: null,
-
-  setSignIn: (value) => set({ isSignIn: value }),
-  setLoading: (isLoading) => set({ isLoading }),
+  setLoading: (loading) => set({ isLoading: loading }),
   setError: (error) => set({ error }),
+  clearError: () => set({ error: null }),
 }));
