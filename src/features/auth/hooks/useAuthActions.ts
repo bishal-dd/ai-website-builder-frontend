@@ -1,36 +1,46 @@
 import { authClient } from "@/shared/helper/auth/authClient";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { AuthFormValues } from "@/features/auth/utils/form";
+import { SignInFormValues, SignUpFormValues } from "@/features/auth/utils/form";
 
 export const useAuthActions = () => {
   const router = useRouter();
+  const pathname = usePathname();
+  const { setLoading, setError } = useAuthStore();
 
-  const { isSignIn, setLoading, setError } = useAuthStore();
+  const isSignInPage = pathname === "/auth/login";
 
-  const handleEmailAuth = async (data: AuthFormValues) => {
+  const handleEmailAuth = async (data: SignInFormValues | SignUpFormValues) => {
     setLoading(true);
     setError(null);
 
-    const result = isSignIn
-      ? await authClient.signIn.email({
-          email: data.email,
-          password: data.password,
-        })
-      : await authClient.signUp.email({
-          email: data.email,
-          password: data.password,
-          name: "user",
-        });
+    try {
+      const result = isSignInPage
+        ? await authClient.signIn.email({
+            email: data.email,
+            password: data.password,
+            callbackURL: "/wizard",
+          })
+        : await authClient.signUp.email({
+            email: data.email,
+            password: data.password,
+            name: (data as SignUpFormValues).name,
+            callbackURL: "/wizard",
+          });
 
-    if (result.error) {
-      setError(result.error.message);
+      if (result.error) {
+        setError(result.error.message || "Authentication failed");
+        setLoading(false);
+        return;
+      }
+
       setLoading(false);
-      return;
+      router.push("/wizard");
+    } catch (err) {
+      setError("An unexpected error occurred");
+      console.error(err);
+      setLoading(false);
     }
-
-    setLoading(false);
-    router.push("/wizard");
   };
 
   const handleSocialAuth = async (provider: string) => {
@@ -40,11 +50,11 @@ export const useAuthActions = () => {
     try {
       const result = await authClient.signIn.social({
         provider,
-        callbackURL: "http://localhost:3000/wizard",
+        callbackURL: `${window.location.origin}/wizard`,
       });
 
       if (result?.error) {
-        setError(result.error.message);
+        setError(result.error.message || "Social authentication failed");
         setLoading(false);
       }
     } catch (err) {

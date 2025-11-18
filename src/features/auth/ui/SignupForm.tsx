@@ -4,15 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Mail, Lock } from "lucide-react";
-import { useAuthForm } from "@/features/auth/hooks/useAuthForm";
+import { Loader2, Mail, Lock, User } from "lucide-react";
 import { useAuthActions } from "@/features/auth/hooks/useAuthActions";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import Link from "next/link";
+import { useSignUpForm } from "@/features/auth/hooks/useSignUpForm";
 
-export default function AuthenticationPage() {
-  const { isSignIn, isLoading, error, setSignIn } = useAuthStore();
+export default function SignUpPage() {
+  const { isLoading, error } = useAuthStore();
   const { handleEmailAuth, handleSocialAuth } = useAuthActions();
-  const { register, handleSubmit, errors } = useAuthForm();
+  const { register, handleSubmit, errors } = useSignUpForm();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50">
@@ -20,12 +21,10 @@ export default function AuthenticationPage() {
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {isSignIn ? "Welcome Back" : "Create Account"}
+              Create Account
             </h1>
             <p className="text-gray-600">
-              {isSignIn
-                ? "Sign in to your account to continue"
-                : "Sign up to get started with Website Wizard"}
+              Sign up to get started with Website Wizard
             </p>
           </div>
 
@@ -88,7 +87,7 @@ export default function AuthenticationPage() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">
-                  Or continue with
+                  Or sign up with email
                 </span>
               </div>
             </div>
@@ -98,6 +97,30 @@ export default function AuthenticationPage() {
               onSubmit={handleSubmit(handleEmailAuth)}
               className="space-y-4"
             >
+              <div className="space-y-2">
+                <Label
+                  htmlFor="name"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Name
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Enter your name"
+                    {...register("name")}
+                    className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                  />
+                  {errors.name && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.name.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
@@ -154,10 +177,8 @@ export default function AuthenticationPage() {
                 {isLoading ? (
                   <div className="flex items-center">
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    {isSignIn ? "Signing in..." : "Creating account..."}
+                    Creating account...
                   </div>
-                ) : isSignIn ? (
-                  "Sign In"
                 ) : (
                   "Create Account"
                 )}
@@ -165,22 +186,15 @@ export default function AuthenticationPage() {
             </form>
 
             <div className="mt-6 text-center">
-              <button
-                type="button"
-                onClick={() => setSignIn(!isSignIn)}
-                className="text-gray-700 hover:text-black/80 text-sm font-medium transition-colors"
-              >
-                {isSignIn
-                  ? "Don't have an account? "
-                  : "Already have an account? "}
-              </button>
-              <button
-                type="button"
-                onClick={() => setSignIn(!isSignIn)}
-                className="text-indigo-600 hover:text-indigo-700 text-sm font-medium transition-colors"
-              >
-                {isSignIn ? " Sign up" : " Sign in"}
-              </button>
+              <p className="text-gray-700 text-sm">
+                Already have an account?{" "}
+                <Link
+                  href="/auth/login"
+                  className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+                >
+                  Sign in
+                </Link>
+              </p>
             </div>
           </Card>
         </div>
