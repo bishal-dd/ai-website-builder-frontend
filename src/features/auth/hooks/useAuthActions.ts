@@ -38,6 +38,7 @@ export const useAuthActions = () => {
       router.push("/wizard");
     } catch (err) {
       setError("An unexpected error occurred");
+      console.error(err);
       setLoading(false);
     }
   };

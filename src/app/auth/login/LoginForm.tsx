@@ -161,7 +161,7 @@ export default function LoginForm() {
 
             <div className="mt-6 text-center">
               <p className="text-gray-700 text-sm">
-                Don't have an account?{" "}
+                Don&#39;t have an account?
                 <Link
                   href="/auth/signup"
                   className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
