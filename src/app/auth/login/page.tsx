@@ -1,10 +1,10 @@
+import LoginForm from "@/features/auth/ui/LoginForm";
 import { RedirectIfAuthenticatedRoute } from "@/shared/routes";
-import SignInPage from "./LoginForm";
 
 export default function Page() {
   return (
     <RedirectIfAuthenticatedRoute>
-      <SignInPage />
+      <LoginForm />
     </RedirectIfAuthenticatedRoute>
   );
 }

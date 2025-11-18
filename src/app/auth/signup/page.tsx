@@ -1,5 +1,5 @@
+import SignupForm from "@/features/auth/ui/SignupForm";
 import { RedirectIfAuthenticatedRoute } from "@/shared/routes";
-import SignupForm from "./SignupForm";
 
 export default function Page() {
   return (
