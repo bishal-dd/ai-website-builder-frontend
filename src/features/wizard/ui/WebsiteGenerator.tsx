@@ -6,9 +6,7 @@ import { LoadingState } from "../loading/ui/LoadingState";
 
 export function WebsiteGenerator({ jobId }: { jobId: string }) {
   const [isOpen, setIsOpen] = useState(true);
-  const [status, setStatus] = useState("processing");
   const [progress, setProgress] = useState(0);
-  const [websiteId, setWebsiteId] = useState<string | null>(null);
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -22,11 +20,9 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
         );
         const data = await res.json();
 
-        setStatus(data.status);
         setProgress(data.progress || 0);
 
         if (data.status === "completed") {
-          setWebsiteId(data.websiteId);
           setIsOpen(false);
           clearInterval(interval);
 
