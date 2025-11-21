@@ -12,12 +12,14 @@ import { StepThree } from "./ui/StepThree";
 import { StepFour } from "./ui/StepFour";
 import { useWizardStore } from "./store/wizardStore";
 import { createWebsiteAPI } from "@/features/wizard/api/createWebsite";
-
+import { WebsiteGenerator } from "./ui/WebsiteGenerator";
 const TOTAL_STEPS = 4;
 
 export default function WebsiteWizard() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loadingJobId, setLoadingJobId] = useState<string | null>(null);
+
   const { currentStep, canProceed, handleNext, handleBack } =
     useWebsiteWizard(TOTAL_STEPS);
 
@@ -49,15 +51,12 @@ export default function WebsiteWizard() {
         return;
       }
 
-      console.log("✅ Website saved with ID:", result.websiteId);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error("❌ Error completing website:", err);
-        setErrorMessage(err.message || "Something went wrong");
-      } else {
-        console.error("❌ Unknown error completing website:", err);
-        setErrorMessage("An unknown error occurred");
+      // Open the loading overlay with jobId
+      if (result.jobId) {
+        setLoadingJobId(result.jobId);
       }
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +100,7 @@ export default function WebsiteWizard() {
                 disabled={!canProceed() || isLoading}
               >
                 {isLoading ? (
-                  "Generating..."
+                  "Submitting..."
                 ) : (
                   <>
                     <Check className="w-4 h-4 mr-2" /> Complete
@@ -112,6 +111,9 @@ export default function WebsiteWizard() {
           </div>
         </Card>
       </div>
+
+      {/* Loading Overlay */}
+      {loadingJobId && <WebsiteGenerator jobId={loadingJobId} />}
     </div>
   );
 }
