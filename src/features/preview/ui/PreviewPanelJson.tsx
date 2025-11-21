@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { JsonRenderer } from "./JsonRenderer";
 import type { WebElement, WebsiteData } from "../types/webElement";
+import { DomainModal } from "../domain/ui/DomainModal";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
@@ -24,7 +25,7 @@ interface PreviewPanelJsonProps {
   onUpdateElement?: (
     pageId: string,
     elementId: number,
-    updates: Partial<WebElement>,
+    updates: Partial<WebElement>
   ) => void;
   onPageChange: (pageId: string) => void;
   currentPageId: string;
@@ -38,23 +39,24 @@ export function PreviewPanelJson({
 }: PreviewPanelJsonProps) {
   const [device, setDevice] = useState<DeviceType>("desktop");
   const [key, setKey] = useState(0);
+  const [showDomainModal, setShowDomainModal] = useState(false);
 
-  const handleRefresh = () => {
-    setKey((prev) => prev + 1);
-  };
+  const handleRefresh = () => setKey((prev) => prev + 1);
 
   const deviceSizes = {
     desktop: "w-full h-full",
     tablet: "w-[768px] h-full",
     mobile: "w-[375px] h-full",
   };
+
   const currentPage = websiteData.elements.find(
-    (p) => p.page_id === currentPageId,
+    (p) => p.page_id === currentPageId
   );
   const hasContent = currentPage && currentPage.pageContent.length > 0;
 
   return (
     <div className="flex h-full flex-col bg-muted">
+      {/* Header with device tabs and controls */}
       <div className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
         <div className="flex items-center gap-4">
           <h3 className="text-sm font-semibold text-foreground">Preview</h3>
@@ -86,9 +88,13 @@ export function PreviewPanelJson({
           <Button variant="ghost" size="icon">
             <ExternalLink className="h-4 w-4" />
           </Button>
+          <Button size="sm" onClick={() => setShowDomainModal(true)}>
+            Search & Buy Domain
+          </Button>
         </div>
       </div>
 
+      {/* Page selection */}
       <div className="border-b border-border bg-card px-6 py-2">
         <ScrollArea className="w-full">
           <div className="flex gap-2 pb-2">
@@ -108,12 +114,13 @@ export function PreviewPanelJson({
         </ScrollArea>
       </div>
 
+      {/* Preview area */}
       <div className="flex flex-1 items-center justify-center overflow-auto p-6">
         <div
           className={cn(
             "bg-background shadow-2xl transition-all duration-300 rounded-lg overflow-auto border border-border",
             deviceSizes[device],
-            device !== "desktop" && "max-h-full",
+            device !== "desktop" && "max-h-full"
           )}
         >
           {hasContent ? (
@@ -144,24 +151,39 @@ export function PreviewPanelJson({
         </div>
       </div>
 
-      <div className="border-t border-border bg-card px-6 py-2">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>
-            {hasContent
-              ? `Viewing: ${currentPage?.title}`
-              : "Ready to generate"}
-          </span>
-          <span className="flex items-center gap-2">
-            <span
-              className={cn(
-                "h-2 w-2 rounded-full",
-                hasContent ? "bg-green-500" : "bg-yellow-500",
-              )}
-            ></span>
-            {hasContent ? "Live" : "Waiting"}
-          </span>
-        </div>
+      {/* Footer */}
+      <div className="border-t border-border bg-card px-6 py-2 flex items-center justify-between text-xs text-muted-foreground">
+        <span>
+          {hasContent ? `Viewing: ${currentPage?.title}` : "Ready to generate"}
+        </span>
+        <span className="flex items-center gap-2">
+          <span
+            className={cn(
+              "h-2 w-2 rounded-full",
+              hasContent ? "bg-green-500" : "bg-yellow-500"
+            )}
+          ></span>
+          {hasContent ? "Live" : "Waiting"}
+        </span>
       </div>
+
+      {/* Domain Modal */}
+      {showDomainModal && (
+        <DomainModal
+          onClose={() => setShowDomainModal(false)}
+          contact={{
+            FirstName: "Choedra",
+            LastName: "Bhutan",
+            Email: "choedra@example.com",
+            PhoneNumber: "+9751234567",
+            AddressLine1: "Some Street",
+            City: "Thimphu",
+            State: "Thimphu",
+            CountryCode: "BT",
+            ZipCode: "11001",
+          }}
+        />
+      )}
     </div>
   );
 }
