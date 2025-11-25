@@ -1,20 +1,26 @@
-// components/domain/DomainModal/useDomainModal.ts
 import { useState } from "react";
 import { searchDomainAPI, buyDomainAPI } from "../api/domainService";
-import { DomainContact } from "../types/domain";
+import { DomainContact, DomainSuggestion } from "../types/domain";
 
 export function useDomainModal() {
   const [keyword, setKeyword] = useState("");
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<DomainSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [buying, setBuying] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const searchDomain = async () => {
-    if (!keyword) return;
+    if (!keyword.trim()) return;
+
     setLoading(true);
+    setError(null);
     try {
-      const results = await searchDomainAPI(keyword);
+      const results = await searchDomainAPI(keyword.trim());
       setSuggestions(results);
+    } catch (err) {
+      console.error("Failed to search domains:", err);
+      setError("Failed to search domains. Please try again.");
+      setSuggestions([]);
     } finally {
       setLoading(false);
     }
@@ -22,13 +28,22 @@ export function useDomainModal() {
 
   const buyDomain = async (domain: string, contact: DomainContact) => {
     setBuying(domain);
+    setError(null);
     try {
-      const data = await buyDomainAPI(domain, contact);
-      return data;
+      const result = await buyDomainAPI(domain, contact);
+      return result;
+    } catch (err) {
+      console.error("Failed to buy domain:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to buy domain";
+      setError(errorMessage);
+      return { success: false, error: { message: errorMessage } };
     } finally {
       setBuying(null);
     }
   };
+
+  const clearError = () => setError(null);
 
   return {
     keyword,
@@ -36,6 +51,8 @@ export function useDomainModal() {
     suggestions,
     loading,
     buying,
+    error,
+    clearError,
     searchDomain,
     buyDomain,
   };

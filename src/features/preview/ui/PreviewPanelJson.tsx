@@ -172,15 +172,15 @@ export function PreviewPanelJson({
         <DomainModal
           onClose={() => setShowDomainModal(false)}
           contact={{
-            FirstName: "Choedra",
-            LastName: "Bhutan",
-            Email: "choedra@example.com",
-            PhoneNumber: "+9751234567",
-            AddressLine1: "Some Street",
-            City: "Thimphu",
-            State: "Thimphu",
-            CountryCode: "BT",
-            ZipCode: "11001",
+            firstName: "Choedra",
+            lastName: "Bhutan",
+            email: "choedra@example.com",
+            phone: "+9751234567",
+            address: "Some Street",
+            city: "Thimphu",
+            state: "Thimphu",
+            zip: "11001",
+            country: "BT",
           }}
         />
       )}
