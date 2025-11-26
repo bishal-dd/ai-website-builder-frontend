@@ -4,10 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DomainSuggestion } from "../types/domain";
 
 interface DomainCardProps {
-  domain: any; // DomainSuggestion
-  onSelect: (domain: any) => void;
+  domain: DomainSuggestion; // DomainSuggestion
+  onSelect: (domain: DomainSuggestion) => void;
 }
 
 export function DomainCard({ domain, onSelect }: DomainCardProps) {

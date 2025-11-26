@@ -14,7 +14,7 @@ export interface DomainSuggestion {
   domain: string;
   available: boolean;
   price: number;
-  currency: string;
+  currency?: string;
 }
 
 export interface SelectedDomain {

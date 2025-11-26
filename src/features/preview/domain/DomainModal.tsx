@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Globe, X } from "lucide-react";
+import { ArrowLeft, Globe, X, CreditCard, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDomainModal } from "./hooks/useDomainModal";
 import { useCurrency } from "./hooks/useCurrency";
@@ -22,15 +22,8 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
     null
   );
 
-  const {
-    keyword,
-    setKeyword,
-    suggestions,
-    loading,
-    error,
-    clearError,
-    searchDomain,
-  } = useDomainModal();
+  const { keyword, setKeyword, suggestions, loading, error, searchDomain } =
+    useDomainModal();
 
   const { currencyInfo, convertPrice, formatPrice } = useCurrency();
 
@@ -147,7 +140,7 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
 
             {loading && (
               <div className="flex items-center justify-center py-6">
-                <span>Loading...</span> {/* static text, no animation */}
+                <span>Loading...</span>
               </div>
             )}
 

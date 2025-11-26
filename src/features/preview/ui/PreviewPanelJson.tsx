@@ -89,7 +89,7 @@ export function PreviewPanelJson({
             <ExternalLink className="h-4 w-4" />
           </Button>
           <Button size="sm" onClick={() => setShowDomainModal(true)}>
-            Search & Buy Domain
+            Publish
           </Button>
         </div>
       </div>
