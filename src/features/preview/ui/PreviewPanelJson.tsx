@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { JsonRenderer } from "./JsonRenderer";
 import type { WebElement, WebsiteData } from "../types/webElement";
-import { DomainModal } from "../domain/ui/DomainModal";
+import { DomainModal } from "../domain/DomainModal";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 

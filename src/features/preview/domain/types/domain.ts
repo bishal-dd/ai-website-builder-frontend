@@ -16,3 +16,17 @@ export interface DomainSuggestion {
   price: number;
   currency: string;
 }
+
+export interface SelectedDomain {
+  domain: string;
+  price: number;
+  currency: string;
+}
+
+export interface PricingDetails {
+  domainPrice: number;
+  hostingPrice: number;
+  websiteGenerationPrice: number;
+  totalPrice: number;
+  currency: string;
+}

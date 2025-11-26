@@ -16,7 +16,17 @@ export function useDomainModal() {
     setError(null);
     try {
       const results = await searchDomainAPI(keyword.trim());
-      setSuggestions(results);
+
+      if (!results || results.length === 0) {
+        setSuggestions([]);
+        return;
+      }
+
+      // Ensure the exact keyword is the first suggestion
+      const exactMatch = results.find((r) => r.domain === keyword.trim());
+      const alternatives = results.filter((r) => r.domain !== keyword.trim());
+
+      setSuggestions([...(exactMatch ? [exactMatch] : []), ...alternatives]);
     } catch (err) {
       console.error("Failed to search domains:", err);
       setError("Failed to search domains. Please try again.");
