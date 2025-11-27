@@ -1,11 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, Globe, X, CreditCard, MessageCircle } from "lucide-react";
+import { Globe, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDomainModal } from "./hooks/useDomainModal";
 import { useCurrency } from "./hooks/useCurrency";
-import { DomainContact, SelectedDomain } from "./types/domain";
+import {
+  DomainContact,
+  DomainSuggestion,
+  SelectedDomain,
+} from "./types/domain";
 import { SearchInput } from "./ui/SearchInput";
 import { DomainCard } from "./ui/DomainCard";
 import { PaymentSummary } from "./ui/PaymentSummary";
@@ -27,10 +31,11 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
 
   const { currencyInfo, convertPrice, formatPrice } = useCurrency();
 
-  const handleSelectDomain = (domain: any) => {
+  // ✅ DOMAIN SELECT
+  const handleSelectDomain = (domain: DomainSuggestion) => {
     setSelectedDomain({
       domain: domain.domain,
-      price: convertPrice(domain.price || 0),
+      price: convertPrice(domain.price || 0), // ✅ converted once only
       currency: currencyInfo.code,
     });
     setStep("pricing");
@@ -38,13 +43,16 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
 
   const handleBackToSelection = () => setStep("selection");
 
+  // ✅ WHATSAPP PAYMENT
   const handleWhatsAppPayment = () => {
     if (!selectedDomain) return;
 
-    const hostingPrice = convertPrice(9.99);
-    const websiteGenerationPrice = convertPrice(49.99);
-    const totalPrice =
-      selectedDomain.price + hostingPrice + websiteGenerationPrice;
+    const hostingUSD = 9.99;
+    const websiteUSD = 49.99;
+
+    const hosting = convertPrice(hostingUSD);
+    const website = convertPrice(websiteUSD);
+    const total = selectedDomain.price + hosting + website;
 
     const message = encodeURIComponent(
       `Hi! I'd like to purchase:\n\nDomain: ${
@@ -52,10 +60,10 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
       }\nDomain Price: ${formatPrice(
         selectedDomain.price
       )}\nHosting: ${formatPrice(
-        hostingPrice
+        hosting
       )}/month\nWebsite Generation: ${formatPrice(
-        websiteGenerationPrice
-      )}\nTotal: ${formatPrice(totalPrice)}\nContact: ${contact.email}`
+        website
+      )}\nTotal: ${formatPrice(total)}\nContact: ${contact.email}`
     );
 
     const whatsappNumber = "77952712";
@@ -67,7 +75,7 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
     alert("Payment gateway integration goes here!");
   };
 
-  // Pricing step
+  // ✅ PRICING STEP
   if (step === "pricing" && selectedDomain) {
     return (
       <PaymentSummary
@@ -82,16 +90,20 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
     );
   }
 
-  // Selection step
-  const exactMatch = suggestions.find((s) => s.domain === keyword.trim());
+  // ✅ DOMAIN MATCH LOGIC
+  const cleanKeyword = keyword.trim();
+  const exactMatch = suggestions.find(
+    (s) => s.domain.toLowerCase() === cleanKeyword.toLowerCase()
+  );
+
   const alternatives = suggestions.filter(
-    (s) => s.domain !== keyword.trim() && s.available
+    (s) => s.domain !== cleanKeyword && s.available
   );
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4">
       <div className="bg-background rounded-lg border shadow-lg w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex items-center justify-between p-4 border-b shrink-0">
           <div className="flex items-center gap-2">
             <Globe className="w-5 h-5 text-primary" />
@@ -107,7 +119,7 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
           </Button>
         </div>
 
-        {/* Search */}
+        {/* SEARCH */}
         <div className="p-4 space-y-3 shrink-0">
           <SearchInput
             keyword={keyword}
@@ -118,7 +130,7 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
           {error && <ErrorMessage message={error} />}
         </div>
 
-        {/* Results */}
+        {/* RESULTS */}
         <div className="flex-1 overflow-hidden flex flex-col min-h-0">
           <div className="p-3 bg-muted/50 shrink-0">
             <h3 className="text-sm font-medium">
@@ -126,10 +138,23 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
               {alternatives.length > 0 && `(${alternatives.length})`}
             </h3>
           </div>
+
           <div className="flex-1 overflow-auto p-3 space-y-2">
+            {/* ✅ EXACT MATCH BUT TAKEN */}
+            {exactMatch && !exactMatch.available && (
+              <div className="p-3 border border-red-500/30 bg-red-500/10 rounded-md text-sm text-red-600">
+                ❌ <strong>{exactMatch.domain}</strong> is already taken.
+                <br />
+                Try one of the available alternatives below
+              </div>
+            )}
+
+            {/* ✅ EXACT MATCH AVAILABLE */}
             {exactMatch && exactMatch.available && (
               <DomainCard domain={exactMatch} onSelect={handleSelectDomain} />
             )}
+
+            {/* ✅ ALTERNATIVES */}
             {alternatives.map((item) => (
               <DomainCard
                 key={item.domain}
@@ -138,12 +163,14 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
               />
             ))}
 
+            {/* ✅ LOADING */}
             {loading && (
               <div className="flex items-center justify-center py-6">
                 <span>Loading...</span>
               </div>
             )}
 
+            {/* ✅ EMPTY STATE */}
             {!loading && suggestions.length === 0 && (
               <div className="text-center py-8 text-muted-foreground h-full flex items-center justify-center">
                 <p className="text-sm">
@@ -156,7 +183,7 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
           </div>
         </div>
 
-        {/* Footer */}
+        {/* FOOTER */}
         <div className="p-3 border-t bg-muted/30 shrink-0 flex justify-end">
           <Button variant="outline" size="sm" onClick={onClose}>
             Close
