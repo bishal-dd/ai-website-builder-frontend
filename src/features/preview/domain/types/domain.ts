@@ -14,13 +14,15 @@ export interface DomainSuggestion {
   domain: string;
   available: boolean;
   price: number;
-  currency?: string;
+  currency: "BTN" | "USD";
 }
 
 export interface SelectedDomain {
   domain: string;
   price: number;
   currency: string;
+  hostingPrice?: number;
+  websitePrice?: number;
 }
 
 export interface PricingDetails {

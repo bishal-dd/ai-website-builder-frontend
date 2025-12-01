@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Globe, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDomainModal } from "./hooks/useDomainModal";
-import { useCurrency } from "./hooks/useCurrency";
 import {
   DomainContact,
   DomainSuggestion,
@@ -25,57 +24,63 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
   const [selectedDomain, setSelectedDomain] = useState<SelectedDomain | null>(
     null
   );
+  const [countryCode, setCountryCode] = useState<string>("BT"); // default
 
   const { keyword, setKeyword, suggestions, loading, error, searchDomain } =
     useDomainModal();
 
-  const { currencyInfo, convertPrice, formatPrice } = useCurrency();
+  // Fetch country code once when modal opens
+  useEffect(() => {
+    const fetchCountry = async () => {
+      try {
+        const res = await fetch("/api/geo");
+        const data = await res.json();
+        setCountryCode(data.country_code || "US");
+      } catch {
+        setCountryCode("US");
+      }
+    };
+    fetchCountry();
+  }, []);
 
-  // ✅ DOMAIN SELECT
+  // ✅ Select domain
   const handleSelectDomain = (domain: DomainSuggestion) => {
+    const hostingPrice = countryCode === "BT" ? 3000 : 9.99;
+    const websitePrice = countryCode === "BT" ? 7000 : 49.99;
+
     setSelectedDomain({
       domain: domain.domain,
-      price: convertPrice(domain.price || 0), // ✅ converted once only
-      currency: currencyInfo.code,
+      price: domain.price,
+      hostingPrice,
+      websitePrice,
+      currency: countryCode === "BT" ? "BTN" : "USD",
     });
+
     setStep("pricing");
   };
 
   const handleBackToSelection = () => setStep("selection");
 
-  // ✅ WHATSAPP PAYMENT
   const handleWhatsAppPayment = () => {
     if (!selectedDomain) return;
 
-    const hostingUSD = 9.99;
-    const websiteUSD = 49.99;
-
-    const hosting = convertPrice(hostingUSD);
-    const website = convertPrice(websiteUSD);
-    const total = selectedDomain.price + hosting + website;
+    const total =
+      selectedDomain.price +
+      (selectedDomain.hostingPrice ?? 0) +
+      (selectedDomain.websitePrice ?? 0);
 
     const message = encodeURIComponent(
-      `Hi! I'd like to purchase:\n\nDomain: ${
-        selectedDomain.domain
-      }\nDomain Price: ${formatPrice(
-        selectedDomain.price
-      )}\nHosting: ${formatPrice(
-        hosting
-      )}/month\nWebsite Generation: ${formatPrice(
-        website
-      )}\nTotal: ${formatPrice(total)}\nContact: ${contact.email}`
+      `Hi! I'd like to purchase:\n\nDomain: ${selectedDomain.domain}\nDomain Price: ${selectedDomain.price}\nHosting: ${selectedDomain.hostingPrice}\nWebsite Generation: ${selectedDomain.websitePrice}\nTotal: ${total}\nContact: ${contact.email}`
     );
 
-    const whatsappNumber = "77952712";
-    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, "_blank");
+    window.open(`https://wa.me/77952712?text=${message}`, "_blank");
   };
 
   const handleInternationalPayment = () => {
-    if (!selectedDomain) return;
     alert("Payment gateway integration goes here!");
   };
 
-  // ✅ PRICING STEP
+  // ✅ Render Payment Summary
   if (step === "pricing" && selectedDomain) {
     return (
       <PaymentSummary
@@ -83,19 +88,18 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
         contact={contact}
         onClose={onClose}
         onBack={handleBackToSelection}
-        formatPrice={formatPrice}
         handleWhatsAppPayment={handleWhatsAppPayment}
         handleInternationalPayment={handleInternationalPayment}
+        countryCode={countryCode}
       />
     );
   }
 
-  // ✅ DOMAIN MATCH LOGIC
+  // DOMAIN SELECTION LOGIC
   const cleanKeyword = keyword.trim();
   const exactMatch = suggestions.find(
     (s) => s.domain.toLowerCase() === cleanKeyword.toLowerCase()
   );
-
   const alternatives = suggestions.filter(
     (s) => s.domain !== cleanKeyword && s.available
   );
@@ -140,7 +144,6 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
           </div>
 
           <div className="flex-1 overflow-auto p-3 space-y-2">
-            {/* ✅ EXACT MATCH BUT TAKEN */}
             {exactMatch && !exactMatch.available && (
               <div className="p-3 border border-red-500/30 bg-red-500/10 rounded-md text-sm text-red-600">
                 ❌ <strong>{exactMatch.domain}</strong> is already taken.
@@ -149,12 +152,10 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
               </div>
             )}
 
-            {/* ✅ EXACT MATCH AVAILABLE */}
             {exactMatch && exactMatch.available && (
               <DomainCard domain={exactMatch} onSelect={handleSelectDomain} />
             )}
 
-            {/* ✅ ALTERNATIVES */}
             {alternatives.map((item) => (
               <DomainCard
                 key={item.domain}
@@ -163,14 +164,12 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
               />
             ))}
 
-            {/* ✅ LOADING */}
             {loading && (
               <div className="flex items-center justify-center py-6">
                 <span>Loading...</span>
               </div>
             )}
 
-            {/* ✅ EMPTY STATE */}
             {!loading && suggestions.length === 0 && (
               <div className="text-center py-8 text-muted-foreground h-full flex items-center justify-center">
                 <p className="text-sm">

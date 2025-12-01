@@ -1,6 +1,31 @@
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { searchDomainAPI, buyDomainAPI } from "../api/domainService";
 import { DomainContact, DomainSuggestion } from "../types/domain";
+
+export function useGeo() {
+  const [country, setCountry] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCountry = async () => {
+      try {
+        const res = await fetch("/api/geo"); // call our proxy
+        if (!res.ok) throw new Error("Failed to fetch geo data");
+
+        const data = await res.json();
+        setCountry(data.country_code || "US"); // fallback
+      } catch (err) {
+        console.error("Failed to detect country:", err);
+        setCountry("US"); // fallback to USD
+      }
+    };
+
+    fetchCountry();
+  }, []);
+
+  return country;
+}
 
 export function useDomainModal() {
   const [keyword, setKeyword] = useState("");
@@ -9,22 +34,33 @@ export function useDomainModal() {
   const [buying, setBuying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const country = useGeo(); // detected country code
+
+  // SEARCH DOMAINS
   const searchDomain = async () => {
     if (!keyword.trim()) return;
-
     setLoading(true);
     setError(null);
+
     try {
-      const results = await searchDomainAPI(keyword.trim());
+      // send country to backend for markup
+      const results = await searchDomainAPI(
+        keyword.trim(),
+        country ?? undefined
+      );
 
       if (!results || results.length === 0) {
         setSuggestions([]);
         return;
       }
 
-      // Ensure the exact keyword is the first suggestion
-      const exactMatch = results.find((r) => r.domain === keyword.trim());
-      const alternatives = results.filter((r) => r.domain !== keyword.trim());
+      // Ensure exact match comes first
+      const exactMatch = results.find(
+        (r) => r.domain.toLowerCase() === keyword.trim().toLowerCase()
+      );
+      const alternatives = results.filter(
+        (r) => r.domain.toLowerCase() !== keyword.trim().toLowerCase()
+      );
 
       setSuggestions([...(exactMatch ? [exactMatch] : []), ...alternatives]);
     } catch (err) {
@@ -36,9 +72,15 @@ export function useDomainModal() {
     }
   };
 
+  // BUY DOMAIN
   const buyDomain = async (domain: string, contact: DomainContact) => {
+    if (!country) {
+      console.warn("Country not detected, defaulting to USD pricing");
+    }
+
     setBuying(domain);
     setError(null);
+
     try {
       const result = await buyDomainAPI(domain, contact);
       return result;
@@ -65,5 +107,6 @@ export function useDomainModal() {
     clearError,
     searchDomain,
     buyDomain,
+    country, // expose detected country
   };
 }

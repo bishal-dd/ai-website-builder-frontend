@@ -1,40 +1,41 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, X, CreditCard, MessageCircle } from "lucide-react";
-import { Separator } from "../ui/Separator";
-import { DomainContact, SelectedDomain } from "../types/domain";
+import { ArrowLeft, X } from "lucide-react";
+import { SelectedDomain, DomainContact } from "../types/domain";
 
 interface PaymentSummaryProps {
   selectedDomain: SelectedDomain;
   contact: DomainContact;
   onClose: () => void;
   onBack: () => void;
-  formatPrice: (price: number) => string;
   handleWhatsAppPayment: () => void;
   handleInternationalPayment: () => void;
+  countryCode: string;
 }
 
 export function PaymentSummary({
   selectedDomain,
-  contact,
   onClose,
   onBack,
-  formatPrice,
   handleWhatsAppPayment,
   handleInternationalPayment,
+  countryCode,
 }: PaymentSummaryProps) {
-  const hostingPrice = 9.99;
-  const websiteGenerationPrice = 49.99;
-  const totalPrice =
-    selectedDomain.price + hostingPrice + websiteGenerationPrice;
+  const hostingPrice = selectedDomain.hostingPrice ?? 0;
+  const websitePrice = selectedDomain.websitePrice ?? 0;
+  const totalPrice = selectedDomain.price + hostingPrice + websitePrice;
+
+  const formatPrice = (price: number) =>
+    countryCode === "BT" ? `Nu. ${price}` : `$${price.toFixed(2)}`;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4">
       <div className="bg-background rounded-lg border shadow-lg w-full max-w-md overflow-hidden flex flex-col">
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex items-center justify-between p-4 border-b shrink-0">
           <div className="flex items-center gap-2">
+            {/* Back button */}
             <Button
               variant="ghost"
               size="icon"
@@ -45,6 +46,8 @@ export function PaymentSummary({
             </Button>
             <h2 className="text-lg font-semibold">Payment Summary</h2>
           </div>
+
+          {/* Close button */}
           <Button
             variant="ghost"
             size="icon"
@@ -55,64 +58,43 @@ export function PaymentSummary({
           </Button>
         </div>
 
-        {/* Pricing Details */}
+        {/* PRICING */}
         <div className="p-6 space-y-4">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                Selected Domain
-              </span>
-              <span className="font-medium">{selectedDomain.domain}</span>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Domain Registration (1 year)</span>
-              <span className="font-medium">
-                {formatPrice(selectedDomain.price)}
-              </span>
+              <span>Selected Domain</span>
+              <span>{selectedDomain.domain}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">Hosting Service (Monthly)</span>
-              <span className="font-medium">{formatPrice(hostingPrice)}</span>
+              <span>Domain Registration (1 year)</span>
+              <span>{formatPrice(selectedDomain.price)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">Website Generation</span>
-              <span className="font-medium">
-                {formatPrice(websiteGenerationPrice)}
-              </span>
+              <span>Hosting Service</span>
+              <span>{formatPrice(hostingPrice)}</span>
             </div>
-            <Separator />
             <div className="flex items-center justify-between">
-              <span className="text-base font-semibold">Total Amount</span>
-              <span className="text-xl font-bold text-primary">
-                {formatPrice(totalPrice)}
-              </span>
+              <span>Website Generation</span>
+              <span>{formatPrice(websitePrice)}</span>
             </div>
-            <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded">
-              Currency: {selectedDomain.currency} • Contact: {contact.email}
+            <div className="flex items-center justify-between font-bold text-primary">
+              <span>Total Amount</span>
+              <span>{formatPrice(totalPrice)}</span>
             </div>
           </div>
+        </div>
 
-          {/* Payment Buttons */}
-          <div className="space-y-3 pt-4">
-            <Button
-              onClick={handleInternationalPayment}
-              className="w-full"
-              size="lg"
-            >
-              <CreditCard className="w-4 h-4 mr-2" />
-              Pay with Card
-            </Button>
-            <Button
-              onClick={handleWhatsAppPayment}
-              variant="outline"
-              className="w-full bg-transparent"
-              size="lg"
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
+        {/* ACTIONS */}
+        <div className="p-6 flex flex-col gap-3">
+          {countryCode === "BT" ? (
+            <Button onClick={handleWhatsAppPayment} className="w-full">
               Contact via WhatsApp
             </Button>
-          </div>
+          ) : (
+            <Button onClick={handleInternationalPayment} className="w-full">
+              Pay with Card
+            </Button>
+          )}
         </div>
       </div>
     </div>

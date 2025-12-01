@@ -3,12 +3,16 @@ import { DomainContact, DomainSuggestion } from "../types/domain";
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export async function searchDomainAPI(
-  keyword: string
+  keyword: string,
+  country?: string
 ): Promise<DomainSuggestion[]> {
   try {
-    const res = await fetch(
-      `${BASE_URL}/domains/suggest?keyword=${encodeURIComponent(keyword)}`
-    );
+    const url = new URL(`${BASE_URL}/domains/suggest`);
+    url.searchParams.set("keyword", keyword);
+
+    if (country) url.searchParams.set("country", country);
+
+    const res = await fetch(url.toString());
 
     if (!res.ok) {
       throw new Error(`Failed to fetch domains: ${res.status}`);
