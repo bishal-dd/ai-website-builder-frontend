@@ -1,31 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { searchDomainAPI, buyDomainAPI } from "../api/domainService";
 import { DomainContact, DomainSuggestion } from "../types/domain";
-
-export function useGeo() {
-  const [country, setCountry] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchCountry = async () => {
-      try {
-        const res = await fetch("/api/geo"); // call our proxy
-        if (!res.ok) throw new Error("Failed to fetch geo data");
-
-        const data = await res.json();
-        setCountry(data.country_code || "US"); // fallback
-      } catch (err) {
-        console.error("Failed to detect country:", err);
-        setCountry("US"); // fallback to USD
-      }
-    };
-
-    fetchCountry();
-  }, []);
-
-  return country;
-}
+import { useGeo } from "./useGeo";
 
 export function useDomainModal() {
   const [keyword, setKeyword] = useState("");
