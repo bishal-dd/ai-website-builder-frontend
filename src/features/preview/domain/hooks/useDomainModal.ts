@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { searchDomainAPI, buyDomainAPI } from "../api/domainService";
 import { DomainContact, DomainSuggestion } from "../types/domain";
-import { useGeo } from "./useGeo";
+import { useGeo } from "./useGeoContext";
 
 export function useDomainModal() {
   const [keyword, setKeyword] = useState("");
@@ -12,27 +12,22 @@ export function useDomainModal() {
   const [buying, setBuying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const country = useGeo(); // detected country code
+  const { country, loading: geoLoading } = useGeo();
 
   // SEARCH DOMAINS
   const searchDomain = async () => {
-    if (!keyword.trim()) return;
+    if (!keyword.trim() || geoLoading) return; // wait for geo fetch
     setLoading(true);
     setError(null);
 
     try {
-      // send country to backend for markup
-      const results = await searchDomainAPI(
-        keyword.trim(),
-        country ?? undefined
-      );
+      const results = await searchDomainAPI(keyword.trim(), country);
 
       if (!results || results.length === 0) {
         setSuggestions([]);
         return;
       }
 
-      // Ensure exact match comes first
       const exactMatch = results.find(
         (r) => r.domain.toLowerCase() === keyword.trim().toLowerCase()
       );
@@ -85,6 +80,7 @@ export function useDomainModal() {
     clearError,
     searchDomain,
     buyDomain,
-    country, // expose detected country
+    country, // comes from GeoContext
+    geoLoading, // optional if you want to block actions until ready
   };
 }

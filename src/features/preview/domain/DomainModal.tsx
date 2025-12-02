@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Globe, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDomainModal } from "./hooks/useDomainModal";
@@ -13,6 +13,7 @@ import { SearchInput } from "./ui/SearchInput";
 import { DomainCard } from "./ui/DomainCard";
 import { PaymentSummary } from "./ui/PaymentSummary";
 import { ErrorMessage } from "./ui/ErrorMessage";
+import { useGeo } from "./hooks/useGeoContext";
 
 interface DomainModalProps {
   onClose: () => void;
@@ -24,27 +25,18 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
   const [selectedDomain, setSelectedDomain] = useState<SelectedDomain | null>(
     null
   );
-  const [countryCode, setCountryCode] = useState<string>("BT"); // default
 
+  // ✅ Use GeoContext
+  const { country: countryCode, loading: geoLoading } = useGeo();
+
+  // ✅ Domain search hook
   const { keyword, setKeyword, suggestions, loading, error, searchDomain } =
     useDomainModal();
 
-  // Fetch country code once when modal opens
-  useEffect(() => {
-    const fetchCountry = async () => {
-      try {
-        const res = await fetch("/api/geo");
-        const data = await res.json();
-        setCountryCode(data.country_code || "US");
-      } catch {
-        setCountryCode("US");
-      }
-    };
-    fetchCountry();
-  }, []);
-
-  // ✅ Select domain
+  // Handle domain selection
   const handleSelectDomain = (domain: DomainSuggestion) => {
+    if (geoLoading) return; // wait until geo loaded
+
     const hostingPrice = countryCode === "BT" ? 3000 : 9.99;
     const websitePrice = countryCode === "BT" ? 7000 : 49.99;
 
@@ -61,6 +53,7 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
 
   const handleBackToSelection = () => setStep("selection");
 
+  // WhatsApp payment
   const handleWhatsAppPayment = () => {
     if (!selectedDomain) return;
 
@@ -76,11 +69,12 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
     window.open(`https://wa.me/77952712?text=${message}`, "_blank");
   };
 
+  // International payment placeholder
   const handleInternationalPayment = () => {
     alert("Payment gateway integration goes here!");
   };
 
-  // ✅ Render Payment Summary
+  // ✅ Payment step
   if (step === "pricing" && selectedDomain) {
     return (
       <PaymentSummary
@@ -129,7 +123,7 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
             keyword={keyword}
             setKeyword={setKeyword}
             onSearch={searchDomain}
-            loading={loading}
+            loading={loading || geoLoading} // disable while geo is loading
           />
           {error && <ErrorMessage message={error} />}
         </div>
@@ -164,13 +158,13 @@ export function DomainModal({ onClose, contact }: DomainModalProps) {
               />
             ))}
 
-            {loading && (
+            {(loading || geoLoading) && (
               <div className="flex items-center justify-center py-6">
                 <span>Loading...</span>
               </div>
             )}
 
-            {!loading && suggestions.length === 0 && (
+            {!loading && !geoLoading && suggestions.length === 0 && (
               <div className="text-center py-8 text-muted-foreground h-full flex items-center justify-center">
                 <p className="text-sm">
                   {keyword
