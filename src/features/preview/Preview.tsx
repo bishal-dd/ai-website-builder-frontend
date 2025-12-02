@@ -11,9 +11,11 @@ import type {
 } from "@/features/preview/types/webElement";
 import useGetGeneratedWebsite from "@/features/preview/hooks/useGetGeneratedWebsite";
 import { mapApiToWebsiteData } from "@/features/preview/utils/mapApiToWebsiteData";
+import useUpdateWebsitePage from "./hooks/useUpdateWebsitePage";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const updatePage = useUpdateWebsitePage();
   const [websiteData, setWebsiteData] = useState<WebsiteData>({
     elements: [],
     metadata: {},
@@ -37,7 +39,7 @@ export default function Preview() {
     }
   };
 
-  const handleUpdateElement = (
+  const handleUpdateElement = async (
     pageId: string,
     elementId: number,
     updates: Partial<WebElement>,
@@ -57,14 +59,27 @@ export default function Preview() {
       });
     };
 
-    setWebsiteData((prev) => ({
-      ...prev,
-      elements: prev.elements.map((page) =>
-        page.id === pageId
-          ? { ...page, pageContent: updateElementRecursive(page.pageContent) }
-          : page,
-      ),
-    }));
+    // Compute new elements first
+    const newElements = websiteData.elements.map((page) =>
+      page.id === pageId
+        ? { ...page, pageContent: updateElementRecursive(page.pageContent) }
+        : page,
+    );
+
+    // Update state
+    setWebsiteData((prev) => ({ ...prev, elements: newElements }));
+
+    // Find the updated page safely
+    const updatedPage = newElements.find((el) => el.id === pageId);
+    if (!updatedPage) {
+      console.error("Page not found", pageId);
+      return;
+    }
+
+    await updatePage.mutateAsync({
+      pageId,
+      body: { content: updatedPage },
+    });
   };
 
   return (
