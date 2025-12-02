@@ -23,4 +23,5 @@ export type CreateWebsiteResponse = {
   success?: boolean;
   websiteId?: string;
   error?: string;
+  jobId?: string;
 };
