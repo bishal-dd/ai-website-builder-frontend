@@ -21,7 +21,7 @@ export default function Preview() {
     metadata: {},
   });
   const [currentPageId, setCurrentPageId] = useState<string>("");
-  const websiteId = "665d2c87-e0a7-4116-ae21-176dc4e83d54";
+  const websiteId = "0625c42c-a063-494f-ba50-93b685f22ffc";
 
   const { data: generatedWebsite } = useGetGeneratedWebsite(websiteId);
 
@@ -61,7 +61,7 @@ export default function Preview() {
 
     // Compute new elements first
     const newElements = websiteData.elements.map((page) =>
-      page.id === pageId
+      page.page_id === pageId
         ? { ...page, pageContent: updateElementRecursive(page.pageContent) }
         : page,
     );
@@ -70,7 +70,7 @@ export default function Preview() {
     setWebsiteData((prev) => ({ ...prev, elements: newElements }));
 
     // Find the updated page safely
-    const updatedPage = newElements.find((el) => el.id === pageId);
+    const updatedPage = newElements.find((el) => el.page_id === pageId);
     if (!updatedPage) {
       console.error("Page not found", pageId);
       return;

@@ -25,7 +25,7 @@ interface PreviewPanelJsonProps {
   onUpdateElement?: (
     pageId: string,
     elementId: number,
-    updates: Partial<WebElement>
+    updates: Partial<WebElement>,
   ) => void;
   onPageChange: (pageId: string) => void;
   currentPageId: string;
@@ -48,10 +48,13 @@ export function PreviewPanelJson({
     tablet: "w-[768px] h-full",
     mobile: "w-[375px] h-full",
   };
+  // console.log(websiteData);
+  // console.log(currentPageId);
 
   const currentPage = websiteData.elements.find(
-    (p) => p.page_id === currentPageId
+    (p) => p.page_id === currentPageId,
   );
+  console.log(currentPage);
   const hasContent = currentPage && currentPage.pageContent.length > 0;
 
   return (
@@ -101,9 +104,9 @@ export function PreviewPanelJson({
             {websiteData.elements.map((page) => (
               <Button
                 key={page.id}
-                variant={currentPageId === page.id ? "default" : "outline"}
+                variant={currentPageId === page.page_id ? "default" : "outline"}
                 size="sm"
-                onClick={() => onPageChange(page.id)}
+                onClick={() => onPageChange(page.page_id)}
                 className="gap-2 whitespace-nowrap"
               >
                 <FileText className="h-3 w-3" />
@@ -120,7 +123,7 @@ export function PreviewPanelJson({
           className={cn(
             "bg-background shadow-2xl transition-all duration-300 rounded-lg overflow-auto border border-border",
             deviceSizes[device],
-            device !== "desktop" && "max-h-full"
+            device !== "desktop" && "max-h-full",
           )}
         >
           {hasContent ? (
@@ -160,7 +163,7 @@ export function PreviewPanelJson({
           <span
             className={cn(
               "h-2 w-2 rounded-full",
-              hasContent ? "bg-green-500" : "bg-yellow-500"
+              hasContent ? "bg-green-500" : "bg-yellow-500",
             )}
           ></span>
           {hasContent ? "Live" : "Waiting"}
