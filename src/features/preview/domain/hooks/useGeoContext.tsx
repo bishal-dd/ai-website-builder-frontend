@@ -7,6 +7,7 @@ import {
   useState,
   ReactNode,
 } from "react";
+import { getUserCountry } from "../api/geo";
 
 interface GeoContextType {
   country: string;
@@ -20,11 +21,18 @@ export const GeoProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/geo")
-      .then((res) => res.json())
-      .then((data) => setCountry(data.country_code || "US"))
-      .catch(() => setCountry("US"))
-      .finally(() => setLoading(false));
+    const fetchCountry = async () => {
+      try {
+        const countryCode = await getUserCountry();
+        setCountry(countryCode);
+      } catch {
+        setCountry("US");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCountry();
   }, []);
 
   return (
