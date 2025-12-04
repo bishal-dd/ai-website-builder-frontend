@@ -1,3 +1,5 @@
+// src/features/preview/ui/PreviewPanelJson.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -27,6 +29,12 @@ interface PreviewPanelJsonProps {
     elementId: number,
     updates: Partial<WebElement>,
   ) => void;
+  // ** NEW PROP **
+  onUpdateSharedElement: (
+    componentKey: "navbar" | "footer",
+    elementId: number,
+    updates: Partial<WebElement>,
+  ) => void;
   onPageChange: (pageId: string) => void;
   currentPageId: string;
 }
@@ -34,6 +42,7 @@ interface PreviewPanelJsonProps {
 export function PreviewPanelJson({
   websiteData,
   onUpdateElement,
+  onUpdateSharedElement, // <-- Destructure new prop
   onPageChange,
   currentPageId,
 }: PreviewPanelJsonProps) {
@@ -48,13 +57,10 @@ export function PreviewPanelJson({
     tablet: "w-[768px] h-full",
     mobile: "w-[375px] h-full",
   };
-  // console.log(websiteData);
-  // console.log(currentPageId);
 
   const currentPage = websiteData.elements.find(
     (p) => p.page_id === currentPageId,
   );
-  console.log(currentPage);
   const hasContent = currentPage && currentPage.pageContent.length > 0;
 
   return (
@@ -130,9 +136,11 @@ export function PreviewPanelJson({
             <div key={key} className="w-full h-full overflow-auto">
               <JsonRenderer
                 elements={currentPage.pageContent}
+                sharedComponents={websiteData.sharedComponents} // <-- Pass shared components
                 onUpdateElement={(elementId, updates) =>
                   onUpdateElement?.(currentPageId, elementId, updates)
                 }
+                onUpdateSharedElement={onUpdateSharedElement} // <-- Pass new handler
               />
             </div>
           ) : (

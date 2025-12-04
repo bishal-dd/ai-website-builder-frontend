@@ -1,3 +1,5 @@
+// src/app/Preview.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,12 +14,15 @@ import type {
 import useGetGeneratedWebsite from "@/features/preview/hooks/useGetGeneratedWebsite";
 import { mapApiToWebsiteData } from "@/features/preview/utils/mapApiToWebsiteData";
 import useUpdateWebsitePage from "./hooks/useUpdateWebsitePage";
+import useUpdateWebsite from "@/features/preview/hooks/useUpdateWebsite";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const updatePage = useUpdateWebsitePage();
+  const updateWebsite = useUpdateWebsite();
   const [websiteData, setWebsiteData] = useState<WebsiteData>({
     elements: [],
+    sharedComponents: { navbar: [], footer: [] }, // <-- Initialize sharedComponents
     metadata: {},
   });
   const [currentPageId, setCurrentPageId] = useState<string>("");
@@ -39,37 +44,52 @@ export default function Preview() {
     }
   };
 
+  const updateElementRecursive = (
+    elements: WebElement[],
+    elementId: number,
+    updates: Partial<WebElement>,
+  ): WebElement[] => {
+    return elements.map((element) => {
+      if (element.id === elementId) {
+        return { ...element, ...updates };
+      }
+      if (element.children) {
+        return {
+          ...element,
+          children: updateElementRecursive(
+            element.children,
+            elementId,
+            updates,
+          ),
+        };
+      }
+      return element;
+    });
+  };
+
   const handleUpdateElement = async (
     pageId: string,
     elementId: number,
     updates: Partial<WebElement>,
   ) => {
-    const updateElementRecursive = (elements: WebElement[]): WebElement[] => {
-      return elements.map((element) => {
-        if (element.id === elementId) {
-          return { ...element, ...updates };
-        }
-        if (element.children) {
-          return {
-            ...element,
-            children: updateElementRecursive(element.children),
-          };
-        }
-        return element;
-      });
-    };
-
-    // Compute new elements first
+    // 1. Compute new elements first
     const newElements = websiteData.elements.map((page) =>
       page.page_id === pageId
-        ? { ...page, pageContent: updateElementRecursive(page.pageContent) }
+        ? {
+            ...page,
+            pageContent: updateElementRecursive(
+              page.pageContent,
+              elementId,
+              updates,
+            ),
+          }
         : page,
     );
 
-    // Update state
+    // 2. Update state
     setWebsiteData((prev) => ({ ...prev, elements: newElements }));
 
-    // Find the updated page safely
+    // 3. Find the updated page safely for persistence
     const updatedPage = newElements.find((el) => el.page_id === pageId);
     if (!updatedPage) {
       console.error("Page not found", pageId);
@@ -82,6 +102,40 @@ export default function Preview() {
     });
   };
 
+  // ** NEW FUNCTION: Handles updates for Navbar/Footer **
+  const handleUpdateSharedElement = async (
+    componentKey: "navbar" | "footer",
+    elementId: number,
+    updates: Partial<WebElement>,
+  ) => {
+    // 1. Compute new shared components
+    const newSharedComponents = {
+      ...websiteData.sharedComponents,
+      [componentKey]: updateElementRecursive(
+        websiteData.sharedComponents[componentKey],
+        elementId,
+        updates,
+      ),
+    };
+
+    // 2. Update state
+    setWebsiteData((prev) => ({
+      ...prev,
+      sharedComponents: newSharedComponents,
+    }));
+
+    await updateWebsite.mutateAsync({
+      websiteId,
+      body: { shared_components: newSharedComponents },
+    });
+
+    // NOTE: In a real app, you would add logic here to call a separate API
+    // endpoint to persist the shared component changes to the database.
+    console.log(
+      `Updated shared component ${componentKey} element ${elementId}`,
+    );
+  };
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-background flex flex-col">
       <main className="flex-1 relative overflow-hidden">
@@ -89,6 +143,7 @@ export default function Preview() {
           websiteData={websiteData}
           currentPageId={currentPageId}
           onUpdateElement={handleUpdateElement}
+          onUpdateSharedElement={handleUpdateSharedElement} // <-- Pass new handler
           onPageChange={setCurrentPageId}
         />
         {!isChatOpen && (
