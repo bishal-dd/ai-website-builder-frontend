@@ -48,7 +48,7 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [jobId, router]);
+  }, [jobId, router, setWebsiteId]);
 
   return (
     <>

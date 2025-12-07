@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { JsonRenderer } from "./JsonRenderer";
 import type { WebElement, WebsiteData } from "../types/webElement";
-import { DomainModal } from "../domain/DomainModal";
+import { useRouter } from "next/navigation";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
@@ -39,7 +39,8 @@ export function PreviewPanelJson({
 }: PreviewPanelJsonProps) {
   const [device, setDevice] = useState<DeviceType>("desktop");
   const [key, setKey] = useState(0);
-  const [showDomainModal, setShowDomainModal] = useState(false);
+
+  const router = useRouter();
 
   const handleRefresh = () => setKey((prev) => prev + 1);
 
@@ -88,7 +89,7 @@ export function PreviewPanelJson({
           <Button variant="ghost" size="icon">
             <ExternalLink className="h-4 w-4" />
           </Button>
-          <Button size="sm" onClick={() => setShowDomainModal(true)}>
+          <Button size="sm" onClick={() => router.push("/domain")}>
             Publish
           </Button>
         </div>
@@ -166,24 +167,6 @@ export function PreviewPanelJson({
           {hasContent ? "Live" : "Waiting"}
         </span>
       </div>
-
-      {/* Domain Modal */}
-      {showDomainModal && (
-        <DomainModal
-          onClose={() => setShowDomainModal(false)}
-          contact={{
-            firstName: "Choedra",
-            lastName: "Bhutan",
-            email: "choedra@example.com",
-            phone: "+9751234567",
-            address: "Some Street",
-            city: "Thimphu",
-            state: "Thimphu",
-            zip: "11001",
-            country: "BT",
-          }}
-        />
-      )}
     </div>
   );
 }
