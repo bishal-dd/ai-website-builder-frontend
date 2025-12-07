@@ -1,8 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { SelectedDomain, DomainContact } from "../types/domain";
+import { useWizardStore } from "@/features/wizard/store/wizardStore";
+import { useWebsiteDeploymentStatus } from "../hooks/useWebsiteDeploymentStatus";
 
 interface PaymentSummaryProps {
   selectedDomain: SelectedDomain;
@@ -22,10 +24,14 @@ export function PaymentSummary({
   handleInternationalPayment,
   countryCode,
 }: PaymentSummaryProps) {
+  const websiteId = useWizardStore((state) => state.websiteId);
+  const { status, setStatus, progress } = useWebsiteDeploymentStatus(
+    websiteId!
+  );
+
   const hostingPrice = selectedDomain.hostingPrice ?? 0;
   const websitePrice = selectedDomain.websitePrice ?? 0;
   const totalPrice = selectedDomain.price + hostingPrice + websitePrice;
-
   const formatPrice = (price: number) =>
     countryCode === "BT" ? `Nu. ${price}` : `$${price.toFixed(2)}`;
 
@@ -35,7 +41,6 @@ export function PaymentSummary({
         {/* HEADER */}
         <div className="flex items-center justify-between p-4 border-b shrink-0">
           <div className="flex items-center gap-2">
-            {/* Back button */}
             <Button
               variant="ghost"
               size="icon"
@@ -46,8 +51,6 @@ export function PaymentSummary({
             </Button>
             <h2 className="text-lg font-semibold">Payment Summary</h2>
           </div>
-
-          {/* Close button */}
           <Button
             variant="ghost"
             size="icon"
@@ -84,18 +87,68 @@ export function PaymentSummary({
           </div>
         </div>
 
+        {/* STATUS / LOADING */}
+        {status !== "awaiting_payment" && (
+          <div className="p-6 flex flex-col items-center gap-3">
+            {status === "pending_approval" && (
+              <div className="flex items-center gap-2 text-yellow-500">
+                <Loader2 className="animate-spin w-5 h-5" />
+                <span>Waiting for admin approval...</span>
+              </div>
+            )}
+            {status === "deploying" && (
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="animate-spin w-5 h-5 text-blue-500" />
+                <span>Deployment in progress...</span>
+                <div className="w-full h-2 bg-gray-200 rounded-full mt-2">
+                  <div
+                    className="h-2 bg-blue-500 rounded-full transition-all"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+            {status === "completed" && (
+              <div className="flex items-center gap-2 text-green-500">
+                <CheckCircle />
+                <span>Website deployed successfully!</span>
+              </div>
+            )}
+            {status === "failed" && (
+              <div className="flex items-center gap-2 text-red-500">
+                <AlertCircle />
+                <span>Deployment failed. Contact support.</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ACTIONS */}
-        <div className="p-6 flex flex-col gap-3">
-          {countryCode === "BT" ? (
-            <Button onClick={handleWhatsAppPayment} className="w-full">
-              Contact via WhatsApp
-            </Button>
-          ) : (
-            <Button onClick={handleInternationalPayment} className="w-full">
-              Pay with Card
-            </Button>
-          )}
-        </div>
+        {status === "awaiting_payment" && (
+          <div className="p-6 flex flex-col gap-3">
+            {countryCode === "BT" ? (
+              <Button
+                onClick={() => {
+                  handleWhatsAppPayment();
+                  setStatus("pending_approval");
+                }}
+                className="w-full"
+              >
+                Contact via WhatsApp
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  handleInternationalPayment();
+                  setStatus("pending_approval");
+                }}
+                className="w-full"
+              >
+                Pay with Card
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
