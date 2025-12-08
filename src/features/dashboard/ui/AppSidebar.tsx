@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  LayoutDashboard,
-  Globe,
-  Settings,
-  LogOut,
-  Sparkles,
-} from "lucide-react";
+import { LayoutDashboard, LogOut, Sparkles } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,

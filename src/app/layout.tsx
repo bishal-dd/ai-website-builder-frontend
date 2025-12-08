@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/shared/ui/Navbar";
 import { Providers } from "./providers";
 import { GeoProvider } from "@/features/preview/domain/hooks/useGeoContext";
 

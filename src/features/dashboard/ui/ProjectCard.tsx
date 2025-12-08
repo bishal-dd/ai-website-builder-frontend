@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,10 +52,6 @@ const statusConfig = {
 };
 
 export function ProjectCard({ project }: { project: Project }) {
-  const config = statusConfig[project.status];
-  const StatusIcon = config.icon;
-  const isDeployed = project.status === "completed" && project.domain;
-
   const formattedDate = new Date(project.createdAt).toLocaleDateString(
     "en-US",
     {
