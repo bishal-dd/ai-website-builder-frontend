@@ -1,0 +1,158 @@
+import {
+  ExternalLink,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  MoreVertical,
+} from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+type ProjectStatus = "completed" | "deploying" | "failed";
+
+interface Project {
+  id: string;
+  name: string;
+  domain: string | null;
+  status: ProjectStatus;
+  createdAt: string;
+  previewImage?: string;
+  description?: string;
+}
+
+const statusConfig = {
+  completed: {
+    label: "Live",
+    icon: CheckCircle2,
+    variant: "default" as const,
+    className:
+      "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25",
+  },
+  deploying: {
+    label: "Deploying",
+    icon: Loader2,
+    variant: "secondary" as const,
+    className:
+      "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/25",
+  },
+  failed: {
+    label: "Failed",
+    icon: XCircle,
+    variant: "destructive" as const,
+    className:
+      "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30 hover:bg-red-500/25",
+  },
+};
+
+export function ProjectCard({ project }: { project: Project }) {
+  const config = statusConfig[project.status];
+  const StatusIcon = config.icon;
+  const isDeployed = project.status === "completed" && project.domain;
+
+  const formattedDate = new Date(project.createdAt).toLocaleDateString(
+    "en-US",
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }
+  );
+
+  const previewUrl =
+    project.previewImage ||
+    `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(
+      `Modern ${project.name} website preview`
+    )}`;
+
+  return (
+    <Card className="group relative aspect-[4/3] overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-border hover:shadow-xl hover:shadow-primary/5">
+      <div className="absolute inset-0 w-full h-full">
+        <img
+          src={previewUrl || "/placeholder.svg"}
+          alt={`${project.name} preview`}
+          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      </div>
+
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20" />
+
+      <div className="relative flex h-full flex-col p-5">
+        <div className="flex items-start justify-between gap-2 mb-auto">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white"
+              >
+                <MoreVertical className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem>Edit Project</DropdownMenuItem>
+              <DropdownMenuItem>View Analytics</DropdownMenuItem>
+              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive">
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold leading-tight tracking-tight text-balance text-white drop-shadow-lg">
+              {project.name}
+            </h3>
+            {project.description && (
+              <p className="text-sm text-white/90 line-clamp-2 drop-shadow">
+                {project.description}
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center gap-3 text-xs text-white/80">
+              {project.domain && (
+                <div className="flex items-center gap-1.5">
+                  <ExternalLink className="size-3.5" />
+                  <span className="truncate font-mono">{project.domain}</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-1.5">
+                <Clock className="size-3.5" />
+                <span>{formattedDate}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-auto">
+            {/* Updated Button with Silver Color */}
+            <Button
+              size="sm"
+              variant="default"
+              className="gap-1 px-2 py-1 text-xs bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-white/30 hover:scale-105 transition-all duration-200"
+              asChild
+            >
+              <a
+                href={`https://${project.domain}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLink className="size-3" />
+                View
+              </a>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
