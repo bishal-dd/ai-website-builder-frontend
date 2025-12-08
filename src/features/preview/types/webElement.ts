@@ -17,9 +17,13 @@ export type WebPages = {
   pageContent: WebElement[];
   page_id: string;
 };
-
+export type SharedComponents = {
+  navbar: WebElement[];
+  footer: WebElement[];
+};
 export type WebsiteData = {
   elements: WebPages[];
+  sharedComponents: SharedComponents;
   metadata?: {
     title?: string;
     description?: string;
