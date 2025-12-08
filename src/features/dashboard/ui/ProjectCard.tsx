@@ -1,11 +1,4 @@
-import {
-  ExternalLink,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Loader2,
-  MoreVertical,
-} from "lucide-react";
+import { ExternalLink, Clock, MoreVertical } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Image from "next/image";
 
 type ProjectStatus = "completed" | "deploying" | "failed";
 
@@ -26,30 +20,6 @@ interface Project {
   previewImage?: string;
   description?: string;
 }
-
-const statusConfig = {
-  completed: {
-    label: "Live",
-    icon: CheckCircle2,
-    variant: "default" as const,
-    className:
-      "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25",
-  },
-  deploying: {
-    label: "Deploying",
-    icon: Loader2,
-    variant: "secondary" as const,
-    className:
-      "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/25",
-  },
-  failed: {
-    label: "Failed",
-    icon: XCircle,
-    variant: "destructive" as const,
-    className:
-      "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30 hover:bg-red-500/25",
-  },
-};
 
 export function ProjectCard({ project }: { project: Project }) {
   const formattedDate = new Date(project.createdAt).toLocaleDateString(
@@ -70,7 +40,7 @@ export function ProjectCard({ project }: { project: Project }) {
   return (
     <Card className="group relative aspect-[4/3] overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-border hover:shadow-xl hover:shadow-primary/5">
       <div className="absolute inset-0 w-full h-full">
-        <img
+        <Image
           src={previewUrl || "/placeholder.svg"}
           alt={`${project.name} preview`}
           className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
