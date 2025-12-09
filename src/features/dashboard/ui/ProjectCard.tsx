@@ -41,9 +41,10 @@ export function ProjectCard({ project }: { project: Project }) {
     <Card className="group relative aspect-[4/3] overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-border hover:shadow-xl hover:shadow-primary/5">
       <div className="absolute inset-0 w-full h-full">
         <Image
-          src={previewUrl || "/placeholder.svg"}
+          src={previewUrl}
           alt={`${project.name} preview`}
-          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
 
