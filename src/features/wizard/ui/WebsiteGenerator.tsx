@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoadingState } from "../loading/ui/LoadingState";
+import { useWizardStore } from "../store/wizardStore";
 
 export function WebsiteGenerator({ jobId }: { jobId: string }) {
   const [isOpen, setIsOpen] = useState(true);
   const [progress, setProgress] = useState(0);
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement>(null);
+  const setWebsiteId = useWizardStore((state) => state.setWebsiteId);
 
   useEffect(() => {
     if (!jobId) return;
@@ -23,6 +25,8 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
         setProgress(data.progress || 0);
 
         if (data.status === "completed") {
+          setWebsiteId(data.websiteId); // store the websiteId
+
           setIsOpen(false);
           clearInterval(interval);
 
@@ -32,7 +36,7 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
           }
 
           // Optional: redirect after short delay
-          setTimeout(() => router.push(`/preview/${data.websiteId}`), 500);
+          setTimeout(() => router.push(`/preview`), 500);
         } else if (data.status === "failed") {
           clearInterval(interval);
           setIsOpen(false);
@@ -44,7 +48,7 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [jobId, router]);
+  }, [jobId, router, setWebsiteId]);
 
   return (
     <>

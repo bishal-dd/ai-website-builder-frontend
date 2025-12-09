@@ -19,13 +19,13 @@ export const useAuthActions = () => {
         ? await authClient.signIn.email({
             email: data.email,
             password: data.password,
-            callbackURL: "/wizard",
+            callbackURL: "/dashboard",
           })
         : await authClient.signUp.email({
             email: data.email,
             password: data.password,
             name: (data as SignUpFormValues).name,
-            callbackURL: "/wizard",
+            callbackURL: "/dashboard",
           });
 
       if (result.error) {
@@ -35,7 +35,7 @@ export const useAuthActions = () => {
       }
 
       setLoading(false);
-      router.push("/wizard");
+      router.push("/dashboard");
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
@@ -50,7 +50,7 @@ export const useAuthActions = () => {
     try {
       const result = await authClient.signIn.social({
         provider,
-        callbackURL: `${window.location.origin}/wizard`,
+        callbackURL: `${window.location.origin}/dashboard`,
       });
 
       if (result?.error) {

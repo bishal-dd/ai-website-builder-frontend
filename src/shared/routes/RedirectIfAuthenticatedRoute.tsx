@@ -14,7 +14,7 @@ export const RedirectIfAuthenticatedRoute = ({
 
   useEffect(() => {
     if (!loading && authenticated) {
-      router.push("/wizard");
+      router.push("/dashboard");
     }
   }, [authenticated, loading, router]);
 

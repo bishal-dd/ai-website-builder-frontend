@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { searchDomainAPI, buyDomainAPI } from "../api/domainService";
+import {
+  searchDomainAPI,
+  buyDomainAPI,
+  createPreOrder,
+} from "../api/domainService";
 import { DomainContact, DomainSuggestion } from "../types/domain";
 import { useGeo } from "./useGeoContext";
 
@@ -68,6 +72,28 @@ export function useDomainModal() {
     }
   };
 
+  const preOrderDomain = async (
+    domain: string,
+    websiteId: string,
+    userId: string
+  ) => {
+    setBuying(domain);
+    setError(null);
+
+    try {
+      const result = await createPreOrder({ name: domain, websiteId, userId });
+      return result;
+    } catch (err) {
+      console.error("Failed to pre-order domain:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to pre-order domain";
+      setError(errorMessage);
+      return { success: false, error: { message: errorMessage } };
+    } finally {
+      setBuying(null);
+    }
+  };
+
   const clearError = () => setError(null);
 
   return {
@@ -80,6 +106,7 @@ export function useDomainModal() {
     clearError,
     searchDomain,
     buyDomain,
+    preOrderDomain,
     country, // comes from GeoContext
     geoLoading, // optional if you want to block actions until ready
   };

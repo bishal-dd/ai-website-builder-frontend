@@ -31,6 +31,20 @@ export async function searchDomainAPI(
   }
 }
 
+export async function createPreOrder(data: {
+  name: string;
+  websiteId: string;
+  userId: string;
+}) {
+  const res = await fetch(`${BASE_URL}/domains`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Failed to create pre-order: ${res.status}`);
+  return res.json();
+}
+
 export async function buyDomainAPI(domain: string, contact: DomainContact) {
   const res = await fetch(`${BASE_URL}/domains/buy`, {
     method: "POST",
