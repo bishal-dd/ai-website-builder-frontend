@@ -15,6 +15,7 @@ import useGetGeneratedWebsite from "@/features/preview/hooks/useGetGeneratedWebs
 import { mapApiToWebsiteData } from "@/features/preview/utils/mapApiToWebsiteData";
 import useUpdateWebsitePage from "./hooks/useUpdateWebsitePage";
 import useUpdateWebsite from "@/features/preview/hooks/useUpdateWebsite";
+import { useParams } from "next/navigation";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -26,7 +27,8 @@ export default function Preview() {
     metadata: {},
   });
   const [currentPageId, setCurrentPageId] = useState<string>("");
-  const websiteId = "0625c42c-a063-494f-ba50-93b685f22ffc";
+  const params = useParams();
+  const websiteId = params.websiteId as string;
 
   const { data: generatedWebsite } = useGetGeneratedWebsite(websiteId);
 

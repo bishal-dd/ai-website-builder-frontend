@@ -232,6 +232,7 @@ export function JsonRenderer({
     const props: Record<string, unknown> = {
       key: id,
       className: className || undefined,
+      style: cssStringToObject(attributes?.style), // <-- FIXED
       ...(type && { type }),
       ...(attributes?.href && { href: attributes?.href }),
     };
