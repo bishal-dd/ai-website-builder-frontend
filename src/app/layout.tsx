@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { GeoProvider } from "@/features/preview/domain/hooks/useGeoContext";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default async function RootLayout({
       >
         <GeoProvider>
           <Providers>{children}</Providers>
+          <Toaster />
         </GeoProvider>
       </body>
     </html>
