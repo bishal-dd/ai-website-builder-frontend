@@ -64,8 +64,75 @@ export const useAuthActions = () => {
     }
   };
 
+  const updateName = async (name: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await authClient.updateUser({ name });
+
+      if (result.error) {
+        setError(result.error.message || "Failed to update name");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to update name");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await authClient.changePassword({
+        currentPassword,
+        newPassword,
+        revokeOtherSessions: true,
+      });
+
+      if (result.error) {
+        setError(result.error.message || "Password update failed");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Password update failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const changeEmail = async (newEmail: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await authClient.changeEmail({
+        newEmail,
+        callbackURL: "http://localhost:3000/email-verified",
+      });
+
+      if (result.error) {
+        setError(result.error.message || "Email update failed");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Email update failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     handleEmailAuth,
     handleSocialAuth,
+    updateName,
+    changePassword,
+    changeEmail,
   };
 };
