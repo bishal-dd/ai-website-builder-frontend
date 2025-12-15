@@ -3,15 +3,15 @@
 import { Plus, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ProjectCard } from "./ProjectCard";
-import { EmptyState } from "./EmptyState";
+import { ProjectCard } from "./ui/ProjectCard";
+import { EmptyState } from "./ui/EmptyState";
 import { useRouter } from "next/navigation";
-import { useProjects } from "../hooks/useProjects";
+import { useProjects } from "./hooks/useProjects";
 import { useState } from "react";
 
 export function DashboardContent() {
   const router = useRouter();
-  const { projects, loading } = useProjects(); // fetch real projects
+  const { projects, isLoading, error } = useProjects();
   const [view, setView] = useState<"grid" | "list">("grid");
 
   const hasProjects = projects.length > 0;
@@ -82,9 +82,13 @@ export function DashboardContent() {
 
       {/* Main Content */}
       <main className="flex-1 p-6">
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center mt-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : error ? (
+          <div className="flex justify-center mt-20 text-red-500">
+            Error loading projects: {error.message}
           </div>
         ) : hasProjects ? (
           <div
