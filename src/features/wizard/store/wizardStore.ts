@@ -20,10 +20,11 @@ const defaultState: Omit<
   websiteName: "",
   tagline: "",
   designType: "",
-  primaryColor: "#8b5cf6",
-  secondaryColor: "#6366f1",
+  primaryColor: "",
+  secondaryColor: "",
+  email: "",
   pageContents: [],
-  websiteId: null, // <-- add this
+  websiteId: null,
 };
 
 export const useWizardStore = create<WizardState>((set) => ({

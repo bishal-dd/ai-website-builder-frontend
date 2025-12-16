@@ -11,6 +11,7 @@ export interface WizardState {
   designType: string;
   primaryColor: string;
   secondaryColor: string;
+  email: string;
   pageContents: PageContent[];
   websiteId: string | null; // <-- add this
 
@@ -25,6 +26,7 @@ export interface WizardState {
       designType: string;
       primaryColor: string;
       secondaryColor: string;
+      email: string;
     }>
   ) => void;
   addSection: (page: PageType, section: Section) => void;
