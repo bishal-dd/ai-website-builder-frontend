@@ -26,8 +26,15 @@ export const useWebsiteWizard = (totalSteps: number) => {
         );
       case 4:
         return selectedPages.every((page) => {
-          const content = pageContents.find((pc) => pc.page === page);
-          return content && content.sections.length > 0;
+          const pageData = pageContents.find((pc) => pc.page === page);
+          if (!pageData) return false;
+
+          // check if every section has either content or aiGenerated true
+          return pageData.sections.every(
+            (section) =>
+              (section.content && section.content.trim() !== "") ||
+              section.aiGenerated
+          );
         });
       default:
         return false;
