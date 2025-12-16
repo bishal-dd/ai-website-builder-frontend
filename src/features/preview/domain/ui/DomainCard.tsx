@@ -29,7 +29,7 @@ export function DomainCard({ domain, onSelect, disabled }: DomainCardProps) {
             )}
           </div>
           <div className="text-sm text-muted-foreground">
-            {domain.price}/ {domain.currency}/year
+            {domain.currency} {domain.price}/year
           </div>
         </div>
         <Button
