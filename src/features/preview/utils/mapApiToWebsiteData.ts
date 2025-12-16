@@ -17,6 +17,7 @@ interface ApiData {
   title?: string;
   description?: string;
   design_type?: string;
+  sequence: number;
   shared_components: SharedComponents; // <-- Use the new type
   pages: ApiPage[];
 }

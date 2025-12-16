@@ -62,6 +62,10 @@ export function PreviewPanelJson({
   const currentPage = websiteData.elements.find(
     (p) => p.page_id === currentPageId,
   );
+  const sortedPages = [...websiteData.elements].sort(
+    (a, b) => (a.sequence ?? 0) - (b.sequence ?? 0),
+  );
+
   const hasContent = currentPage && currentPage.pageContent.length > 0;
 
   return (
@@ -108,7 +112,7 @@ export function PreviewPanelJson({
       <div className="border-b border-border bg-card px-6 py-2">
         <ScrollArea className="w-full">
           <div className="flex gap-2 pb-2">
-            {websiteData.elements.map((page) => (
+            {sortedPages.map((page) => (
               <Button
                 key={page.id}
                 variant={currentPageId === page.page_id ? "default" : "outline"}

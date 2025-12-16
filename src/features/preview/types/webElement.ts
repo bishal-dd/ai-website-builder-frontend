@@ -14,6 +14,7 @@ export type WebPages = {
   title: string;
   description: string;
   theme: string;
+  sequence: number;
   pageContent: WebElement[];
   page_id: string;
 };
