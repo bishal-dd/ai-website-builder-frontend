@@ -18,7 +18,7 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
     const interval = setInterval(async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/job/${jobId}/status`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/job/${jobId}/status`,
         );
         const data = await res.json();
 
@@ -36,7 +36,7 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
           }
 
           // Optional: redirect after short delay
-          setTimeout(() => router.push(`/preview`), 500);
+          setTimeout(() => router.push(`/preview/${data.websiteId}`), 500);
         } else if (data.status === "failed") {
           clearInterval(interval);
           setIsOpen(false);
