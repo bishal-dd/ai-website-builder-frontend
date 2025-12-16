@@ -284,7 +284,8 @@ export function JsonRenderer({
       return (
         <div
           key={id}
-          className="relative inline-block group"
+          className="relative w-full group"
+          style={{ lineHeight: 0 }} // prevents inline image gaps
           onMouseEnter={() => setHoveredImageId(id)}
           onMouseLeave={() => setHoveredImageId(null)}
         >
