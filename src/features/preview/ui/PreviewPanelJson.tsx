@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { JsonRenderer } from "./JsonRenderer";
 import type { WebElement, WebsiteData } from "../types/webElement";
 import { useRouter } from "next/navigation";
+import { LayoutDashboard } from "lucide-react";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
@@ -96,12 +97,27 @@ export function PreviewPanelJson({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Back to Dashboard */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push("/dashboard")}
+            className="gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            <span className="hidden md:inline">Dashboard</span>
+          </Button>
+
+          <div className="mx-1 h-6 w-px bg-border" />
+
           <Button variant="ghost" size="icon" onClick={handleRefresh}>
             <RefreshCw className="h-4 w-4" />
           </Button>
+
           <Button variant="ghost" size="icon">
             <ExternalLink className="h-4 w-4" />
           </Button>
+
           <Button size="sm" onClick={() => router.push("/domain")}>
             Publish
           </Button>

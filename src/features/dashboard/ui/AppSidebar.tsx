@@ -26,7 +26,7 @@ const navigationItems = [
   {
     title: "Dashboard",
     icon: LayoutDashboard,
-    href: "/",
+    href: "/dashboard",
     isActive: true,
   },
   {
