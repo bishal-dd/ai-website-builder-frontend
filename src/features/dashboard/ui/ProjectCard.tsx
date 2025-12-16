@@ -1,21 +1,12 @@
-import { ExternalLink, Clock, MoreVertical } from "lucide-react";
+import { ExternalLink, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import Image from "next/image";
-
-type ProjectStatus = "completed" | "deploying" | "failed";
 
 interface Project {
   id: string;
   name: string;
   domain: string | null;
-  status: ProjectStatus;
   createdAt: string;
   previewImage?: string;
   description?: string;
@@ -51,27 +42,7 @@ export function ProjectCard({ project }: { project: Project }) {
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20" />
 
       <div className="relative flex h-full flex-col p-5">
-        <div className="flex items-start justify-between gap-2 mb-auto">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white"
-              >
-                <MoreVertical className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem>Edit Project</DropdownMenuItem>
-              <DropdownMenuItem>View Analytics</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <div className="flex items-start justify-between gap-2 mb-auto"></div>
 
         <div className="flex flex-col gap-3">
           <div className="space-y-2">
@@ -104,15 +75,16 @@ export function ProjectCard({ project }: { project: Project }) {
             <Button
               size="sm"
               variant="default"
-              className="gap-1 px-2 py-1 text-xs bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-white/30 hover:scale-105 transition-all duration-200"
+              className="gap-1 px-3 py-1 text-xs bg-primary text-primary-foreground border border-primary/80 hover:bg-primary/90 hover:scale-105 transition-all duration-200"
               asChild
             >
               <a
                 href={`https://${project.domain}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="flex items-center gap-1"
               >
-                <ExternalLink className="size-3" />
+                <ExternalLink className="w-3.5 h-3.5" />
                 View
               </a>
             </Button>

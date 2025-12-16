@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, LayoutGrid, List } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ProjectCard } from "./ui/ProjectCard";
@@ -12,7 +12,7 @@ import { useState } from "react";
 export function DashboardContent() {
   const router = useRouter();
   const { projects, isLoading, error } = useProjects();
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view] = useState<"grid" | "list">("grid");
 
   const hasProjects = projects.length > 0;
 
@@ -48,25 +48,6 @@ export function DashboardContent() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="hidden items-center gap-1 rounded-lg border border-border/40 bg-muted/30 p-1 sm:flex">
-                <Button
-                  variant={view === "grid" ? "secondary" : "ghost"}
-                  size="icon"
-                  className="size-7"
-                  onClick={() => setView("grid")}
-                >
-                  <LayoutGrid className="size-4" />
-                </Button>
-                <Button
-                  variant={view === "list" ? "secondary" : "ghost"}
-                  size="icon"
-                  className="size-7"
-                  onClick={() => setView("list")}
-                >
-                  <List className="size-4" />
-                </Button>
-              </div>
-
               <Button
                 size="default"
                 className="gap-2 shadow-sm"
