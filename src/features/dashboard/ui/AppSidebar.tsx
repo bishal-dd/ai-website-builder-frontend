@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, LogOut, Sparkles, User } from "lucide-react";
+import { Globe2, LayoutDashboard, LogOut, Sparkles, User } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -33,6 +33,11 @@ const navigationItems = [
     title: "Profile",
     icon: User,
     href: "/dashboard/profile",
+  },
+  {
+    title: "Domains",
+    icon: Globe2,
+    href: "/dashboard/domain",
   },
 ];
 
