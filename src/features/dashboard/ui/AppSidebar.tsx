@@ -21,24 +21,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useSession } from "@/shared/session";
+import { usePathname } from "next/navigation";
 
 const navigationItems = [
   {
     title: "Dashboard",
     icon: LayoutDashboard,
     href: "/dashboard",
-    isActive: true,
   },
   {
     title: "Profile",
     icon: User,
     href: "/dashboard/profile",
-    isActive: false,
   },
 ];
 
 export function AppSidebar() {
   const { user, signOut } = useSession();
+  const pathname = usePathname();
 
   return (
     <Sidebar>
@@ -60,16 +60,24 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={item.isActive}>
-                    <Link href={item.href}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {navigationItems.map((item) => {
+                const isActive =
+                  item.href === "/dashboard"
+                    ? pathname === "/dashboard"
+                    : pathname === item.href ||
+                      pathname.startsWith(item.href + "/");
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive}>
+                      <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
