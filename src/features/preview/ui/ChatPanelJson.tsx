@@ -1,13 +1,13 @@
 "use client";
 
-import type React from "react";
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Sparkles, User, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRegenerateWebsite } from "../hooks/useRegenerateWebsite";
+import { WebsiteRegenerator } from "./WebsiteRegenerator";
 
 interface Message {
   id: string;
@@ -18,9 +18,10 @@ interface Message {
 
 interface ChatPanelJsonProps {
   onClose?: () => void;
+  websiteId: string;
 }
 
-export function ChatPanelJson({ onClose }: ChatPanelJsonProps) {
+export function ChatPanelJson({ onClose, websiteId }: ChatPanelJsonProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -31,18 +32,21 @@ export function ChatPanelJson({ onClose }: ChatPanelJsonProps) {
     },
   ]);
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [regenJobId, setRegenJobId] = useState<string | null>(null);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { mutate: regenerate, isPending } = useRegenerateWebsite();
+
+  // Scroll to bottom whenever messages update
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isPending) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -53,50 +57,65 @@ export function ChatPanelJson({ onClose }: ChatPanelJsonProps) {
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
-    setIsLoading(true);
 
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content:
-          "Great! I'm generating your website now. You'll see the preview update on the right side.",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
+    // Call regenerate API
+    regenerate(
+      { websiteId, userMessage: userMessage.content },
+      {
+        onSuccess: (data) => {
+          if (data.jobId) {
+            setRegenJobId(data.jobId);
 
-      setIsLoading(false);
-    }, 2000);
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: (Date.now() + 1).toString(),
+                role: "assistant",
+                content: "✅ Website regeneration started. Updating preview...",
+                timestamp: new Date(),
+              },
+            ]);
+          }
+        },
+        onError: (err: unknown) => {
+          const errorMessage = err instanceof Error ? err.message : String(err);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: (Date.now() + 2).toString(),
+              role: "assistant",
+              content: `❌ Failed: ${errorMessage}`,
+              timestamp: new Date(),
+            },
+          ]);
+        },
+      }
+    );
   };
 
   return (
     <div className="flex h-full flex-col bg-background">
-      <div className="border-b border-border bg-card px-6 py-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
-              <Sparkles className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">
-                sencill AI
-              </h2>
-              <p className="text-sm text-muted-foreground">Website Generator</p>
-            </div>
+      {/* Header */}
+      <div className="border-b border-border bg-card px-6 py-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+            <Sparkles className="h-5 w-5 text-primary" />
           </div>
-          {onClose && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="h-8 w-8"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          )}
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">
+              sencill AI
+            </h2>
+            <p className="text-sm text-muted-foreground">Website Generator</p>
+          </div>
         </div>
+        {onClose && (
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-5 w-5" />
+          </Button>
+        )}
       </div>
 
+      {/* Messages */}
       <ScrollArea className="flex-1 px-6 py-4">
         <div ref={scrollRef} className="space-y-4">
           {messages.map((message) => (
@@ -104,7 +123,7 @@ export function ChatPanelJson({ onClose }: ChatPanelJsonProps) {
               key={message.id}
               className={cn(
                 "flex gap-3",
-                message.role === "user" ? "justify-end" : "justify-start",
+                message.role === "user" ? "justify-end" : "justify-start"
               )}
             >
               {message.role === "assistant" && (
@@ -117,7 +136,7 @@ export function ChatPanelJson({ onClose }: ChatPanelJsonProps) {
                   "max-w-[80%] rounded-lg px-4 py-3",
                   message.role === "user"
                     ? "bg-primary text-primary-foreground"
-                    : "bg-card border border-border",
+                    : "bg-card border border-border"
                 )}
               >
                 <p className="text-sm leading-relaxed">{message.content}</p>
@@ -135,23 +154,10 @@ export function ChatPanelJson({ onClose }: ChatPanelJsonProps) {
               )}
             </div>
           ))}
-          {isLoading && (
-            <div className="flex gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20">
-                <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-              </div>
-              <div className="rounded-lg border border-border bg-card px-4 py-3">
-                <div className="flex gap-1">
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]"></div>
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]"></div>
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-primary"></div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </ScrollArea>
 
+      {/* Input */}
       <div className="border-t border-border bg-card px-6 py-4">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Textarea
@@ -165,13 +171,12 @@ export function ChatPanelJson({ onClose }: ChatPanelJsonProps) {
                 handleSubmit(e);
               }
             }}
-            disabled={isLoading}
+            disabled={isPending}
           />
           <Button
             type="submit"
             size="icon"
-            className="h-[60px] w-[60px] shrink-0"
-            disabled={isLoading || !input.trim()}
+            disabled={isPending || !input.trim()}
           >
             <Send className="h-5 w-5" />
           </Button>
@@ -180,6 +185,15 @@ export function ChatPanelJson({ onClose }: ChatPanelJsonProps) {
           Press Enter to send, Shift+Enter for new line
         </p>
       </div>
+
+      {/* Regeneration Overlay */}
+      {regenJobId && (
+        <WebsiteRegenerator
+          jobId={regenJobId}
+          websiteId={websiteId} // dynamic
+          onComplete={() => setRegenJobId(null)} // hide overlay after completion
+        />
+      )}
     </div>
   );
 }
