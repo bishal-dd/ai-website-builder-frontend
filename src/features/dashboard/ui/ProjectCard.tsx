@@ -79,7 +79,7 @@ export function ProjectCard({ project }: { project: Project }) {
               asChild
             >
               <a
-                href={`https://${project.domain}`}
+                href={`/preview/${project.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1"
