@@ -5,10 +5,7 @@ import { ChatPanelJson } from "./ui/ChatPanelJson";
 import { PreviewPanelJson } from "./ui/PreviewPanelJson";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
-import type {
-  WebElement,
-  WebsiteData,
-} from "@/features/preview/types/webElement";
+import type { WebElement, WebsiteData } from "@/features/preview/types/webElement";
 import useGetGeneratedWebsite from "@/features/preview/hooks/useGetGeneratedWebsite";
 import { mapApiToWebsiteData } from "@/features/preview/utils/mapApiToWebsiteData";
 import useUpdateWebsitePage from "./hooks/useUpdateWebsitePage";
@@ -52,23 +49,30 @@ export default function Preview() {
   const updateElementRecursive = (
     elements: WebElement[],
     elementId: number,
-    updates: Partial<WebElement>
-  ): WebElement[] =>
-    elements.map((el) =>
-      el.id === elementId
-        ? { ...el, ...updates }
-        : el.children
-        ? {
-            ...el,
-            children: updateElementRecursive(el.children, elementId, updates),
-          }
-        : el
-    );
+    updates: Partial<WebElement>,
+  ): WebElement[] => {
+    return elements.map((element) => {
+      if (element.id === elementId) {
+        return { ...element, ...updates };
+      }
+      if (element.children) {
+        return {
+          ...element,
+          children: updateElementRecursive(
+            element.children,
+            elementId,
+            updates,
+          ),
+        };
+      }
+      return element;
+    });
+  };
 
   const handleUpdateElement = async (
     pageId: string,
     elementId: number,
-    updates: Partial<WebElement>
+    updates: Partial<WebElement>,
   ) => {
     const newElements = websiteData.elements.map((page) =>
       page.page_id === pageId
@@ -77,10 +81,10 @@ export default function Preview() {
             pageContent: updateElementRecursive(
               page.pageContent,
               elementId,
-              updates
+              updates,
             ),
           }
-        : page
+        : page,
     );
 
     setWebsiteData((prev) => ({ ...prev, elements: newElements }));
@@ -94,14 +98,14 @@ export default function Preview() {
   const handleUpdateSharedElement = async (
     componentKey: "navbar" | "footer",
     elementId: number,
-    updates: Partial<WebElement>
+    updates: Partial<WebElement>,
   ) => {
     const newSharedComponents = {
       ...websiteData.sharedComponents,
       [componentKey]: updateElementRecursive(
         websiteData.sharedComponents[componentKey],
         elementId,
-        updates
+        updates,
       ),
     };
 
@@ -114,6 +118,10 @@ export default function Preview() {
       websiteId,
       body: { shared_components: newSharedComponents },
     });
+
+    console.log(
+      `Updated shared component ${componentKey} element ${elementId}`,
+    );
   };
 
   return (
@@ -125,7 +133,7 @@ export default function Preview() {
           onUpdateElement={handleUpdateElement}
           onUpdateSharedElement={handleUpdateSharedElement}
           onPageChange={setCurrentPageId}
-          onPublish={() => setIsDomainModalOpen(true)} // <-- Open modal on publish
+          onPublish={() => setIsDomainModalOpen(true)}
         />
 
         {!isChatOpen && (
@@ -149,7 +157,6 @@ export default function Preview() {
           </div>
         )}
 
-        {/* Domain Modal */}
         {isDomainModalOpen && websiteId && (
           <DomainModalWrapper
             websiteId={websiteId}
