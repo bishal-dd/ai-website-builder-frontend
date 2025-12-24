@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { DomainModal } from "@/features/preview/domain/DomainModal";
 import type { DomainContact } from "@/features/preview/domain/types/domain";
 import { useSession } from "@/shared/session";
