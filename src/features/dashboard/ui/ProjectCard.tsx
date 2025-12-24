@@ -80,8 +80,6 @@ export function ProjectCard({ project }: { project: Project }) {
             >
               <a
                 href={`/preview/${project.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="flex items-center gap-1"
               >
                 <ExternalLink className="w-3.5 h-3.5" />

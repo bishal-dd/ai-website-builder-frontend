@@ -3,10 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { SelectedDomain, DomainContact } from "../types/domain";
-import { useWizardStore } from "@/features/wizard/store/wizardStore";
 import { useWebsiteDeploymentStatus } from "../hooks/useWebsiteDeploymentStatus";
 
 interface PaymentSummaryProps {
+  websiteId: string;
   selectedDomain: SelectedDomain;
   contact: DomainContact;
   onClose: () => void;
@@ -17,6 +17,7 @@ interface PaymentSummaryProps {
 }
 
 export function PaymentSummary({
+  websiteId,
   selectedDomain,
   onClose,
   onBack,
@@ -24,7 +25,6 @@ export function PaymentSummary({
   handleInternationalPayment,
   countryCode,
 }: PaymentSummaryProps) {
-  const websiteId = useWizardStore((state) => state.websiteId);
   const { status, setStatus, progress } = useWebsiteDeploymentStatus(
     websiteId!
   );

@@ -109,6 +109,7 @@ export function DomainModal({
   if (step === "pricing" && selectedDomain) {
     return (
       <PaymentSummary
+        websiteId={websiteId}
         selectedDomain={selectedDomain}
         contact={contact}
         onClose={onClose}
