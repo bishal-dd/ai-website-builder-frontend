@@ -31,7 +31,7 @@ export function DomainModal({
 }: DomainModalProps) {
   const [step, setStep] = useState<"selection" | "pricing">("selection");
   const [selectedDomain, setSelectedDomain] = useState<SelectedDomain | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,10 +95,10 @@ export function DomainModal({
       (selectedDomain.websitePrice ?? 0);
 
     const message = encodeURIComponent(
-      `Hi! I'd like to purchase:\n\nDomain: ${selectedDomain.domain}\nDomain Price: ${selectedDomain.price}\nHosting: ${selectedDomain.hostingPrice}\nWebsite Generation: ${selectedDomain.websitePrice}\nTotal: ${total}\nContact: ${contact.email}`
+      `Hi! I'd like to purchase:\n\nDomain: ${selectedDomain.domain}\nDomain Price: ${selectedDomain.price}\nHosting: ${selectedDomain.hostingPrice}\nWebsite Generation: ${selectedDomain.websitePrice}\nTotal: ${total}\nContact: ${contact.email}`,
     );
 
-    window.open(`https://wa.me/77952712?text=${message}`, "_blank");
+    window.open(`https://wa.me/17959259?text=${message}`, "_blank");
   };
 
   // Payment placeholder
@@ -124,10 +124,10 @@ export function DomainModal({
   // DOMAIN SELECTION LOGIC
   const cleanKeyword = keyword.trim();
   const exactMatch = suggestions.find(
-    (s) => s.domain.toLowerCase() === cleanKeyword.toLowerCase()
+    (s) => s.domain.toLowerCase() === cleanKeyword.toLowerCase(),
   );
   const alternatives = suggestions.filter(
-    (s) => s.domain !== cleanKeyword && s.available
+    (s) => s.domain !== cleanKeyword && s.available,
   );
 
   return (
