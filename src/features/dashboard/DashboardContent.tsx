@@ -8,6 +8,7 @@ import { EmptyState } from "./ui/EmptyState";
 import { useRouter } from "next/navigation";
 import { useProjects } from "./hooks/useProjects";
 import { useState } from "react";
+import Link from "next/link";
 
 export function DashboardContent() {
   const router = useRouter();
@@ -48,13 +49,11 @@ export function DashboardContent() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                size="default"
-                className="gap-2 shadow-sm"
-                onClick={() => router.push("/wizard")}
-              >
-                <Plus className="size-4" />
-                <span className="hidden sm:inline">New Project</span>
+              <Button size="default" className="gap-2 shadow-sm" asChild>
+                <Link href="/wizard">
+                  <Plus className="size-4" />
+                  <span className="hidden sm:inline">New Project</span>
+                </Link>
               </Button>
             </div>
           </div>

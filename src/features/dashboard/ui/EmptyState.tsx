@@ -1,5 +1,6 @@
 import { Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function EmptyState() {
   return (
@@ -20,9 +21,11 @@ export function EmptyState() {
         }
       </p>
 
-      <Button size="lg" className="gap-2 shadow-lg shadow-primary/25">
-        <Zap className="size-5" />
-        Create Your First Project
+      <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" asChild>
+        <Link href="/wizard">
+          <Zap className="size-5" />
+          Create Your First Project
+        </Link>
       </Button>
 
       <div className="mt-12 grid grid-cols-3 gap-8 text-sm text-muted-foreground">
