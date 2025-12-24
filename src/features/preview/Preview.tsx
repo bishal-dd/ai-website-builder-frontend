@@ -49,7 +49,7 @@ export default function Preview() {
   const updateElementRecursive = (
     elements: WebElement[],
     elementId: number,
-    updates: Partial<WebElement>
+    updates: Partial<WebElement>,
   ): WebElement[] => {
     return elements.map((element) => {
       if (element.id === elementId) {
@@ -61,7 +61,7 @@ export default function Preview() {
           children: updateElementRecursive(
             element.children,
             elementId,
-            updates
+            updates,
           ),
         };
       }
@@ -72,7 +72,7 @@ export default function Preview() {
   const handleUpdateElement = async (
     pageId: string,
     elementId: number,
-    updates: Partial<WebElement>
+    updates: Partial<WebElement>,
   ) => {
     // 1. Compute new elements first
     const newElements = websiteData.elements.map((page) =>
@@ -82,10 +82,10 @@ export default function Preview() {
             pageContent: updateElementRecursive(
               page.pageContent,
               elementId,
-              updates
+              updates,
             ),
           }
-        : page
+        : page,
     );
 
     // 2. Update state
@@ -108,7 +108,7 @@ export default function Preview() {
   const handleUpdateSharedElement = async (
     componentKey: "navbar" | "footer",
     elementId: number,
-    updates: Partial<WebElement>
+    updates: Partial<WebElement>,
   ) => {
     // 1. Compute new shared components
     const newSharedComponents = {
@@ -116,7 +116,7 @@ export default function Preview() {
       [componentKey]: updateElementRecursive(
         websiteData.sharedComponents[componentKey],
         elementId,
-        updates
+        updates,
       ),
     };
 
@@ -134,7 +134,7 @@ export default function Preview() {
     // NOTE: In a real app, you would add logic here to call a separate API
     // endpoint to persist the shared component changes to the database.
     console.log(
-      `Updated shared component ${componentKey} element ${elementId}`
+      `Updated shared component ${componentKey} element ${elementId}`,
     );
   };
 
@@ -161,7 +161,7 @@ export default function Preview() {
           <div className="fixed inset-0 z-50 flex items-end justify-end pointer-events-none">
             <div className="pointer-events-auto h-[600px] w-full max-w-md m-4 rounded-lg shadow-2xl border border-border overflow-hidden">
               <ChatPanelJson
-                websiteId="c4338c3b-5867-4b9b-b5a9-32583e435701"
+                websiteId={websiteId}
                 onClose={() => setIsChatOpen(false)}
               />
             </div>
