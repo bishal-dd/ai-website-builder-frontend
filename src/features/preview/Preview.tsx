@@ -1,5 +1,3 @@
-// src/app/Preview.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -16,17 +14,22 @@ import { mapApiToWebsiteData } from "@/features/preview/utils/mapApiToWebsiteDat
 import useUpdateWebsitePage from "./hooks/useUpdateWebsitePage";
 import useUpdateWebsite from "@/features/preview/hooks/useUpdateWebsite";
 import { useParams } from "next/navigation";
+import { DomainModalWrapper } from "@/features/preview/domain/DomainModalWrapper";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isDomainModalOpen, setIsDomainModalOpen] = useState(false);
+
   const updatePage = useUpdateWebsitePage();
   const updateWebsite = useUpdateWebsite();
+
   const [websiteData, setWebsiteData] = useState<WebsiteData>({
     elements: [],
-    sharedComponents: { navbar: [], footer: [] }, // <-- Initialize sharedComponents
+    sharedComponents: { navbar: [], footer: [] },
     metadata: {},
   });
   const [currentPageId, setCurrentPageId] = useState<string>("");
+
   const params = useParams();
   const websiteId = params.websiteId as string;
 
@@ -50,31 +53,23 @@ export default function Preview() {
     elements: WebElement[],
     elementId: number,
     updates: Partial<WebElement>
-  ): WebElement[] => {
-    return elements.map((element) => {
-      if (element.id === elementId) {
-        return { ...element, ...updates };
-      }
-      if (element.children) {
-        return {
-          ...element,
-          children: updateElementRecursive(
-            element.children,
-            elementId,
-            updates
-          ),
-        };
-      }
-      return element;
-    });
-  };
+  ): WebElement[] =>
+    elements.map((el) =>
+      el.id === elementId
+        ? { ...el, ...updates }
+        : el.children
+        ? {
+            ...el,
+            children: updateElementRecursive(el.children, elementId, updates),
+          }
+        : el
+    );
 
   const handleUpdateElement = async (
     pageId: string,
     elementId: number,
     updates: Partial<WebElement>
   ) => {
-    // 1. Compute new elements first
     const newElements = websiteData.elements.map((page) =>
       page.page_id === pageId
         ? {
@@ -88,29 +83,19 @@ export default function Preview() {
         : page
     );
 
-    // 2. Update state
     setWebsiteData((prev) => ({ ...prev, elements: newElements }));
 
-    // 3. Find the updated page safely for persistence
     const updatedPage = newElements.find((el) => el.page_id === pageId);
-    if (!updatedPage) {
-      console.error("Page not found", pageId);
-      return;
-    }
+    if (!updatedPage) return console.error("Page not found", pageId);
 
-    await updatePage.mutateAsync({
-      pageId,
-      body: { content: updatedPage },
-    });
+    await updatePage.mutateAsync({ pageId, body: { content: updatedPage } });
   };
 
-  // ** NEW FUNCTION: Handles updates for Navbar/Footer **
   const handleUpdateSharedElement = async (
     componentKey: "navbar" | "footer",
     elementId: number,
     updates: Partial<WebElement>
   ) => {
-    // 1. Compute new shared components
     const newSharedComponents = {
       ...websiteData.sharedComponents,
       [componentKey]: updateElementRecursive(
@@ -120,7 +105,6 @@ export default function Preview() {
       ),
     };
 
-    // 2. Update state
     setWebsiteData((prev) => ({
       ...prev,
       sharedComponents: newSharedComponents,
@@ -130,12 +114,6 @@ export default function Preview() {
       websiteId,
       body: { shared_components: newSharedComponents },
     });
-
-    // NOTE: In a real app, you would add logic here to call a separate API
-    // endpoint to persist the shared component changes to the database.
-    console.log(
-      `Updated shared component ${componentKey} element ${elementId}`
-    );
   };
 
   return (
@@ -145,9 +123,11 @@ export default function Preview() {
           websiteData={websiteData}
           currentPageId={currentPageId}
           onUpdateElement={handleUpdateElement}
-          onUpdateSharedElement={handleUpdateSharedElement} // <-- Pass new handler
+          onUpdateSharedElement={handleUpdateSharedElement}
           onPageChange={setCurrentPageId}
+          onPublish={() => setIsDomainModalOpen(true)} // <-- Open modal on publish
         />
+
         {!isChatOpen && (
           <Button
             onClick={() => setIsChatOpen(true)}
@@ -157,15 +137,24 @@ export default function Preview() {
             <MessageSquare className="h-6 w-6" />
           </Button>
         )}
+
         {isChatOpen && (
           <div className="fixed inset-0 z-50 flex items-end justify-end pointer-events-none">
             <div className="pointer-events-auto h-[600px] w-full max-w-md m-4 rounded-lg shadow-2xl border border-border overflow-hidden">
               <ChatPanelJson
-                websiteId="c4338c3b-5867-4b9b-b5a9-32583e435701"
+                websiteId={websiteId}
                 onClose={() => setIsChatOpen(false)}
               />
             </div>
           </div>
+        )}
+
+        {/* Domain Modal */}
+        {isDomainModalOpen && websiteId && (
+          <DomainModalWrapper
+            websiteId={websiteId}
+            onClose={() => setIsDomainModalOpen(false)}
+          />
         )}
       </main>
     </div>

@@ -5,14 +5,18 @@ import { useRouter } from "next/navigation";
 import { DomainModal } from "@/features/preview/domain/DomainModal";
 import type { DomainContact } from "@/features/preview/domain/types/domain";
 import { useSession } from "@/shared/session";
-import { useWizardStore } from "@/features/wizard/store/wizardStore";
 
-export function DomainModalWrapper() {
-  const [open, setOpen] = useState(true);
-  const { websiteId } = useWizardStore();
+interface DomainModalWrapperProps {
+  websiteId: string;
+  onClose: () => void;
+}
+
+export function DomainModalWrapper({
+  websiteId,
+  onClose,
+}: DomainModalWrapperProps) {
   const { user } = useSession();
   const userId = user?.id;
-  const router = useRouter();
 
   const contact: DomainContact = {
     firstName: "Test",
@@ -26,18 +30,11 @@ export function DomainModalWrapper() {
     country: "BT",
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    router.push(`/preview/${websiteId}`);
-  };
-
-  if (!open) return null;
-
   return (
     <DomainModal
-      onClose={handleClose}
+      onClose={onClose}
       contact={contact}
-      websiteId={websiteId || ""}
+      websiteId={websiteId}
       userId={userId || "anonymous"}
     />
   );
