@@ -1,5 +1,3 @@
-// src/features/preview/ui/PreviewPanelJson.tsx
-
 "use client";
 
 import { useState } from "react";
@@ -14,12 +12,12 @@ import {
   RefreshCw,
   FileText,
   Sparkles,
+  LayoutDashboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { JsonRenderer } from "./JsonRenderer";
 import type { WebElement, WebsiteData } from "../types/webElement";
 import { useRouter } from "next/navigation";
-import { LayoutDashboard } from "lucide-react";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
@@ -28,28 +26,28 @@ interface PreviewPanelJsonProps {
   onUpdateElement?: (
     pageId: string,
     elementId: number,
-    updates: Partial<WebElement>,
+    updates: Partial<WebElement>
   ) => void;
-  // ** NEW PROP **
   onUpdateSharedElement: (
     componentKey: "navbar" | "footer",
     elementId: number,
-    updates: Partial<WebElement>,
+    updates: Partial<WebElement>
   ) => void;
   onPageChange: (pageId: string) => void;
   currentPageId: string;
+  onPublish: () => void; // <-- NEW PROP
 }
 
 export function PreviewPanelJson({
   websiteData,
   onUpdateElement,
-  onUpdateSharedElement, // <-- Destructure new prop
+  onUpdateSharedElement,
   onPageChange,
   currentPageId,
+  onPublish,
 }: PreviewPanelJsonProps) {
   const [device, setDevice] = useState<DeviceType>("desktop");
   const [key, setKey] = useState(0);
-
   const router = useRouter();
 
   const handleRefresh = () => setKey((prev) => prev + 1);
@@ -61,17 +59,16 @@ export function PreviewPanelJson({
   };
 
   const currentPage = websiteData.elements.find(
-    (p) => p.page_id === currentPageId,
+    (p) => p.page_id === currentPageId
   );
   const sortedPages = [...websiteData.elements].sort(
-    (a, b) => (a.sequence ?? 0) - (b.sequence ?? 0),
+    (a, b) => (a.sequence ?? 0) - (b.sequence ?? 0)
   );
-
   const hasContent = currentPage && currentPage.pageContent.length > 0;
 
   return (
     <div className="flex h-full flex-col bg-muted">
-      {/* Header with device tabs and controls */}
+      {/* Header */}
       <div className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
         <div className="flex items-center gap-4">
           <h3 className="text-sm font-semibold text-foreground">Preview</h3>
@@ -96,8 +93,8 @@ export function PreviewPanelJson({
           </Tabs>
         </div>
 
+        {/* Controls */}
         <div className="flex items-center gap-2">
-          {/* Back to Dashboard */}
           <Button
             variant="ghost"
             size="sm"
@@ -118,7 +115,8 @@ export function PreviewPanelJson({
             <ExternalLink className="h-4 w-4" />
           </Button>
 
-          <Button size="sm" onClick={() => router.push("/domain")}>
+          {/* Publish button now calls onPublish instead of navigating */}
+          <Button size="sm" onClick={onPublish}>
             Publish
           </Button>
         </div>
@@ -150,18 +148,18 @@ export function PreviewPanelJson({
           className={cn(
             "bg-background shadow-2xl transition-all duration-300 rounded-lg overflow-auto border border-border",
             deviceSizes[device],
-            device !== "desktop" && "max-h-full",
+            device !== "desktop" && "max-h-full"
           )}
         >
           {hasContent ? (
             <div key={key} className="w-full h-full overflow-auto">
               <JsonRenderer
                 elements={currentPage.pageContent}
-                sharedComponents={websiteData.sharedComponents} // <-- Pass shared components
+                sharedComponents={websiteData.sharedComponents}
                 onUpdateElement={(elementId, updates) =>
                   onUpdateElement?.(currentPageId, elementId, updates)
                 }
-                onUpdateSharedElement={onUpdateSharedElement} // <-- Pass new handler
+                onUpdateSharedElement={onUpdateSharedElement}
               />
             </div>
           ) : (
@@ -192,9 +190,9 @@ export function PreviewPanelJson({
           <span
             className={cn(
               "h-2 w-2 rounded-full",
-              hasContent ? "bg-green-500" : "bg-yellow-500",
+              hasContent ? "bg-green-500" : "bg-yellow-500"
             )}
-          ></span>
+          />
           {hasContent ? "Live" : "Waiting"}
         </span>
       </div>
