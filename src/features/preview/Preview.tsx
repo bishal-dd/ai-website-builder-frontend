@@ -5,17 +5,18 @@ import { ChatPanelJson } from "./ui/ChatPanelJson";
 import { PreviewPanelJson } from "./ui/PreviewPanelJson";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
-import type { WebElement, WebsiteData } from "@/features/preview/types/webElement";
+import type {
+  WebElement,
+  WebsiteData,
+} from "@/features/preview/types/webElement";
 import useGetGeneratedWebsite from "@/features/preview/hooks/useGetGeneratedWebsite";
 import { mapApiToWebsiteData } from "@/features/preview/utils/mapApiToWebsiteData";
 import useUpdateWebsitePage from "./hooks/useUpdateWebsitePage";
 import useUpdateWebsite from "@/features/preview/hooks/useUpdateWebsite";
 import { useParams } from "next/navigation";
-import { DomainModalWrapper } from "@/features/preview/domain/DomainModalWrapper";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isDomainModalOpen, setIsDomainModalOpen] = useState(false);
 
   const updatePage = useUpdateWebsitePage();
   const updateWebsite = useUpdateWebsite();
@@ -49,7 +50,7 @@ export default function Preview() {
   const updateElementRecursive = (
     elements: WebElement[],
     elementId: number,
-    updates: Partial<WebElement>,
+    updates: Partial<WebElement>
   ): WebElement[] => {
     return elements.map((element) => {
       if (element.id === elementId) {
@@ -61,7 +62,7 @@ export default function Preview() {
           children: updateElementRecursive(
             element.children,
             elementId,
-            updates,
+            updates
           ),
         };
       }
@@ -72,7 +73,7 @@ export default function Preview() {
   const handleUpdateElement = async (
     pageId: string,
     elementId: number,
-    updates: Partial<WebElement>,
+    updates: Partial<WebElement>
   ) => {
     const newElements = websiteData.elements.map((page) =>
       page.page_id === pageId
@@ -81,10 +82,10 @@ export default function Preview() {
             pageContent: updateElementRecursive(
               page.pageContent,
               elementId,
-              updates,
+              updates
             ),
           }
-        : page,
+        : page
     );
 
     setWebsiteData((prev) => ({ ...prev, elements: newElements }));
@@ -98,14 +99,14 @@ export default function Preview() {
   const handleUpdateSharedElement = async (
     componentKey: "navbar" | "footer",
     elementId: number,
-    updates: Partial<WebElement>,
+    updates: Partial<WebElement>
   ) => {
     const newSharedComponents = {
       ...websiteData.sharedComponents,
       [componentKey]: updateElementRecursive(
         websiteData.sharedComponents[componentKey],
         elementId,
-        updates,
+        updates
       ),
     };
 
@@ -120,7 +121,7 @@ export default function Preview() {
     });
 
     console.log(
-      `Updated shared component ${componentKey} element ${elementId}`,
+      `Updated shared component ${componentKey} element ${elementId}`
     );
   };
 
@@ -128,12 +129,12 @@ export default function Preview() {
     <div className="h-screen w-screen overflow-hidden bg-background flex flex-col">
       <main className="flex-1 relative overflow-hidden">
         <PreviewPanelJson
+          websiteId={websiteId}
           websiteData={websiteData}
           currentPageId={currentPageId}
           onUpdateElement={handleUpdateElement}
           onUpdateSharedElement={handleUpdateSharedElement}
           onPageChange={setCurrentPageId}
-          onPublish={() => setIsDomainModalOpen(true)}
         />
 
         {!isChatOpen && (
@@ -155,13 +156,6 @@ export default function Preview() {
               />
             </div>
           </div>
-        )}
-
-        {isDomainModalOpen && websiteId && (
-          <DomainModalWrapper
-            websiteId={websiteId}
-            onClose={() => setIsDomainModalOpen(false)}
-          />
         )}
       </main>
     </div>

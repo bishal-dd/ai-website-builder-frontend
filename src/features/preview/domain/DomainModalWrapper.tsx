@@ -6,7 +6,7 @@ import { useSession } from "@/shared/session";
 
 interface DomainModalWrapperProps {
   websiteId: string;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 export function DomainModalWrapper({
@@ -30,7 +30,7 @@ export function DomainModalWrapper({
 
   return (
     <DomainModal
-      onClose={onClose}
+      onClose={onClose ?? (() => {})}
       contact={contact}
       websiteId={websiteId}
       userId={userId || "anonymous"}
