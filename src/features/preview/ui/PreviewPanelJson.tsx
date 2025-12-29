@@ -22,29 +22,29 @@ import { useRouter } from "next/navigation";
 type DeviceType = "desktop" | "tablet" | "mobile";
 
 interface PreviewPanelJsonProps {
+  websiteId: string;
   websiteData: WebsiteData;
   onUpdateElement?: (
     pageId: string,
     elementId: number,
-    updates: Partial<WebElement>,
+    updates: Partial<WebElement>
   ) => void;
   onUpdateSharedElement: (
     componentKey: "navbar" | "footer",
     elementId: number,
-    updates: Partial<WebElement>,
+    updates: Partial<WebElement>
   ) => void;
   onPageChange: (pageId: string) => void;
   currentPageId: string;
-  onPublish: () => void; // <-- NEW PROP
 }
 
 export function PreviewPanelJson({
+  websiteId,
   websiteData,
   onUpdateElement,
   onUpdateSharedElement,
   onPageChange,
   currentPageId,
-  onPublish,
 }: PreviewPanelJsonProps) {
   const [device, setDevice] = useState<DeviceType>("desktop");
   const [key, setKey] = useState(0);
@@ -59,10 +59,10 @@ export function PreviewPanelJson({
   };
 
   const currentPage = websiteData.elements.find(
-    (p) => p.page_id === currentPageId,
+    (p) => p.page_id === currentPageId
   );
   const sortedPages = [...websiteData.elements].sort(
-    (a, b) => (a.sequence ?? 0) - (b.sequence ?? 0),
+    (a, b) => (a.sequence ?? 0) - (b.sequence ?? 0)
   );
   const hasContent = currentPage && currentPage.pageContent.length > 0;
 
@@ -115,7 +115,7 @@ export function PreviewPanelJson({
             <ExternalLink className="h-4 w-4" />
           </Button>
 
-          <Button size="sm" onClick={onPublish}>
+          <Button size="sm" onClick={() => router.push(`/domain/${websiteId}`)}>
             Publish
           </Button>
         </div>
@@ -147,7 +147,7 @@ export function PreviewPanelJson({
           className={cn(
             "bg-background shadow-2xl transition-all duration-300 rounded-lg overflow-auto border border-border",
             deviceSizes[device],
-            device !== "desktop" && "max-h-full",
+            device !== "desktop" && "max-h-full"
           )}
         >
           {hasContent ? (
@@ -189,7 +189,7 @@ export function PreviewPanelJson({
           <span
             className={cn(
               "h-2 w-2 rounded-full",
-              hasContent ? "bg-green-500" : "bg-yellow-500",
+              hasContent ? "bg-green-500" : "bg-yellow-500"
             )}
           />
           {hasContent ? "Live" : "Waiting"}

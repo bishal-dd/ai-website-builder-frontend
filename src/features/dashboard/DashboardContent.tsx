@@ -5,13 +5,11 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ProjectCard } from "./ui/ProjectCard";
 import { EmptyState } from "./ui/EmptyState";
-import { useRouter } from "next/navigation";
 import { useProjects } from "./hooks/useProjects";
 import { useState } from "react";
 import Link from "next/link";
 
 export function DashboardContent() {
-  const router = useRouter();
   const { projects, isLoading, error } = useProjects();
   const [view] = useState<"grid" | "list">("grid");
 
