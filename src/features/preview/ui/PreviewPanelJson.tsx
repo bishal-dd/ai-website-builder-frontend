@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Added useEffect
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -27,12 +27,12 @@ interface PreviewPanelJsonProps {
   onUpdateElement?: (
     pageId: string,
     elementId: number,
-    updates: Partial<WebElement>
+    updates: Partial<WebElement>,
   ) => void;
   onUpdateSharedElement: (
     componentKey: "navbar" | "footer",
     elementId: number,
-    updates: Partial<WebElement>
+    updates: Partial<WebElement>,
   ) => void;
   onPageChange: (pageId: string) => void;
   currentPageId: string;
@@ -46,9 +46,22 @@ export function PreviewPanelJson({
   onPageChange,
   currentPageId,
 }: PreviewPanelJsonProps) {
+  // 1. Start with desktop as a safe default for SSR
   const [device, setDevice] = useState<DeviceType>("desktop");
   const [key, setKey] = useState(0);
   const router = useRouter();
+
+  // 2. Detect the user's actual device on mount
+  useEffect(() => {
+    const width = window.innerWidth;
+    if (width < 640) {
+      setDevice("mobile");
+    } else if (width < 1024) {
+      setDevice("tablet");
+    } else {
+      setDevice("desktop");
+    }
+  }, []);
 
   const handleRefresh = () => setKey((prev) => prev + 1);
 
@@ -59,10 +72,10 @@ export function PreviewPanelJson({
   };
 
   const currentPage = websiteData.elements.find(
-    (p) => p.page_id === currentPageId
+    (p) => p.page_id === currentPageId,
   );
   const sortedPages = [...websiteData.elements].sort(
-    (a, b) => (a.sequence ?? 0) - (b.sequence ?? 0)
+    (a, b) => (a.sequence ?? 0) - (b.sequence ?? 0),
   );
   const hasContent = currentPage && currentPage.pageContent.length > 0;
 
@@ -93,7 +106,7 @@ export function PreviewPanelJson({
           </Tabs>
         </div>
 
-        {/* Controls */}
+        {/* ... (Controls section remains the same) ... */}
         <div className="flex flex-wrap items-center gap-1 mt-2 sm:mt-0">
           <Button
             variant="ghost"
@@ -104,24 +117,20 @@ export function PreviewPanelJson({
             <LayoutDashboard className="h-4 w-4" />
             <span className="hidden md:inline">Dashboard</span>
           </Button>
-
           <div className="mx-1 h-6 w-px bg-border" />
-
           <Button variant="ghost" size="icon" onClick={handleRefresh}>
             <RefreshCw className="h-4 w-4" />
           </Button>
-
           <Button variant="ghost" size="icon">
             <ExternalLink className="h-4 w-4" />
           </Button>
-
           <Button size="sm" onClick={() => router.push(`/domain/${websiteId}`)}>
             Publish
           </Button>
         </div>
       </div>
 
-      {/* Page selection */}
+      {/* ... (Page selection remains the same) ... */}
       <div className="border-b border-border bg-card px-4 py-2">
         <ScrollArea className="w-full max-h-20">
           <div className="flex gap-2 pb-2 flex-wrap">
@@ -147,12 +156,14 @@ export function PreviewPanelJson({
           className={cn(
             "bg-background shadow-2xl transition-all duration-300 rounded-lg overflow-auto border border-border",
             deviceSizes[device],
-            device !== "desktop" && "max-h-full"
+            // On real mobile devices, we want the preview to take full height
+            device !== "desktop" && "max-h-full",
           )}
         >
           {hasContent ? (
             <div key={key} className="w-full h-full overflow-auto">
               <JsonRenderer
+                device={device}
                 elements={currentPage.pageContent}
                 sharedComponents={websiteData.sharedComponents}
                 onUpdateElement={(elementId, updates) =>
@@ -163,16 +174,16 @@ export function PreviewPanelJson({
             </div>
           ) : (
             <div className="flex h-full min-h-[300px] items-center justify-center p-4">
+              {/* ... (Empty state remains same) ... */}
               <div className="text-center">
                 <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
                   <Sparkles className="h-10 w-10 text-primary" />
                 </div>
                 <h2 className="mb-1 text-xl font-bold text-foreground">
-                  Your Website Preview
+                  Preview
                 </h2>
                 <p className="text-muted-foreground text-sm">
-                  Start chatting to generate your website. It will appear here
-                  in real-time.
+                  Start chatting to generate.
                 </p>
               </div>
             </div>
@@ -180,16 +191,14 @@ export function PreviewPanelJson({
         </div>
       </div>
 
-      {/* Footer */}
+      {/* ... (Footer remains the same) ... */}
       <div className="border-t border-border bg-card px-4 py-2 flex items-center justify-between text-xs text-muted-foreground flex-wrap">
-        <span>
-          {hasContent ? `Viewing: ${currentPage?.title}` : "Ready to generate"}
-        </span>
+        <span>{hasContent ? `Viewing: ${currentPage?.title}` : "Ready"}</span>
         <span className="flex items-center gap-2 mt-1 sm:mt-0">
           <span
             className={cn(
               "h-2 w-2 rounded-full",
-              hasContent ? "bg-green-500" : "bg-yellow-500"
+              hasContent ? "bg-green-500" : "bg-yellow-500",
             )}
           />
           {hasContent ? "Live" : "Waiting"}
