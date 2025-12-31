@@ -1,101 +1,128 @@
 "use client";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Globe2, ArrowRightLeft, ExternalLink } from "lucide-react";
+import {
+  Globe2,
+  ArrowRightLeft,
+  CheckCircle2,
+  Clock,
+  XCircle,
+} from "lucide-react";
 import { Domain } from "../types/domain";
 
 interface DomainListProps {
   domains: Domain[];
-  onTransfer: (domain: Domain) => void;
+  onRequestTransfer: (domain: Domain) => void;
 }
 
-export function DomainList({ domains, onTransfer }: DomainListProps) {
-  const getStatusColor = (status: Domain["status"]) => {
+export function DomainList({ domains, onRequestTransfer }: DomainListProps) {
+  const getStatusConfig = (status: Domain["status"]) => {
     switch (status) {
       case "active":
-        return "default";
-      case "pending":
-        return "secondary";
-      case "transferred":
-        return "outline";
+        return {
+          label: "Active",
+          variant: "default" as const,
+          icon: CheckCircle2,
+        };
+      case "transfer_requested":
+        return {
+          label: "Transfer requested",
+          variant: "secondary" as const,
+          icon: Clock,
+        };
+      case "transferred_out":
+        return {
+          label: "Transferred out",
+          variant: "outline" as const,
+          icon: ArrowRightLeft,
+        };
+      case "transfer_failed":
+        return {
+          label: "Transfer failed",
+          variant: "destructive" as const,
+          icon: XCircle,
+        };
       default:
-        return "default";
+        return {
+          label: status,
+          variant: "secondary" as const,
+          icon: Clock,
+        };
     }
   };
 
   return (
     <div className="grid gap-4">
-      {domains.map((domain) => (
-        <Card
-          key={domain.id}
-          className="hover:border-primary/50 transition-colors"
-        >
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
+      {domains.map((domain) => {
+        const transferDisabled =
+          domain.status === "transfer_requested" ||
+          domain.status === "transferred_out";
+
+        const status = getStatusConfig(domain.status);
+        const StatusIcon = status.icon;
+
+        return (
+          <Card
+            key={domain.id}
+            className="group border transition-all hover:shadow-sm hover:border-primary/40"
+          >
+            <CardHeader className="flex-row items-start justify-between gap-4 pb-4">
+              {/* Left: Domain identity */}
               <div className="flex items-center gap-3">
                 <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <Globe2 className="size-5" />
                 </div>
+
                 <div>
-                  <CardTitle className="text-lg">{domain.name}</CardTitle>
-                  <CardDescription className="flex items-center gap-2 mt-1">
-                    <span>Registrar: {domain.registrar}</span>
-                    {domain.connectedWebsite && (
-                      <>
-                        <span>•</span>
-                        <span>Connected to: {domain.connectedWebsite}</span>
-                      </>
-                    )}
-                  </CardDescription>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-mono text-lg font-semibold">
+                      {domain.name}
+                    </h3>
+                  </div>
+
+                  {domain.connectedWebsite && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Connected to{" "}
+                      <span className="font-medium">
+                        {domain.connectedWebsite}
+                      </span>
+                    </p>
+                  )}
                 </div>
               </div>
+
+              {/* Right: Status */}
               <Badge
-                variant={getStatusColor(domain.status)}
-                className="capitalize"
+                variant={status.variant}
+                className="flex items-center gap-1.5"
               >
-                {domain.status}
+                <StatusIcon className="size-3.5" />
+                {status.label}
               </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex gap-6 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Expiry Date</p>
-                  <p className="font-medium">{domain.expiryDate}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Auto Renew</p>
-                  <p className="font-medium">
-                    {domain.autoRenew ? "Enabled" : "Disabled"}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <ExternalLink className="mr-2 size-4" />
-                  Manage
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onTransfer(domain)}
-                >
-                  <ArrowRightLeft className="mr-2 size-4" />
-                  Transfer
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardHeader>
+
+            <CardContent className="flex items-center justify-between pt-0">
+              {/* Meta strip */}
+              <p className="text-xs text-muted-foreground">
+                Managed by Sencill AI
+              </p>
+
+              {/* Actions */}
+              <Button
+                variant={transferDisabled ? "outline" : "default"}
+                size="sm"
+                disabled={transferDisabled}
+                onClick={() => onRequestTransfer(domain)}
+              >
+                <ArrowRightLeft className="mr-2 size-4" />
+                {transferDisabled ? "Transfer pending" : "Request transfer"}
+              </Button>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import {
   Dialog,
@@ -11,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectTrigger,
@@ -24,7 +27,13 @@ interface DomainTransferDialogProps {
   open: boolean;
   domain: Domain | null;
   onClose: () => void;
-  onSubmit: (domain: Domain, code: string) => void;
+  onSubmit: (
+    domain: Domain,
+    payload: {
+      newRegistrar?: string;
+      reason?: string;
+    },
+  ) => void;
 }
 
 export function DomainTransferDialog({
@@ -33,65 +42,89 @@ export function DomainTransferDialog({
   onClose,
   onSubmit,
 }: DomainTransferDialogProps) {
-  const [transferCode, setTransferCode] = useState("");
+  const [newRegistrar, setNewRegistrar] = useState<string | undefined>();
+  const [reason, setReason] = useState("");
+  const [acknowledged, setAcknowledged] = useState(false);
 
   const handleSubmit = () => {
-    if (!domain) return;
-    onSubmit(domain, transferCode);
-    setTransferCode("");
+    if (!domain || !acknowledged) return;
+
+    onSubmit(domain, {
+      newRegistrar,
+      reason,
+    });
+
+    setNewRegistrar(undefined);
+    setReason("");
+    setAcknowledged(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle>Transfer Domain</DialogTitle>
+          <DialogTitle>Request Domain Transfer</DialogTitle>
           <DialogDescription>
-            Transfer {domain?.name} to another registrar or provider.
+            This will start a manual transfer process. Our team will unlock the
+            domain and provide you with an authorization (EPP) code.
           </DialogDescription>
         </DialogHeader>
+
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label>Domain Name</Label>
+            <Label>Domain</Label>
             <Input value={domain?.name || ""} disabled />
           </div>
+
           <div className="grid gap-2">
-            <Label>Current Registrar</Label>
-            <Input value={domain?.registrar || ""} disabled />
-          </div>
-          <div className="grid gap-2">
-            <Label>New Registrar</Label>
-            <Select>
+            <Label>New Registrar (optional)</Label>
+            <Select onValueChange={setNewRegistrar}>
               <SelectTrigger>
                 <SelectValue placeholder="Select registrar" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="godaddy">GoDaddy</SelectItem>
                 <SelectItem value="namecheap">Namecheap</SelectItem>
+                <SelectItem value="godaddy">GoDaddy</SelectItem>
                 <SelectItem value="google">Google Domains</SelectItem>
-                <SelectItem value="cloudflare">Cloudflare</SelectItem>
-                <SelectItem value="vercel">Vercel</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
           <div className="grid gap-2">
-            <Label>Authorization Code (EPP Code)</Label>
-            <Input
-              placeholder="Enter transfer authorization code"
-              value={transferCode}
-              onChange={(e) => setTransferCode(e.target.value)}
+            <Label>Reason</Label>
+            <Textarea
+              placeholder="Let us know why you are transferring this domain"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
-              Get this code from your current registrar&apos;s domain management
-              panel panel
-            </p>
+          </div>
+
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="ack"
+              checked={acknowledged}
+              onCheckedChange={(v) => setAcknowledged(!!v)}
+            />
+            <Label htmlFor="ack" className="text-sm leading-relaxed">
+              I understand this domain will no longer be managed by Sencill AI
+              and I will be responsible for completing the transfer at my new
+              registrar.
+            </Label>
           </div>
         </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>Initiate Transfer</Button>
+          <Button
+            variant="destructive"
+            disabled={!acknowledged}
+            onClick={handleSubmit}
+          >
+            Request Transfer
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
