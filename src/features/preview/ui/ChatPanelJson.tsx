@@ -8,6 +8,7 @@ import { Send, Sparkles, User, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRegenerateWebsite } from "../hooks/useRegenerateWebsite";
 import { WebsiteRegenerator } from "./WebsiteRegenerator";
+import { useRouter } from "next/navigation";
 
 interface Message {
   id: string;
@@ -22,6 +23,7 @@ interface ChatPanelJsonProps {
 }
 
 export function ChatPanelJson({ onClose, websiteId }: ChatPanelJsonProps) {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -89,7 +91,7 @@ export function ChatPanelJson({ onClose, websiteId }: ChatPanelJsonProps) {
             },
           ]);
         },
-      }
+      },
     );
   };
 
@@ -123,7 +125,7 @@ export function ChatPanelJson({ onClose, websiteId }: ChatPanelJsonProps) {
               key={message.id}
               className={cn(
                 "flex gap-3",
-                message.role === "user" ? "justify-end" : "justify-start"
+                message.role === "user" ? "justify-end" : "justify-start",
               )}
             >
               {message.role === "assistant" && (
@@ -136,7 +138,7 @@ export function ChatPanelJson({ onClose, websiteId }: ChatPanelJsonProps) {
                   "max-w-[80%] rounded-lg px-4 py-3",
                   message.role === "user"
                     ? "bg-primary text-primary-foreground"
-                    : "bg-card border border-border"
+                    : "bg-card border border-border",
                 )}
               >
                 <p className="text-sm leading-relaxed">{message.content}</p>
@@ -191,7 +193,6 @@ export function ChatPanelJson({ onClose, websiteId }: ChatPanelJsonProps) {
         <WebsiteRegenerator
           jobId={regenJobId}
           websiteId={websiteId} // dynamic
-          onComplete={() => setRegenJobId(null)} // hide overlay after completion
         />
       )}
     </div>

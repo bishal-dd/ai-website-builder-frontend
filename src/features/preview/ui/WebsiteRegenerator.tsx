@@ -7,16 +7,15 @@ import { LoadingState } from "@/features/wizard/loading/ui/LoadingState";
 export function WebsiteRegenerator({
   jobId,
   websiteId,
-  onComplete,
 }: {
   jobId: string;
   websiteId: string;
-  onComplete?: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(true);
   const [progress, setProgress] = useState(0);
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement>(null);
+  const completedRef = useRef(false);
 
   useEffect(() => {
     if (!jobId) return;
@@ -26,7 +25,7 @@ export function WebsiteRegenerator({
     const interval = setInterval(async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/job/regenerate/${jobId}/status`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/job/regenerate/${jobId}/status`,
         );
         const data = await res.json();
 
@@ -37,14 +36,13 @@ export function WebsiteRegenerator({
         setProgress((prev) => prev + (newProgress - prev) * 0.3); // smooth lerp
 
         if (newProgress >= 100 || data.status === "completed") {
+          completedRef.current = true;
           setProgress(100);
           setIsOpen(false);
           clearInterval(interval);
 
           audioRef.current?.play().catch(console.error);
-
-          if (onComplete) onComplete();
-          else router.push(`/preview/${websiteId}`);
+          window.location.reload();
         } else if (data.status === "failed") {
           setIsOpen(false);
           clearInterval(interval);
@@ -56,7 +54,7 @@ export function WebsiteRegenerator({
     }, 500); // poll every 0.5s for smoother progress
 
     return () => clearInterval(interval);
-  }, [jobId, router, websiteId, onComplete]);
+  }, [jobId, router, websiteId]);
 
   return (
     <>

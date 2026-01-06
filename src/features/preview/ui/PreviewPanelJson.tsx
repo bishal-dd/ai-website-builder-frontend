@@ -63,7 +63,10 @@ export function PreviewPanelJson({
     }
   }, []);
 
-  const handleRefresh = () => setKey((prev) => prev + 1);
+  const handleRefresh = () => {
+    router.refresh();
+    setKey((prev) => prev + 1);
+  };
 
   const deviceSizes = {
     desktop: "w-full h-full",
@@ -121,9 +124,9 @@ export function PreviewPanelJson({
           <Button variant="ghost" size="icon" onClick={handleRefresh}>
             <RefreshCw className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon">
+          {/*<Button variant="ghost" size="icon">
             <ExternalLink className="h-4 w-4" />
-          </Button>
+          </Button>*/}
           <Button size="sm" onClick={() => router.push(`/domain/${websiteId}`)}>
             Publish
           </Button>
