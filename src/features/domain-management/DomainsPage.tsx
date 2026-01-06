@@ -1,8 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { useDomains } from "./hooks/useDomains";
 import { DomainList } from "./ui/DomainList";
 import { DomainTransferDialog } from "./ui/DomainTransferDialog";

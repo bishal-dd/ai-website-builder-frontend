@@ -8,7 +8,6 @@ import { Send, Sparkles, User, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRegenerateWebsite } from "../hooks/useRegenerateWebsite";
 import { WebsiteRegenerator } from "./WebsiteRegenerator";
-import { useRouter } from "next/navigation";
 
 interface Message {
   id: string;
@@ -23,7 +22,6 @@ interface ChatPanelJsonProps {
 }
 
 export function ChatPanelJson({ onClose, websiteId }: ChatPanelJsonProps) {
-  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",

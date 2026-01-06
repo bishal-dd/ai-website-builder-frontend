@@ -8,7 +8,6 @@ import {
   Monitor,
   Smartphone,
   Tablet,
-  ExternalLink,
   RefreshCw,
   FileText,
   Sparkles,

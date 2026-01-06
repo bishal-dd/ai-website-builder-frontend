@@ -2,13 +2,7 @@
 
 import type React from "react";
 import type { WebElement, SharedComponents } from "@/features/preview/types";
-import {
-  createElement,
-  type ReactElement,
-  useState,
-  useRef,
-  useEffect,
-} from "react";
+import { createElement, type ReactElement, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/shared/session";
 import { cn } from "@/lib/utils";
@@ -52,33 +46,26 @@ export function JsonRenderer({
   onUpdateSharedElement,
 }: JsonRendererProps) {
   const { user } = useSession();
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState("");
   const [hoveredImageId, setHoveredImageId] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<{
     [key: number]: boolean;
   }>({});
-  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isSimulatedMobile = device === "mobile" || device === "tablet";
 
-  useEffect(() => {
-    if (editingId !== null && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [editingId]);
+  const handleTextSave = (
+    id: number,
+    componentKey: "navbar" | "footer" | undefined,
+    newContent: string,
+  ) => {
+    if (newContent.trim() === "") return;
 
-  const handleTextSave = (id: number, componentKey?: "navbar" | "footer") => {
-    if (editValue === "") return;
     if (componentKey && onUpdateSharedElement) {
-      onUpdateSharedElement(componentKey, id, { content: editValue });
+      onUpdateSharedElement(componentKey, id, { content: newContent });
     } else if (onUpdateElement) {
-      onUpdateElement(id, { content: editValue });
+      onUpdateElement(id, { content: newContent });
     }
-    setEditingId(null);
-    setEditValue("");
   };
 
   const handleImageChange = async (
@@ -136,17 +123,12 @@ export function JsonRenderer({
     const isMobileMenuContainer =
       attributes?.id === "nav-menu" || className?.includes("md:flex");
 
-    const props: {
-      key: React.Key;
-      className?: string;
-      style?: React.CSSProperties;
-      href?: string;
-      onClick?: React.MouseEventHandler<HTMLElement>;
-    } = {
+    const props: React.AllHTMLAttributes<HTMLElement> & { key: React.Key } = {
       key: id,
       className: className || undefined,
       style: cssStringToObject(attributes?.style),
-      ...(attributes?.href && { href: attributes.href }),
+      href: attributes?.href,
+      src: attributes?.src,
     };
 
     // --- OVERRIDE RESPONSIVENESS BASED ON TAB SELECTION ---
@@ -176,36 +158,27 @@ export function JsonRenderer({
       }
     }
 
-    // --- EDITING LOGIC ---
-    const isEditing = editingId === id;
+    // --- INLINE EDITING LOGIC ---
     const isTextElement = content && !children && tag !== "img";
     const isEditable =
       isTextElement && (onUpdateElement || onUpdateSharedElement);
 
-    if (isEditing && isTextElement) {
-      return createElement("input", {
-        key: id,
-        ref: inputRef,
-        value: editValue,
-        onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-          setEditValue(e.target.value),
-        onBlur: () => handleTextSave(id, componentKey),
-        onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) =>
-          e.key === "Enter" && handleTextSave(id, componentKey),
-        className: cn(className, "outline-dashed bg-primary/10"),
-      });
-    }
-
     if (isEditable) {
-      props.onClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setEditingId(id);
-        setEditValue(content || "");
-      };
+      props.contentEditable = true;
+      props.suppressContentEditableWarning = true;
       props.className = cn(
         props.className,
-        "cursor-text hover:outline hover:outline-1 hover:outline-primary/30",
+        "cursor-text hover:outline hover:outline-2 hover:outline-primary/50 focus:outline focus:outline-primary focus:bg-primary/5 outline-offset-2 transition-all",
       );
+      props.onBlur = (e: React.FocusEvent<HTMLElement>) => {
+        handleTextSave(id, componentKey, e.currentTarget.innerText);
+      };
+      props.onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          e.currentTarget.blur();
+        }
+      };
     }
 
     // --- IMAGE LOGIC ---
