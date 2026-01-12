@@ -12,28 +12,28 @@ import {
 } from "@/components/ui/select";
 import { useWizardStore } from "@/features/wizard/store/wizardStore";
 import { DESIGN_TYPES } from "../constants";
+import { useGeo } from "@/features/preview/domain/hooks/useGeoContext";
+import { useEffect } from "react";
 
 export function StepThree() {
+  const { country } = useGeo();
   const {
     websiteName,
     tagline,
-    email,
     designType,
     primaryColor,
     secondaryColor,
+    contactEmail,
+    contactPhone,
     setWebsiteInfo,
   } = useWizardStore();
 
+  useEffect(() => {
+    if (country) setWebsiteInfo({ country });
+  }, [country, setWebsiteInfo]);
+
   const handleChange = (field: string, value: string) => {
-    setWebsiteInfo({
-      websiteName,
-      tagline,
-      email,
-      designType,
-      primaryColor,
-      secondaryColor,
-      [field]: value,
-    });
+    setWebsiteInfo({ [field]: value });
   };
 
   return (
@@ -48,9 +48,8 @@ export function StepThree() {
 
       <Card className="p-6 max-w-2xl mx-auto">
         <div className="space-y-8">
-          {/* Top 2 / Bottom 2 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Top row */}
+            {/* Website name */}
             <div className="space-y-2">
               <Label htmlFor="websiteName">Website Name *</Label>
               <Input
@@ -61,6 +60,7 @@ export function StepThree() {
               />
             </div>
 
+            {/* Tagline */}
             <div className="space-y-2">
               <Label htmlFor="tagline">Tagline</Label>
               <Input
@@ -71,19 +71,32 @@ export function StepThree() {
               />
             </div>
 
-            {/* Bottom row */}
+            {/* Contact Email */}
             <div className="space-y-2">
-              <Label htmlFor="email">Contact Email *</Label>
+              <Label htmlFor="contactEmail">Email</Label>
               <Input
-                id="email"
+                id="contactEmail"
                 type="email"
                 placeholder="you@example.com"
-                value={email}
-                onChange={(e) => handleChange("email", e.target.value)}
+                value={contactEmail}
+                onChange={(e) => handleChange("contactEmail", e.target.value)}
               />
             </div>
 
+            {/* Contact Phone */}
             <div className="space-y-2">
+              <Label htmlFor="contactPhone">Phone</Label>
+              <Input
+                id="contactPhone"
+                type="tel"
+                placeholder="+975 17 123 456"
+                value={contactPhone}
+                onChange={(e) => handleChange("contactPhone", e.target.value)}
+              />
+            </div>
+
+            {/* Design type */}
+            <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="designType">Design Type *</Label>
               <Select
                 value={designType}

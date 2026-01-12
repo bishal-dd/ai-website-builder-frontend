@@ -11,9 +11,11 @@ export interface WizardState {
   designType: string;
   primaryColor: string;
   secondaryColor: string;
-  email: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  country: string;
   pageContents: PageContent[];
-  websiteId: string | null; // <-- add this
+  websiteId: string | null;
 
   setWebsiteId: (id: string) => void;
   setCurrentStep: (step: number) => void;
@@ -26,9 +28,12 @@ export interface WizardState {
       designType: string;
       primaryColor: string;
       secondaryColor: string;
-      email: string;
+      contactEmail: string;
+      contactPhone: string;
+      country: string;
     }>
   ) => void;
+
   addSection: (page: PageType, section: Section) => void;
   updateSection: (
     page: PageType,
