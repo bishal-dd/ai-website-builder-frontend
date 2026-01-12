@@ -81,7 +81,13 @@ export function JsonRenderer({
       : (content: string) => onUpdateElement?.(id, { content });
     try {
       const fileKey = `${crypto.randomUUID()}.${file.name.split(".").pop() || "png"}`;
-      const presignUrlResponse = await fetch("http://localhost:4000/presign", {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+      if (!backendUrl) {
+        throw new Error("NEXT_PUBLIC_BACKEND_URL is not defined");
+      }
+
+      const presignUrlResponse = await fetch(`${backendUrl}/presign`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -96,9 +102,13 @@ export function JsonRenderer({
         headers: { "Content-Type": file.type },
         body: file,
       });
-      updater(
-        `https://d28hne0rpm84ao.cloudfront.net/${user?.id}/previews/images/${fileKey}`,
-      );
+      const cloudfront = process.env.NEXT_PUBLIC_CLOUDFRONT_URL;
+
+      if (!cloudfront) {
+        throw new Error("NEXT_PUBLIC_CLOUDFRONT_URL is not defined");
+      }
+
+      updater(`${cloudfront}/${user?.id}/previews/images/${fileKey}`);
     } catch (err) {
       console.error("Upload failed", err);
     }
@@ -183,6 +193,8 @@ export function JsonRenderer({
 
     // --- IMAGE LOGIC ---
     if (tag === "img") {
+      const imageSrc = content?.startsWith("http") ? content : attributes?.src;
+
       const fixedStyle = cssStringToObject(attributes?.style);
       return (
         <div
@@ -193,7 +205,7 @@ export function JsonRenderer({
         >
           {createElement("img", {
             ...props,
-            src: content || attributes?.src,
+            src: imageSrc,
             style: { ...fixedStyle, objectFit: "cover" },
           })}
           {hoveredImageId === id && (

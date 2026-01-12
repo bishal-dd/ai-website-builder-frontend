@@ -84,7 +84,7 @@ export const useAuthActions = () => {
 
   const changePassword = async (
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
   ) => {
     setLoading(true);
     setError(null);
@@ -114,7 +114,7 @@ export const useAuthActions = () => {
     try {
       const result = await authClient.changeEmail({
         newEmail,
-        callbackURL: "http://localhost:3000/email-verified",
+        callbackURL: `${window.location.origin}/email-verified`,
       });
 
       if (result.error) {

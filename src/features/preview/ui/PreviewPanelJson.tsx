@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"; // Added useEffect
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Monitor,
   Smartphone,
@@ -133,22 +133,24 @@ export function PreviewPanelJson({
       </div>
 
       {/* ... (Page selection remains the same) ... */}
+      {/* Page selection */}
       <div className="border-b border-border bg-card px-4 py-2">
-        <ScrollArea className="w-full max-h-20">
-          <div className="flex gap-2 pb-2 flex-wrap">
+        <ScrollArea className="w-full  whitespace-nowrap">
+          <div className="flex w-max space-x-4 p-2">
             {sortedPages.map((page) => (
               <Button
                 key={page.id}
                 variant={currentPageId === page.page_id ? "default" : "outline"}
                 size="sm"
                 onClick={() => onPageChange(page.page_id)}
-                className="gap-1 whitespace-nowrap"
+                className="gap-2 pr-9 shrink-0"
               >
                 <FileText className="h-3 w-3" />
                 {page.title}
               </Button>
             ))}
           </div>
+          <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </div>
 
