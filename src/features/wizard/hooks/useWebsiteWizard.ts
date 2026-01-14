@@ -9,33 +9,38 @@ export const useWebsiteWizard = (totalSteps: number) => {
     websiteName,
     designType,
     pageContents,
-    email,
+    contactEmail,
+    contactPhone,
   } = useWizardStore();
 
   const canProceed = () => {
     switch (currentStep) {
       case 1:
         return websiteType !== null;
+
       case 2:
         return selectedPages.length > 0;
+
       case 3:
         return (
           websiteName.trim() !== "" &&
           (designType || "").trim() !== "" &&
-          (email || "").trim() !== ""
+          ((contactEmail && contactEmail.trim() !== "") ||
+            (contactPhone && contactPhone.trim() !== ""))
         );
+
       case 4:
         return selectedPages.every((page) => {
           const pageData = pageContents.find((pc) => pc.page === page);
           if (!pageData) return false;
 
-          // check if every section has either content or aiGenerated true
           return pageData.sections.every(
             (section) =>
               (section.content && section.content.trim() !== "") ||
               section.aiGenerated
           );
         });
+
       default:
         return false;
     }

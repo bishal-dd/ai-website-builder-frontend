@@ -22,7 +22,9 @@ const defaultState: Omit<
   designType: "",
   primaryColor: "",
   secondaryColor: "",
-  email: "",
+  contactEmail: "",
+  contactPhone: "",
+  country: "",
   pageContents: [],
   websiteId: null,
 };
