@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, LogOut, Sparkles, User } from "lucide-react";
+import { LayoutDashboard, LogOut, User } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,

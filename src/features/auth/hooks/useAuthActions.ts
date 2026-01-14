@@ -84,7 +84,7 @@ export const useAuthActions = () => {
 
   const changePassword = async (
     currentPassword: string,
-    newPassword: string,
+    newPassword: string
   ) => {
     setLoading(true);
     setError(null);
@@ -128,11 +128,59 @@ export const useAuthActions = () => {
     }
   };
 
+  const requestPasswordReset = async (email: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await authClient.requestPasswordReset({
+        email,
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+
+      if (result?.error) {
+        setError(result.error.message || "Failed to send reset email");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to send reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPassword = async (token: string, newPassword: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await authClient.resetPassword({
+        token,
+        newPassword,
+      });
+
+      if (result?.error) {
+        setError(result.error.message || "Password reset failed");
+        return;
+      }
+
+      // Optional but good UX
+      router.push("/auth/login");
+    } catch (err) {
+      console.error(err);
+      setError("Password reset failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     handleEmailAuth,
     handleSocialAuth,
     updateName,
     changePassword,
     changeEmail,
+    requestPasswordReset,
+    resetPassword,
   };
 };
