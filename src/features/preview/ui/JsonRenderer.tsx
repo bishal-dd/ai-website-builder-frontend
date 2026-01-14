@@ -38,6 +38,28 @@ const cssStringToObject = (
   return style as React.CSSProperties;
 };
 
+const processClasses = (
+  className: string | undefined,
+  device: "desktop" | "tablet" | "mobile",
+) => {
+  if (!className) return "";
+
+  const classes = className.split(" ");
+
+  if (device === "desktop") {
+    // 1. Find all classes that start with 'md:'
+    // 2. Remove the 'md:' prefix
+    // 3. Append them to the class list so they override mobile styles
+    const desktopOverrides = classes
+      .filter((c) => c.startsWith("md:"))
+      .map((c) => c.replace("md:", ""));
+
+    return cn(className, desktopOverrides);
+  }
+
+  return className;
+};
+
 export function JsonRenderer({
   elements,
   sharedComponents,
@@ -52,7 +74,7 @@ export function JsonRenderer({
   }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isSimulatedMobile = device === "mobile" || device === "tablet";
+  const isSimulatedMobile = device === "mobile";
 
   const handleTextSave = (
     id: number,
@@ -135,7 +157,7 @@ export function JsonRenderer({
 
     const props: React.AllHTMLAttributes<HTMLElement> & { key: React.Key } = {
       key: id,
-      className: className || undefined,
+      className: processClasses(className, device),
       style: cssStringToObject(attributes?.style),
       href: attributes?.href,
       src: attributes?.src,

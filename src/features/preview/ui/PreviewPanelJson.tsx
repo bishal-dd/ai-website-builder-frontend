@@ -158,10 +158,9 @@ export function PreviewPanelJson({
       <div className="flex flex-1 items-center justify-center overflow-auto p-4">
         <div
           className={cn(
-            "bg-background shadow-2xl transition-all duration-300 rounded-lg overflow-auto border border-border",
+            "bg-background shadow-2xl transition-all duration-300 rounded-lg overflow-auto border border-border origin-top",
             deviceSizes[device],
-            // On real mobile devices, we want the preview to take full height
-            device !== "desktop" && "max-h-full",
+            device === "desktop" && "min-w-[1280px]", // Force desktop width
           )}
         >
           {hasContent ? (
