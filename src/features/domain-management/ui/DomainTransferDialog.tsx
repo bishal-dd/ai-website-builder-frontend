@@ -104,7 +104,7 @@ export function DomainTransferDialog({
             <Checkbox
               id="ack"
               checked={acknowledged}
-              onCheckedChange={(v) => setAcknowledged(!!v)}
+              onCheckedChange={(v: boolean) => setAcknowledged(!!v)}
             />
             <Label htmlFor="ack" className="text-sm leading-relaxed">
               I understand this domain will no longer be managed by Sencill AI

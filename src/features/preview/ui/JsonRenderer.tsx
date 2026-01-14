@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import { useEffect } from "react";
 import type { WebElement, SharedComponents } from "@/features/preview/types";
 import { createElement, type ReactElement, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
@@ -36,28 +37,6 @@ const cssStringToObject = (
     style[key] = value;
   });
   return style as React.CSSProperties;
-};
-
-const processClasses = (
-  className: string | undefined,
-  device: "desktop" | "tablet" | "mobile",
-) => {
-  if (!className) return "";
-
-  const classes = className.split(" ");
-
-  if (device === "desktop") {
-    // 1. Find all classes that start with 'md:'
-    // 2. Remove the 'md:' prefix
-    // 3. Append them to the class list so they override mobile styles
-    const desktopOverrides = classes
-      .filter((c) => c.startsWith("md:"))
-      .map((c) => c.replace("md:", ""));
-
-    return cn(className, desktopOverrides);
-  }
-
-  return className;
 };
 
 export function JsonRenderer({
@@ -149,46 +128,13 @@ export function JsonRenderer({
       attributes,
     } = element;
 
-    const isHamburgerButton =
-      tag === "button" &&
-      (content === "☰" || attributes?.["aria-label"] === "Toggle navigation");
-    const isMobileMenuContainer =
-      attributes?.id === "nav-menu" || className?.includes("md:flex");
-
     const props: React.AllHTMLAttributes<HTMLElement> & { key: React.Key } = {
-      key: id,
-      className: processClasses(className, device),
+      key: `${id}-${device}`,
+      className: className,
       style: cssStringToObject(attributes?.style),
       href: attributes?.href,
       src: attributes?.src,
     };
-
-    // --- OVERRIDE RESPONSIVENESS BASED ON TAB SELECTION ---
-    if (isHamburgerButton) {
-      props.className = cn(
-        className?.replace("md:hidden", "").replace("hidden", ""),
-        isSimulatedMobile ? "block" : "hidden",
-      );
-      props.onClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setMobileMenuOpen((prev) => ({ ...prev, [105]: !prev[105] })); // Toggle menu ID 105
-      };
-    }
-
-    if (isMobileMenuContainer) {
-      const isOpen = mobileMenuOpen[id];
-      if (isSimulatedMobile) {
-        props.className = isOpen
-          ? "flex flex-col w-full absolute left-0 top-full bg-white border-b shadow-lg p-4 z-50"
-          : "hidden";
-      } else {
-        props.className = "flex flex-row items-center gap-8 w-auto";
-        if (props.style) {
-          delete props.style.width;
-          delete props.style.position;
-        }
-      }
-    }
 
     // --- INLINE EDITING LOGIC ---
     const isTextElement = content && !children && tag !== "img";
@@ -198,12 +144,31 @@ export function JsonRenderer({
     if (isEditable) {
       props.contentEditable = true;
       props.suppressContentEditableWarning = true;
-      props.className = cn(
-        props.className,
-        "cursor-text hover:outline hover:outline-2 hover:outline-primary/50 focus:outline focus:outline-primary focus:bg-primary/5 outline-offset-2 transition-all",
-      );
-      props.onBlur = (e: React.FocusEvent<HTMLElement>) => {
+      props.style = {
+        ...(props.style || {}),
+        cursor: "text",
+        transition: "all 0.15s ease",
+      };
+
+      props.onFocus = (e) => {
+        e.currentTarget.style.outline = "2px solid #facc15"; // yellow
+        e.currentTarget.style.backgroundColor = "rgba(250, 204, 21, 0.15)";
+      };
+
+      props.onBlur = (e) => {
+        e.currentTarget.style.outline = "none";
+        e.currentTarget.style.backgroundColor = "transparent";
         handleTextSave(id, componentKey, e.currentTarget.innerText);
+      };
+
+      props.onMouseEnter = (e) => {
+        e.currentTarget.style.outline = "2px dashed rgba(250,204,21,0.7)";
+      };
+
+      props.onMouseLeave = (e) => {
+        if (document.activeElement !== e.currentTarget) {
+          e.currentTarget.style.outline = "none";
+        }
       };
       props.onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -232,7 +197,21 @@ export function JsonRenderer({
           })}
           {hoveredImageId === id && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded">
-              <Button size="sm" onClick={() => fileInputRef.current?.click()}>
+              <Button
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  backgroundColor: "#facc15", // yellow-400
+                  color: "#000",
+                  padding: "8px 14px",
+                  borderRadius: "6px",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 10px rgba(0,0,0,0.25)",
+                  border: "none",
+                }}
+              >
                 Change{" "}
                 <input
                   ref={fileInputRef}
@@ -256,10 +235,10 @@ export function JsonRenderer({
   };
 
   return (
-    <div className="w-full h-full flex flex-col relative bg-white">
+    <>
       {sharedComponents?.navbar.map((el) => renderElement(el, "navbar"))}
-      <div className="flex-1">{elements.map((el) => renderElement(el))}</div>
+      <div>{elements.map((el) => renderElement(el))}</div>
       {sharedComponents?.footer.map((el) => renderElement(el, "footer"))}
-    </div>
+    </>
   );
 }

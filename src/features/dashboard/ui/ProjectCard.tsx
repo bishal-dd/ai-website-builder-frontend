@@ -2,6 +2,7 @@ import { ExternalLink, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Project {
   id: string;
@@ -19,13 +20,13 @@ export function ProjectCard({ project }: { project: Project }) {
       month: "short",
       day: "numeric",
       year: "numeric",
-    }
+    },
   );
 
   const previewUrl =
     project.previewImage ||
     `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(
-      `Modern ${project.name} website preview`
+      `Modern ${project.name} website preview`,
     )}`;
 
   return (
@@ -78,13 +79,13 @@ export function ProjectCard({ project }: { project: Project }) {
               className="gap-1 px-3 py-1 text-xs bg-primary text-primary-foreground border border-primary/80 hover:bg-primary/90 hover:scale-105 transition-all duration-200"
               asChild
             >
-              <a
+              <Link
                 href={`/preview/${project.id}`}
                 className="flex items-center gap-1"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
                 View
-              </a>
+              </Link>
             </Button>
           </div>
         </div>

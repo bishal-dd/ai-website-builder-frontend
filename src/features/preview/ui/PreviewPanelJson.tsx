@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react"; // Added useEffect
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { JsonRenderer } from "./JsonRenderer";
 import type { WebElement, WebsiteData } from "../types/webElement";
 import { useRouter } from "next/navigation";
+import Frame from "react-frame-component";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
@@ -45,107 +46,90 @@ export function PreviewPanelJson({
   onPageChange,
   currentPageId,
 }: PreviewPanelJsonProps) {
-  // 1. Start with desktop as a safe default for SSR
   const [device, setDevice] = useState<DeviceType>("desktop");
-  const [key, setKey] = useState(0);
   const router = useRouter();
+  const didInitPageRef = useRef(false);
 
-  // 2. Detect the user's actual device on mount
   useEffect(() => {
     const width = window.innerWidth;
-    if (width < 640) {
-      setDevice("mobile");
-    } else if (width < 1024) {
-      setDevice("tablet");
-    } else {
-      setDevice("desktop");
-    }
+    if (width < 640) setDevice("mobile");
+    else if (width < 1024) setDevice("tablet");
+    else setDevice("desktop");
   }, []);
 
-  const handleRefresh = () => {
-    router.refresh();
-    setKey((prev) => prev + 1);
-  };
-
-  const deviceSizes = {
-    desktop: "w-full h-full",
-    tablet: "w-[768px] h-full",
-    mobile: "w-[375px] h-full",
-  };
+  const iframeWidth = {
+    desktop: "100%",
+    tablet: "768px",
+    mobile: "375px",
+  }[device];
 
   const currentPage = websiteData.elements.find(
     (p) => p.page_id === currentPageId,
   );
+
   const sortedPages = [...websiteData.elements].sort(
     (a, b) => (a.sequence ?? 0) - (b.sequence ?? 0),
   );
+
+  useEffect(() => {
+    if (didInitPageRef.current) return;
+    if (!sortedPages.length) return;
+
+    const homePage =
+      sortedPages.find((p) => p.sequence === 1) ?? sortedPages[0];
+
+    didInitPageRef.current = true;
+    onPageChange(homePage.page_id);
+  }, [sortedPages, onPageChange]);
+
   const hasContent = currentPage && currentPage.pageContent.length > 0;
 
   return (
     <div className="flex h-screen flex-col bg-muted">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between border-b border-border bg-card px-4 py-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="text-sm font-semibold text-foreground">Preview</h3>
-          <Tabs
-            value={device}
-            onValueChange={(v) => setDevice(v as DeviceType)}
-          >
-            <TabsList className="flex-wrap gap-1">
-              <TabsTrigger value="desktop" className="gap-1">
+      <div className="flex items-center justify-between border-b bg-card px-4 py-3">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold">Preview</h3>
+          <Tabs value={device} onValueChange={(v: DeviceType) => setDevice(v)}>
+            <TabsList>
+              <TabsTrigger value="desktop">
                 <Monitor className="h-4 w-4" />
-                <span className="hidden sm:inline">Desktop</span>
               </TabsTrigger>
-              <TabsTrigger value="tablet" className="gap-1">
+              <TabsTrigger value="tablet">
                 <Tablet className="h-4 w-4" />
-                <span className="hidden sm:inline">Tablet</span>
               </TabsTrigger>
-              <TabsTrigger value="mobile" className="gap-1">
+              <TabsTrigger value="mobile">
                 <Smartphone className="h-4 w-4" />
-                <span className="hidden sm:inline">Mobile</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
-        {/* ... (Controls section remains the same) ... */}
-        <div className="flex flex-wrap items-center gap-1 mt-2 sm:mt-0">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push("/dashboard")}
-            className="gap-1 text-muted-foreground hover:text-foreground"
-          >
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={() => router.push("/dashboard")}>
             <LayoutDashboard className="h-4 w-4" />
-            <span className="hidden md:inline">Dashboard</span>
           </Button>
-          <div className="mx-1 h-6 w-px bg-border" />
-          <Button variant="ghost" size="icon" onClick={handleRefresh}>
+          <Button variant="ghost" size="icon" onClick={() => router.refresh()}>
             <RefreshCw className="h-4 w-4" />
           </Button>
-          {/*<Button variant="ghost" size="icon">
-            <ExternalLink className="h-4 w-4" />
-          </Button>*/}
-          <Button size="sm" onClick={() => router.push(`/domain/${websiteId}`)}>
+          <Button onClick={() => router.push(`/domain/${websiteId}`)}>
             Publish
           </Button>
         </div>
       </div>
 
-      {/* ... (Page selection remains the same) ... */}
-      {/* Page selection */}
-      <div className="border-b border-border bg-card px-4 py-2">
-        <ScrollArea className="w-full  whitespace-nowrap">
-          <div className="flex w-max space-x-4 p-2">
+      {/* Page selector */}
+      <div className="border-b bg-card px-4 py-2">
+        <ScrollArea>
+          <div className="flex gap-2">
             {sortedPages.map((page) => (
               <Button
                 key={page.id}
-                variant={currentPageId === page.page_id ? "default" : "outline"}
                 size="sm"
+                variant={currentPageId === page.page_id ? "default" : "outline"}
                 onClick={() => onPageChange(page.page_id)}
-                className="gap-2 pr-9 shrink-0"
               >
-                <FileText className="h-3 w-3" />
+                <FileText className="h-3 w-3 mr-1" />
                 {page.title}
               </Button>
             ))}
@@ -154,17 +138,30 @@ export function PreviewPanelJson({
         </ScrollArea>
       </div>
 
-      {/* Preview area */}
+      {/* Preview */}
       <div className="flex flex-1 items-center justify-center overflow-auto p-4">
-        <div
-          className={cn(
-            "bg-background shadow-2xl transition-all duration-300 rounded-lg overflow-auto border border-border origin-top",
-            deviceSizes[device],
-            device === "desktop" && "min-w-[1280px]", // Force desktop width
-          )}
-        >
-          {hasContent ? (
-            <div key={key} className="w-full h-full overflow-auto">
+        {hasContent ? (
+          <div
+            className="bg-background border shadow-xl rounded-lg overflow-hidden"
+            style={{ width: iframeWidth, height: "100%" }}
+          >
+            <Frame
+              key={`${currentPageId}-${device}`}
+              style={{ width: "100%", height: "100%", border: "none" }}
+              initialContent={`
+                <!DOCTYPE html>
+                <html lang="en">
+                  <head>
+                    <meta charset="UTF-8" />
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                    <script src="https://cdn.tailwindcss.com"></script>
+                  </head>
+                  <body>
+                    <div id="root"></div>
+                  </body>
+                </html>
+              `}
+            >
               <JsonRenderer
                 device={device}
                 elements={currentPage.pageContent}
@@ -174,38 +171,14 @@ export function PreviewPanelJson({
                 }
                 onUpdateSharedElement={onUpdateSharedElement}
               />
-            </div>
-          ) : (
-            <div className="flex h-full min-h-[300px] items-center justify-center p-4">
-              {/* ... (Empty state remains same) ... */}
-              <div className="text-center">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-                  <Sparkles className="h-10 w-10 text-primary" />
-                </div>
-                <h2 className="mb-1 text-xl font-bold text-foreground">
-                  Preview
-                </h2>
-                <p className="text-muted-foreground text-sm">
-                  Start chatting to generate.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ... (Footer remains the same) ... */}
-      <div className="border-t border-border bg-card px-4 py-2 flex items-center justify-between text-xs text-muted-foreground flex-wrap">
-        <span>{hasContent ? `Viewing: ${currentPage?.title}` : "Ready"}</span>
-        <span className="flex items-center gap-2 mt-1 sm:mt-0">
-          <span
-            className={cn(
-              "h-2 w-2 rounded-full",
-              hasContent ? "bg-green-500" : "bg-yellow-500",
-            )}
-          />
-          {hasContent ? "Live" : "Waiting"}
-        </span>
+            </Frame>
+          </div>
+        ) : (
+          <div className="text-center text-muted-foreground">
+            <Sparkles className="mx-auto mb-4 h-10 w-10" />
+            Start chatting to generate content
+          </div>
+        )}
       </div>
     </div>
   );
