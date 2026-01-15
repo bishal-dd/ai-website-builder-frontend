@@ -143,6 +143,15 @@ export default function LoginForm() {
                 </div>
               </div>
 
+              <div className="flex justify-end">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
               <Button
                 type="submit"
                 disabled={isLoading}

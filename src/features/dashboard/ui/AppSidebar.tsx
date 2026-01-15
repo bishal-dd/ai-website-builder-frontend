@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, LogOut, Sparkles, User } from "lucide-react";
+import { LayoutDashboard, LogOut, User } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -49,9 +49,6 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-2 py-3">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Sparkles className="size-4" />
-          </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold">Sencill AI</span>
             <span className="text-xs text-muted-foreground">
