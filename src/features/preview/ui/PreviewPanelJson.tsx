@@ -13,7 +13,6 @@ import {
   Sparkles,
   LayoutDashboard,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { JsonRenderer } from "./JsonRenderer";
 import type { WebElement, WebsiteData } from "../types/webElement";
 import { useRouter } from "next/navigation";
@@ -90,7 +89,10 @@ export function PreviewPanelJson({
       <div className="flex items-center justify-between border-b bg-card px-4 py-3">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold">Preview</h3>
-          <Tabs value={device} onValueChange={(v: DeviceType) => setDevice(v)}>
+          <Tabs
+            value={device}
+            onValueChange={(v: string) => setDevice(v as DeviceType)}
+          >
             <TabsList>
               <TabsTrigger value="desktop">
                 <Monitor className="h-4 w-4" />

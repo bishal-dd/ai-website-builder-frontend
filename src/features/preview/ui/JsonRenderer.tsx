@@ -1,12 +1,10 @@
 "use client";
 
 import type React from "react";
-import { useEffect } from "react";
 import type { WebElement, SharedComponents } from "@/features/preview/types";
 import { createElement, type ReactElement, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/shared/session";
-import { cn } from "@/lib/utils";
 
 interface JsonRendererProps {
   elements: WebElement[];
@@ -48,12 +46,7 @@ export function JsonRenderer({
 }: JsonRendererProps) {
   const { user } = useSession();
   const [hoveredImageId, setHoveredImageId] = useState<number | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState<{
-    [key: number]: boolean;
-  }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const isSimulatedMobile = device === "mobile";
 
   const handleTextSave = (
     id: number,
