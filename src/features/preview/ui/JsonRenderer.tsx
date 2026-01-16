@@ -172,40 +172,53 @@ export function JsonRenderer({
     }
 
     // --- IMAGE LOGIC ---
+    // Inside renderElement, replace the img logic:
+
     if (tag === "img") {
       const imageSrc = content?.startsWith("http") ? content : attributes?.src;
-
+      const isLogo = element.attributes?.["data-role"] === "logo";
       const fixedStyle = cssStringToObject(attributes?.style);
+
       return (
         <div
           key={id}
+          // CRITICAL: use 'inline-block' or 'flex' so it doesn't break the navbar line
           className="relative group inline-block"
+          style={{
+            height: isLogo ? "100%" : "auto",
+            verticalAlign: "middle",
+            display: "inline-flex",
+          }}
           onMouseEnter={() => setHoveredImageId(id)}
           onMouseLeave={() => setHoveredImageId(null)}
         >
           {createElement("img", {
             ...props,
             src: imageSrc,
-            style: { ...fixedStyle, objectFit: "cover" },
+            style: {
+              ...fixedStyle,
+              maxHeight: "100%",
+              maxWidth: "100%",
+              width: "auto",
+              height: isLogo ? "100%" : "auto",
+              objectFit: "contain",
+              display: "block",
+            },
           })}
+
           {hoveredImageId === id && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded">
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded transition-opacity">
               <Button
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
+                className="z-50"
                 style={{
-                  backgroundColor: "#facc15", // yellow-400
+                  backgroundColor: "#facc15",
                   color: "#000",
-                  padding: "8px 14px",
-                  borderRadius: "6px",
-                  fontWeight: 600,
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  boxShadow: "0 4px 10px rgba(0,0,0,0.25)",
-                  border: "none",
+                  scale: isLogo ? "0.8" : "1", // Shrink button for small logos
                 }}
               >
-                Change{" "}
+                Change
                 <input
                   ref={fileInputRef}
                   type="file"
