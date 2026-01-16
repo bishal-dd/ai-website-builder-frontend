@@ -1,22 +1,28 @@
-"use client"
+"use client";
 
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { Plus, Trash2, FileText } from "lucide-react"
-import { Section, sectionTypes } from "../types/section"
-import { PageType } from "../types"
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2, FileText } from "lucide-react";
+import { Section, sectionTypes } from "../types/section";
+import { PageType } from "../types";
 
 interface SectionEditorProps {
-  section: Section
-  page: PageType
-  onUpdate: (sectionId: string, updates: Partial<Section>) => void
-  onDelete: (sectionId: string) => void
-  onAddItem: (sectionId: string, section: Section) => void
-  onUpdateItem: (sectionId: string, section: Section, index: number, value: string) => void
-  onDeleteItem: (sectionId: string, section: Section, index: number) => void
+  section: Section;
+  page: PageType;
+  onUpdate: (sectionId: string, updates: Partial<Section>) => void;
+  onDelete: (sectionId: string) => void;
+  onAddItem: (sectionId: string, section: Section) => void;
+  onUpdateItem: (
+    sectionId: string,
+    section: Section,
+    index: number,
+    value: string
+  ) => void;
+  onDeleteItem: (sectionId: string, section: Section, index: number) => void;
+  error?: string | null; // optional
 }
 
 export function SectionEditor({
@@ -27,10 +33,11 @@ export function SectionEditor({
   onAddItem,
   onUpdateItem,
   onDeleteItem,
+  error,
 }: SectionEditorProps) {
-  const sectionTypeInfo = sectionTypes.find((st) => st.value === section.type)
-  const Icon = sectionTypeInfo?.icon || FileText
-  const canDelete = page === "home"
+  const sectionTypeInfo = sectionTypes.find((st) => st.value === section.type);
+  const Icon = sectionTypeInfo?.icon || FileText;
+  const canDelete = page === "home";
 
   return (
     <Card key={section.id} className="p-6">
@@ -44,7 +51,9 @@ export function SectionEditor({
             </h3>
           </div>
           {sectionTypeInfo?.description && (
-            <p className="text-sm text-muted-foreground">{sectionTypeInfo.description}</p>
+            <p className="text-sm text-muted-foreground">
+              {sectionTypeInfo.description}
+            </p>
           )}
         </div>
 
@@ -61,20 +70,22 @@ export function SectionEditor({
       </div>
 
       <div className="space-y-4">
-        
-
         {/* Content */}
         <div className="space-y-2">
           <Label htmlFor={`${section.id}-content`}>Content *</Label>
           <Textarea
             id={`${section.id}-content`}
-            placeholder={section.placeholder || "Start writing your section content here..."}
+            placeholder={
+              section.placeholder ||
+              "Start writing your section content here..."
+            }
             value={section.content}
             onChange={(e) => onUpdate(section.id, { content: e.target.value })}
             rows={3}
             disabled={section.aiGenerated}
-            className={section.aiGenerated ? "bg-gray-100 cursor-not-allowed" : ""}
+            className={error ? "border-red-500 focus-visible:ring-red-500" : ""}
           />
+          {error && <p className="text-sm text-red-500">⚠ {error}</p>}
         </div>
 
         {/* AI Toggle */}
@@ -83,10 +94,15 @@ export function SectionEditor({
             type="checkbox"
             id={`${section.id}-ai`}
             checked={section.aiGenerated || false}
-            onChange={(e) => onUpdate(section.id, { aiGenerated: e.target.checked })}
+            onChange={(e) =>
+              onUpdate(section.id, { aiGenerated: e.target.checked })
+            }
             className="accent-primary"
           />
-          <label htmlFor={`${section.id}-ai`} className="text-sm text-muted-foreground">
+          <label
+            htmlFor={`${section.id}-ai`}
+            className="text-sm text-muted-foreground"
+          >
             Generate content with AI
           </label>
         </div>
@@ -134,5 +150,5 @@ export function SectionEditor({
         )}
       </div>
     </Card>
-  )
+  );
 }

@@ -13,37 +13,90 @@ import { StepFour } from "./ui/StepFour";
 import { useWizardStore } from "./store/wizardStore";
 import { createWebsiteAPI } from "@/features/wizard/api/createWebsite";
 import { WebsiteGenerator } from "./ui/WebsiteGenerator";
+
 const TOTAL_STEPS = 4;
 
 export default function WebsiteWizard() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loadingJobId, setLoadingJobId] = useState<string | null>(null);
+  const [stepErrors, setStepErrors] = useState<Record<string, string[]>>({});
 
-  const { currentStep, canProceed, handleNext, handleBack } =
-    useWebsiteWizard(TOTAL_STEPS);
+  const { currentStep, handleNext, handleBack } = useWebsiteWizard(TOTAL_STEPS);
+  const state = useWizardStore();
+  const resetWizard = useWizardStore((state) => state.resetWizard);
 
-  const renderStep = () => {
+  const validateStep = (): boolean => {
+    const errors: Record<string, string[]> = {};
+
     switch (currentStep) {
       case 1:
-        return <StepOne />;
+        if (!state.websiteType) {
+          errors.websiteType = ["Please select a website type."];
+        }
+        break;
+
       case 2:
-        return <StepTwo />;
+        if (state.selectedPages.length === 0) {
+          errors.selectedPages = ["Please select at least one page."];
+        }
+        break;
+
       case 3:
-        return <StepThree />;
+        if (!state.websiteName.trim()) {
+          errors.websiteName = ["Website name is required."];
+        }
+        if (!state.contactEmail?.trim() && !state.contactPhone?.trim()) {
+          errors.contact = [
+            "Please provide at least an email or phone number.",
+          ];
+        }
+        break;
+
       case 4:
-        return <StepFour />;
-      default:
-        return null;
+        state.selectedPages.forEach((page) => {
+          const pageData = state.pageContents.find((p) => p.page === page);
+          const errorsForThisPage: string[] = [];
+
+          if (!pageData || pageData.sections.length === 0) {
+            errorsForThisPage.push(`Page ${page} has no sections.`);
+          } else {
+            pageData.sections.forEach((section) => {
+              const hasContent =
+                section.content && section.content.trim().length > 0;
+              const hasItems = section.items && section.items.length > 0;
+
+              if (!section.aiGenerated && !hasContent && !hasItems) {
+                errorsForThisPage.push(`The ${section.type} section is empty.`);
+              }
+            });
+          }
+
+          if (errorsForThisPage.length > 0) {
+            errors[page] = errorsForThisPage;
+          }
+        });
+        break;
+    }
+
+    setStepErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleNextStep = () => {
+    if (validateStep()) {
+      setStepErrors({});
+      handleNext();
     }
   };
 
   const handleComplete = async () => {
+    if (!validateStep()) return;
+
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
-      const state = useWizardStore.getState();
       const result = await createWebsiteAPI(state);
 
       if (!result.success) {
@@ -51,14 +104,30 @@ export default function WebsiteWizard() {
         return;
       }
 
-      // Open the loading overlay with jobId
       if (result.jobId) {
         setLoadingJobId(result.jobId);
       }
+
+      resetWizard();
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return <StepOne stepErrors={stepErrors} />;
+      case 2:
+        return <StepTwo stepErrors={stepErrors} />;
+      case 3:
+        return <StepThree stepErrors={stepErrors} />;
+      case 4:
+        return <StepFour stepErrors={stepErrors} />;
+      default:
+        return null;
     }
   };
 
@@ -74,6 +143,7 @@ export default function WebsiteWizard() {
 
         <Card className="p-6 sm:p-8">
           <ProgressBar currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+
           <div className="min-h-[400px] mb-8">{renderStep()}</div>
 
           {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
@@ -84,26 +154,23 @@ export default function WebsiteWizard() {
               onClick={handleBack}
               disabled={currentStep === 1 || isLoading}
             >
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
             </Button>
 
             {currentStep < TOTAL_STEPS ? (
-              <Button
-                onClick={handleNext}
-                disabled={!canProceed() || isLoading}
-              >
-                Next <ArrowRight className="w-4 h-4 ml-2" />
+              <Button onClick={handleNextStep} disabled={isLoading}>
+                Next
+                <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             ) : (
-              <Button
-                onClick={handleComplete}
-                disabled={!canProceed() || isLoading}
-              >
+              <Button onClick={handleComplete} disabled={isLoading}>
                 {isLoading ? (
                   "Submitting..."
                 ) : (
                   <>
-                    <Check className="w-4 h-4 mr-2" /> Complete
+                    <Check className="w-4 h-4 mr-2" />
+                    Complete
                   </>
                 )}
               </Button>
@@ -112,7 +179,6 @@ export default function WebsiteWizard() {
         </Card>
       </div>
 
-      {/* Loading Overlay */}
       {loadingJobId && <WebsiteGenerator jobId={loadingJobId} />}
     </div>
   );
