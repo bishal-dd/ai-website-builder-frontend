@@ -3,30 +3,31 @@
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { useWizardStore } from "@/features/wizard/store/wizardStore";
-import { DESIGN_TYPES } from "../constants";
 import { useGeo } from "@/features/preview/domain/hooks/useGeoContext";
+import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 
-export function StepThree() {
+type StepThreeProps = {
+  stepErrors: Record<string, string[]>;
+};
+
+export function StepThree({ stepErrors }: StepThreeProps) {
   const { country } = useGeo();
+
   const {
     websiteName,
     tagline,
-    designType,
     primaryColor,
     secondaryColor,
     contactEmail,
     contactPhone,
     setWebsiteInfo,
   } = useWizardStore();
+
+  const hasWebsiteNameError = Boolean(stepErrors.websiteName?.length);
+  const hasContactError = Boolean(stepErrors.contact?.length);
 
   useEffect(() => {
     if (country) setWebsiteInfo({ country });
@@ -51,13 +52,28 @@ export function StepThree() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Website name */}
             <div className="space-y-2">
-              <Label htmlFor="websiteName">Website Name *</Label>
+              <Label htmlFor="websiteName">
+                Website Name <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="websiteName"
                 placeholder="My Awesome Site"
                 value={websiteName}
                 onChange={(e) => handleChange("websiteName", e.target.value)}
+                className={cn(
+                  hasWebsiteNameError &&
+                    "border-red-500 focus-visible:ring-red-500"
+                )}
               />
+              {hasWebsiteNameError && (
+                <div className="space-y-1">
+                  {stepErrors.websiteName?.map((msg, idx) => (
+                    <p key={idx} className="text-sm text-red-500">
+                      {msg}
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Tagline */}
@@ -80,41 +96,39 @@ export function StepThree() {
                 placeholder="you@example.com"
                 value={contactEmail}
                 onChange={(e) => handleChange("contactEmail", e.target.value)}
+                className={cn(
+                  hasContactError && "border-red-500 focus-visible:ring-red-500"
+                )}
               />
             </div>
 
             {/* Contact Phone */}
             <div className="space-y-2">
-              <Label htmlFor="contactPhone">Phone</Label>
-              <Input
+              <Label htmlFor="contactPhone">WhatsApp Number</Label>
+              <PhoneInput
                 id="contactPhone"
-                type="tel"
-                placeholder="+975 17 123 456"
+                placeholder="Enter phone number"
+                defaultCountry="BT"
+                international
                 value={contactPhone}
-                onChange={(e) => handleChange("contactPhone", e.target.value)}
+                onChange={(value) => handleChange("contactPhone", value || "")}
+                className={cn(
+                  hasContactError && "border-red-500 focus-visible:ring-red-500"
+                )}
               />
             </div>
-
-            {/* Design type */}
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="designType">Design Type *</Label>
-              <Select
-                value={designType}
-                onValueChange={(value) => handleChange("designType", value)}
-              >
-                <SelectTrigger id="designType">
-                  <SelectValue placeholder="Select design type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DESIGN_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
+
+          {/* Contact error */}
+          {hasContactError && (
+            <div className="space-y-1 text-center">
+              {stepErrors.contact?.map((msg, idx) => (
+                <p key={idx} className="text-sm text-red-500">
+                  {msg}
+                </p>
+              ))}
+            </div>
+          )}
 
           {/* Colors */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 rounded-lg border bg-muted/30 p-4">

@@ -1,5 +1,13 @@
 import { useWizardStore } from "@/features/wizard/store/wizardStore";
 
+export type WizardStepErrors = {
+  websiteType?: string[];
+  pages?: string[];
+  websiteName?: string[];
+  contact?: string[];
+  pageErrors?: Record<string, string[]>;
+};
+
 export const useWebsiteWizard = (totalSteps: number) => {
   const {
     currentStep,
@@ -7,56 +15,77 @@ export const useWebsiteWizard = (totalSteps: number) => {
     websiteType,
     selectedPages,
     websiteName,
-    designType,
     pageContents,
     contactEmail,
     contactPhone,
   } = useWizardStore();
 
-  const canProceed = () => {
+  /** Validate current step and return structured errors */
+  const validateStep = (): WizardStepErrors => {
+    const errors: WizardStepErrors = {};
+
     switch (currentStep) {
       case 1:
-        return websiteType !== null;
+        if (!websiteType) errors.websiteType = ["Please select a website type"];
+        break;
 
       case 2:
-        return selectedPages.length > 0;
+        if (selectedPages.length === 0)
+          errors.pages = ["Select at least one page"];
+        break;
 
       case 3:
-        return (
-          websiteName.trim() !== "" &&
-          (designType || "").trim() !== "" &&
-          ((contactEmail && contactEmail.trim() !== "") ||
-            (contactPhone && contactPhone.trim() !== ""))
-        );
+        if (!websiteName?.trim())
+          errors.websiteName = ["Website name is required"];
+
+        if (!contactEmail?.trim() && !contactPhone?.trim()) {
+          errors.contact = ["Provide at least an email or a phone number"];
+        }
+        break;
 
       case 4:
-        return selectedPages.every((page) => {
-          const pageData = pageContents.find((pc) => pc.page === page);
-          if (!pageData) return false;
+        const pageErrors: Record<string, string[]> = {};
 
-          return pageData.sections.every(
-            (section) =>
-              (section.content && section.content.trim() !== "") ||
-              section.aiGenerated
-          );
+        selectedPages.forEach((page) => {
+          const pageData = pageContents.find((pc) => pc.page === page);
+
+          // If the page has no sections at all
+          if (!pageData || pageData.sections.length === 0) {
+            pageErrors[page] = ["All sections are empty"];
+            return;
+          }
+
+          // Find which sections are empty (excluding AI-generated)
+          const emptySections = pageData.sections
+            .filter(
+              (section) =>
+                !section.aiGenerated &&
+                (!section.content || !section.content.trim())
+            )
+            .map((section) => section.type);
+          if (emptySections.length > 0) pageErrors[page] = emptySections;
         });
 
-      default:
-        return false;
+        if (Object.keys(pageErrors).length > 0) errors.pageErrors = pageErrors;
+        break;
     }
+
+    return errors;
   };
 
+  /** Go to next step */
   const handleNext = () => {
     if (currentStep < totalSteps) setCurrentStep(currentStep + 1);
   };
 
+  /** Go to previous step */
   const handleBack = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
   return {
     currentStep,
-    canProceed,
+    validateStep,
     handleNext,
     handleBack,
   };

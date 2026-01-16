@@ -61,7 +61,7 @@ export default function WebsiteWizard() {
           if (!pageData || pageData.sections.length === 0) {
             errorsForThisPage.push(`Page ${page} has no sections.`);
           } else {
-            pageData.sections.forEach((section, idx) => {
+            pageData.sections.forEach((section) => {
               const hasContent =
                 section.content && section.content.trim().length > 0;
               const hasItems = section.items && section.items.length > 0;
