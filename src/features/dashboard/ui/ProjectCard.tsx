@@ -1,7 +1,8 @@
-import { ExternalLink, Clock } from "lucide-react";
+"use client";
+
+import { Clock, Globe, ArrowUpRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
 interface Project {
@@ -9,7 +10,6 @@ interface Project {
   name: string;
   domain: string | null;
   createdAt: string;
-  previewImage?: string;
   description?: string;
 }
 
@@ -23,73 +23,88 @@ export function ProjectCard({ project }: { project: Project }) {
     },
   );
 
-  const previewUrl =
-    project.previewImage ||
-    `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(
-      `Modern ${project.name} website preview`,
-    )}`;
+  // Generate a consistent gradient based on project name
+  const getGradientClass = (name: string) => {
+    const hash = name
+      .split("")
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const gradients = [
+      "from-blue-500/20 via-cyan-500/10 to-transparent",
+      "from-emerald-500/20 via-teal-500/10 to-transparent",
+      "from-orange-500/20 via-amber-500/10 to-transparent",
+      "from-rose-500/20 via-pink-500/10 to-transparent",
+      "from-indigo-500/20 via-blue-500/10 to-transparent",
+    ];
+    return gradients[hash % gradients.length];
+  };
 
   return (
-    <Card className="group relative aspect-[4/3] overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-border hover:shadow-xl hover:shadow-primary/5">
-      <div className="absolute inset-0 w-full h-full">
-        <Image
-          src={previewUrl}
-          alt={`${project.name} preview`}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+    <Link href={`/preview/${project.id}`} className="block">
+      <Card className="group relative overflow-hidden border-border/50 bg-card transition-all duration-500 hover:border-border hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1">
+        {/* Animated gradient background */}
+        <div
+          className={`absolute inset-0 bg-gradient-to-br ${getGradientClass(
+            project.name,
+          )} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
         />
-      </div>
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20" />
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_1px)] bg-[length:24px_24px]" />
 
-      <div className="relative flex h-full flex-col p-5">
-        <div className="flex items-start justify-between gap-2 mb-auto"></div>
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-        <div className="flex flex-col gap-3">
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold leading-tight tracking-tight text-balance text-white drop-shadow-lg">
+        <div className="relative flex flex-col p-5">
+          {/* Header with icon and domain */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+              <Globe className="size-5" />
+            </div>
+
+            {project.domain && (
+              <Badge
+                variant="secondary"
+                className="font-mono text-[10px] tracking-wide bg-secondary/80 backdrop-blur-sm"
+              >
+                {project.domain}
+              </Badge>
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 space-y-2 mb-4">
+            <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground group-hover:text-foreground/90 transition-colors line-clamp-1">
               {project.name}
             </h3>
-            {project.description && (
-              <p className="text-sm text-white/90 line-clamp-2 drop-shadow">
+
+            {project.description ? (
+              <p className="text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed">
                 {project.description}
               </p>
+            ) : (
+              <p className="text-sm text-muted-foreground/60 italic">
+                No description
+              </p>
             )}
+          </div>
 
-            <div className="flex flex-wrap items-center gap-3 text-xs text-white/80">
-              {project.domain && (
-                <div className="flex items-center gap-1.5">
-                  <ExternalLink className="size-3.5" />
-                  <span className="truncate font-mono">{project.domain}</span>
-                </div>
-              )}
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-4 border-t border-border/50">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Clock className="size-3.5" />
+              <span>{formattedDate}</span>
+            </div>
 
-              <div className="flex items-center gap-1.5">
-                <Clock className="size-3.5" />
-                <span>{formattedDate}</span>
-              </div>
+            <div className="flex items-center gap-1.5 text-xs font-medium text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+              <span>Open</span>
+              <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </div>
           </div>
-
-          <div className="mt-auto">
-            {/* Updated Button with Silver Color */}
-            <Button
-              size="sm"
-              variant="default"
-              className="gap-1 px-3 py-1 text-xs bg-primary text-primary-foreground border border-primary/80 hover:bg-primary/90 hover:scale-105 transition-all duration-200"
-              asChild
-            >
-              <Link
-                href={`/preview/${project.id}`}
-                className="flex items-center gap-1"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                View
-              </Link>
-            </Button>
-          </div>
         </div>
-      </div>
-    </Card>
+
+        {/* Corner accent */}
+        <div className="absolute -bottom-12 -right-12 size-24 rounded-full bg-primary/5 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      </Card>
+    </Link>
   );
 }

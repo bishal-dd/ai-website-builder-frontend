@@ -15,20 +15,6 @@ export function DashboardContent() {
 
   const hasProjects = projects.length > 0;
 
-  const images = [
-    "/portfolio.png",
-    "/hotel.png",
-    "/marketing.png",
-    "/restaurant.png",
-    "/agency.png",
-    "/image.png",
-  ];
-
-  const projectsWithImages = projects.map((p, idx) => ({
-    ...p,
-    previewImage: images[idx % images.length],
-  }));
-
   return (
     <div className="flex min-h-svh flex-col">
       {/* Header */}
@@ -76,7 +62,7 @@ export function DashboardContent() {
                 : "grid-cols-1"
             }`}
           >
-            {projectsWithImages.map((project) => (
+            {projects.map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
           </div>
