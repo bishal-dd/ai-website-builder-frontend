@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Clock, Globe, ArrowUpRight } from "lucide-react";
+import { Clock, Globe, ArrowUpRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
