@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
@@ -26,6 +26,12 @@ export default function WebsiteWizard() {
   const state = useWizardStore();
   const resetWizard = useWizardStore((state) => state.resetWizard);
 
+  useEffect(() => {
+    if (Object.keys(stepErrors).length > 0) {
+      validateStep();
+    }
+  }, [state.pageContents, state.websiteName, state.selectedPages]);
+
   const validateStep = (): boolean => {
     const errors: Record<string, string[]> = {};
 
@@ -46,9 +52,20 @@ export default function WebsiteWizard() {
         if (!state.websiteName.trim()) {
           errors.websiteName = ["Website name is required."];
         }
+
         if (!state.contactEmail?.trim() && !state.contactPhone?.trim()) {
           errors.contact = [
             "Please provide at least an email or phone number.",
+          ];
+        }
+
+        if (
+          state.contactEmail &&
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.contactEmail)
+        ) {
+          errors.contact = [
+            ...(errors.contact || []),
+            "Please enter a valid email address.",
           ];
         }
         break;
@@ -56,24 +73,23 @@ export default function WebsiteWizard() {
       case 4:
         state.selectedPages.forEach((page) => {
           const pageData = state.pageContents.find((p) => p.page === page);
-          const errorsForThisPage: string[] = [];
+          const invalidSectionIds: string[] = []; // Store IDs, not sentences
 
-          if (!pageData || pageData.sections.length === 0) {
-            errorsForThisPage.push(`Page ${page} has no sections.`);
-          } else {
+          if (pageData) {
             pageData.sections.forEach((section) => {
               const hasContent =
                 section.content && section.content.trim().length > 0;
               const hasItems = section.items && section.items.length > 0;
 
+              // If it's not AI-generated and has no manual content
               if (!section.aiGenerated && !hasContent && !hasItems) {
-                errorsForThisPage.push(`The ${section.type} section is empty.`);
+                invalidSectionIds.push(section.id); // Just push the ID
               }
             });
           }
 
-          if (errorsForThisPage.length > 0) {
-            errors[page] = errorsForThisPage;
+          if (invalidSectionIds.length > 0) {
+            errors[page] = invalidSectionIds;
           }
         });
         break;
