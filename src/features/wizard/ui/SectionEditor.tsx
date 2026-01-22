@@ -19,10 +19,10 @@ interface SectionEditorProps {
     sectionId: string,
     section: Section,
     index: number,
-    value: string
+    value: string,
   ) => void;
   onDeleteItem: (sectionId: string, section: Section, index: number) => void;
-  error?: string | null; // optional
+  error?: string | null;
 }
 
 export function SectionEditor({

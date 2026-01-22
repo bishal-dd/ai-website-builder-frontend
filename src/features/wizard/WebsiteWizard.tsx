@@ -94,6 +94,7 @@ export default function WebsiteWizard() {
       validateStep();
     }
   }, [
+    stepErrors,
     state.pageContents,
     state.websiteName,
     state.selectedPages,

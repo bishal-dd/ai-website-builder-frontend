@@ -14,6 +14,8 @@ export interface WizardState {
   contactEmail?: string;
   contactPhone?: string;
   country: string;
+  description: string;
+  socialLinks: string;
   pageContents: PageContent[];
   websiteId: string | null;
 
@@ -31,14 +33,16 @@ export interface WizardState {
       contactEmail: string;
       contactPhone: string;
       country: string;
-    }>
+      description: string;
+      socialLinks: string;
+    }>,
   ) => void;
 
   addSection: (page: PageType, section: Section) => void;
   updateSection: (
     page: PageType,
     sectionId: string,
-    updates: Partial<Section>
+    updates: Partial<Section>,
   ) => void;
   deleteSection: (page: PageType, sectionId: string) => void;
   reorderSections: (page: PageType, sections: Section[]) => void;
