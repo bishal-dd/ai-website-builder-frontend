@@ -4,10 +4,11 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { Textarea } from "@/components/ui/textarea";
 import { useWizardStore } from "@/features/wizard/store/wizardStore";
 import { useGeo } from "@/features/preview/domain/hooks/useGeoContext";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 type StepThreeProps = {
   stepErrors: Record<string, string[]>;
@@ -15,7 +16,6 @@ type StepThreeProps = {
 
 export function StepThree({ stepErrors }: StepThreeProps) {
   const { country } = useGeo();
-
   const {
     websiteName,
     tagline,
@@ -23,11 +23,12 @@ export function StepThree({ stepErrors }: StepThreeProps) {
     secondaryColor,
     contactEmail,
     contactPhone,
+    description,
+    socialLinks,
     setWebsiteInfo,
   } = useWizardStore();
 
-  const hasWebsiteNameError = Boolean(stepErrors.websiteName?.length);
-  const hasContactError = Boolean(stepErrors.contact?.length);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   useEffect(() => {
     if (country) setWebsiteInfo({ country });
@@ -35,6 +36,9 @@ export function StepThree({ stepErrors }: StepThreeProps) {
 
   const handleChange = (field: string, value: string) => {
     setWebsiteInfo({ [field]: value });
+
+    // Reset email error while typing
+    if (field === "contactEmail" && emailError) setEmailError(null);
   };
 
   return (
@@ -50,7 +54,7 @@ export function StepThree({ stepErrors }: StepThreeProps) {
       <Card className="p-6 max-w-2xl mx-auto">
         <div className="space-y-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Website name */}
+            {/* Website Name */}
             <div className="space-y-2">
               <Label htmlFor="websiteName">
                 Website Name <span className="text-red-500">*</span>
@@ -61,19 +65,15 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                 value={websiteName}
                 onChange={(e) => handleChange("websiteName", e.target.value)}
                 className={cn(
-                  hasWebsiteNameError &&
-                    "border-red-500 focus-visible:ring-red-500"
+                  Boolean(stepErrors.websiteName?.length) &&
+                    "border-red-500 focus-visible:ring-red-500",
                 )}
               />
-              {hasWebsiteNameError && (
-                <div className="space-y-1">
-                  {stepErrors.websiteName?.map((msg, idx) => (
-                    <p key={idx} className="text-sm text-red-500">
-                      {msg}
-                    </p>
-                  ))}
-                </div>
-              )}
+              {stepErrors.websiteName?.map((msg, idx) => (
+                <p key={idx} className="text-sm text-red-500">
+                  {msg}
+                </p>
+              ))}
             </div>
 
             {/* Tagline */}
@@ -97,9 +97,23 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                 value={contactEmail}
                 onChange={(e) => handleChange("contactEmail", e.target.value)}
                 className={cn(
-                  hasContactError && "border-red-500 focus-visible:ring-red-500"
+                  (Boolean(stepErrors.contact?.length) || emailError) &&
+                    "border-red-500 focus-visible:ring-red-500",
                 )}
               />
+              {/* Error message */}
+              {(Boolean(stepErrors.contact?.length) || emailError) && (
+                <div className="space-y-1">
+                  {stepErrors.contact?.map((msg, idx) => (
+                    <p key={idx} className="text-sm text-red-500">
+                      {msg}
+                    </p>
+                  ))}
+                  {emailError && (
+                    <p className="text-sm text-red-500">{emailError}</p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Contact Phone */}
@@ -113,22 +127,50 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                 value={contactPhone}
                 onChange={(value) => handleChange("contactPhone", value || "")}
                 className={cn(
-                  hasContactError && "border-red-500 focus-visible:ring-red-500"
+                  Boolean(stepErrors.contact?.length) &&
+                    "border-red-500 focus-visible:ring-red-500",
                 )}
               />
             </div>
           </div>
 
-          {/* Contact error */}
-          {hasContactError && (
-            <div className="space-y-1 text-center">
-              {stepErrors.contact?.map((msg, idx) => (
-                <p key={idx} className="text-sm text-red-500">
-                  {msg}
-                </p>
-              ))}
+          {/* Description + Social links */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Website Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description">
+                Website Description <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="description"
+                placeholder="Describe what your business does and who it’s for"
+                value={description}
+                onChange={(e) => handleChange("description", e.target.value)}
+                rows={5}
+              />
+              <p className="text-sm text-muted-foreground">
+                This helps generate better website content and sections.
+              </p>
             </div>
-          )}
+
+            {/* Social Media Links */}
+            <div className="space-y-2">
+              <Label htmlFor="socialLinks">
+                Social Media Links{" "}
+                <span className="text-muted-foreground">(optional)</span>
+              </Label>
+              <Textarea
+                id="socialLinks"
+                placeholder="Paste your social media links here, separated by commas"
+                value={socialLinks}
+                onChange={(e) => handleChange("socialLinks", e.target.value)}
+                rows={5}
+              />
+              <p className="text-sm text-muted-foreground">
+                Facebook, Instagram, WhatsApp, LinkedIn
+              </p>
+            </div>
+          </div>
 
           {/* Colors */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 rounded-lg border bg-muted/30 p-4">
