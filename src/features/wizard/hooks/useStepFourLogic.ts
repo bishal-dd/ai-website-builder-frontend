@@ -1,90 +1,127 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { useWizardStore } from "../store/wizardStore"
-import { PageType } from "../types"
-import { Section, SectionType } from "../types/section"
-import { initializePageSections } from "../utils/pageUtils"
-import { createSection } from "../utils/sectionUtils"
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useWizardStore } from "../store/wizardStore";
+import { PageType } from "../types";
+import { Section, SectionType } from "../types/section";
+import { initializePageSections } from "../utils/pageUtils";
+import { createSection } from "../utils/sectionUtils";
 
 export function useStepFourLogic() {
-  const { selectedPages, pageContents, addSection, updateSection, deleteSection } =
-    useWizardStore()
-  const [activeTab, setActiveTab] = useState<PageType>(selectedPages[0] || "home")
-  const [hydrated, setHydrated] = useState(false)
+  const {
+    selectedPages,
+    pageContents,
+    addSection,
+    updateSection,
+    deleteSection,
+  } = useWizardStore();
 
-  // 🧠 Hydration
-  useEffect(() => {
-    setHydrated(true)
-  }, [])
+  const [hydrated, setHydrated] = useState(false);
+  const [activeTab, setActiveTab] = useState<PageType>("home");
 
-  // 🧱 Initialize sections when active tab changes
+  // 🧠 Hydration guard (important for Zustand + Next)
   useEffect(() => {
-    if (hydrated) initializePageSections(activeTab, hydrated, pageContents, addSection)
-  }, [activeTab, pageContents, addSection, hydrated])
+    setHydrated(true);
+  }, []);
+
+  // 📌 Ensure "home" is always first
+  const orderedPages = useMemo<PageType[]>(() => {
+    return ["home", ...selectedPages.filter((page) => page !== "home")].filter(
+      (page, index, self) => self.indexOf(page) === index,
+    ) as PageType[];
+  }, [selectedPages]);
+
+  // 🏠 Sync active tab (default → home)
+  useEffect(() => {
+    if (!hydrated) return;
+
+    if (!orderedPages.includes(activeTab)) {
+      setActiveTab(orderedPages[0]);
+    }
+  }, [hydrated, orderedPages, activeTab]);
+
+  // 🧱 Initialize sections when active page changes
+  useEffect(() => {
+    if (!hydrated) return;
+
+    initializePageSections(activeTab, hydrated, pageContents, addSection);
+  }, [activeTab, hydrated, pageContents, addSection]);
 
   // 🔍 Get content of current page
-  const getCurrentPageContent = useCallback(
-    () => pageContents.find((pc) => pc.page === activeTab) || { page: activeTab, sections: [] },
-    [activeTab, pageContents]
-  )
+  const getCurrentPageContent = useCallback(() => {
+    return (
+      pageContents.find((pc) => pc.page === activeTab) || {
+        page: activeTab,
+        sections: [],
+      }
+    );
+  }, [activeTab, pageContents]);
 
   // ⚙️ Section operations
-  const handleUpdateSection = useCallback(
-    (sectionId: string, updates: Partial<Section>) =>
-      updateSection(activeTab, sectionId, updates),
-    [activeTab, updateSection]
-  )
-
   const handleAddSection = useCallback(
     (type: SectionType) => {
-      if (!hydrated) return
-      const section = createSection(activeTab, type, hydrated) // you'll need to import createSection from utils
-      addSection(activeTab, section)
+      if (!hydrated) return;
+
+      const section = createSection(activeTab, type, hydrated);
+      addSection(activeTab, section);
     },
-   [activeTab, addSection, hydrated]
-  )
+    [activeTab, hydrated, addSection],
+  );
+
+  const handleUpdateSection = useCallback(
+    (sectionId: string, updates: Partial<Section>) => {
+      updateSection(activeTab, sectionId, updates);
+    },
+    [activeTab, updateSection],
+  );
 
   const handleDeleteSection = useCallback(
-    (sectionId: string) => deleteSection(activeTab, sectionId),
-    [activeTab, deleteSection]
-  )
+    (sectionId: string) => {
+      deleteSection(activeTab, sectionId);
+    },
+    [activeTab, deleteSection],
+  );
 
   // ⚡ Item operations
   const handleAddItem = useCallback(
-    (sectionId: string, section: Section) =>
-      handleUpdateSection(sectionId, { items: [...(section.items || []), ""] }),
-    [handleUpdateSection]
-  )
+    (sectionId: string, section: Section) => {
+      handleUpdateSection(sectionId, {
+        items: [...(section.items || []), ""],
+      });
+    },
+    [handleUpdateSection],
+  );
 
   const handleUpdateItem = useCallback(
     (sectionId: string, section: Section, itemIndex: number, value: string) => {
-      const newItems = [...(section.items || [])]
-      newItems[itemIndex] = value
-      handleUpdateSection(sectionId, { items: newItems })
+      const newItems = [...(section.items || [])];
+      newItems[itemIndex] = value;
+
+      handleUpdateSection(sectionId, { items: newItems });
     },
-    [handleUpdateSection]
-  )
+    [handleUpdateSection],
+  );
 
   const handleDeleteItem = useCallback(
-    (sectionId: string, section: Section, itemIndex: number) =>
+    (sectionId: string, section: Section, itemIndex: number) => {
       handleUpdateSection(sectionId, {
         items: section.items?.filter((_, i) => i !== itemIndex) || [],
-      }),
-    [handleUpdateSection]
-  )
+      });
+    },
+    [handleUpdateSection],
+  );
 
   return {
-    selectedPages,
+    selectedPages: orderedPages,
     activeTab,
     setActiveTab,
     getCurrentPageContent,
+    handleAddSection,
     handleUpdateSection,
     handleDeleteSection,
-    handleAddSection,
     handleAddItem,
     handleUpdateItem,
     handleDeleteItem,
     hydrated,
-  }
+  };
 }
