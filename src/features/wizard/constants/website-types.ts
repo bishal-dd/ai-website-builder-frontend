@@ -1,5 +1,12 @@
-import { WebsiteType } from "../types"
-import { Briefcase, Home, Globe, Sparkles, Coffee } from "lucide-react"
+import { WebsiteType } from "../types";
+import {
+  Briefcase,
+  Home,
+  Globe,
+  Sparkles,
+  Coffee,
+  Building,
+} from "lucide-react";
 
 export const websiteTypes = [
   {
@@ -28,10 +35,17 @@ export const websiteTypes = [
   },
   {
     type: "marketing page" as WebsiteType,
-    label: "Marketing Page",
+    label: "Marketing Page (Default)",
     description: "Promote a product or service",
     icon: Sparkles,
   },
-]
+  {
+    type: "smallMediumBusiness" as WebsiteType,
+    label: "Small & Medium Business",
+    description:
+      "Create a website designed for small and medium-sized businesses",
+    icon: Building,
+  },
+];
 
-export const DESIGN_TYPES = ["Modern", "Creative", "Corporate"]
+export const DESIGN_TYPES = ["Modern", "Creative", "Corporate"];

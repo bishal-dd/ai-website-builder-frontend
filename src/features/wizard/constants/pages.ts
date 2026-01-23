@@ -1,5 +1,5 @@
-import { PageType } from "../types"
-import { Section, SectionType } from "../types/section"
+import { PageType } from "../types";
+import { Section, SectionType } from "../types/section";
 import {
   Home,
   User,
@@ -9,15 +9,14 @@ import {
   Users,
   Package,
   ShoppingCart,
-  Shield,
   Coffee,
   Bed,
   Heart,
   Map,
   Plane,
   Clock,
-} from "lucide-react"
-import type { LucideIcon } from "lucide-react"
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 /**
  * ----------------------------------------
@@ -27,40 +26,89 @@ import type { LucideIcon } from "lucide-react"
  * can select when building their website.
  */
 export interface PageOption {
-  type: PageType
-  label: string
-  description: string
-  icon: LucideIcon
+  type: PageType;
+  label: string;
+  description: string;
+  icon: LucideIcon;
 }
 
 export const pageOptions: PageOption[] = [
   // Core Pages
   { type: "home", label: "Home", description: "Main landing page", icon: Home },
   { type: "about", label: "About", description: "Tell your story", icon: User },
-  { type: "contact", label: "Contact", description: "Get in touch form", icon: Mail },
+  {
+    type: "contact",
+    label: "Contact",
+    description: "Get in touch form",
+    icon: Mail,
+  },
 
   // Portfolio & Business
-  { type: "projects", label: "Projects", description: "Work portfolio showcase", icon: Briefcase },
-  { type: "services", label: "Services", description: "What you offer", icon: Award },
+  {
+    type: "projects",
+    label: "Projects",
+    description: "Work portfolio showcase",
+    icon: Briefcase,
+  },
+  {
+    type: "services",
+    label: "Services",
+    description: "What you offer",
+    icon: Award,
+  },
   { type: "team", label: "Team", description: "Meet our team", icon: Users },
 
   // E-commerce & Products
-  { type: "products", label: "Products", description: "Your product catalog", icon: Package },
-  { type: "shop", label: "Shop", description: "Online store", icon: ShoppingCart },
-  { type: "pricing", label: "Pricing", description: "Plans and prices", icon: Shield },
+  {
+    type: "products",
+    label: "Products",
+    description: "Your product catalog",
+    icon: Package,
+  },
+  {
+    type: "shop",
+    label: "Shop",
+    description: "Online store",
+    icon: ShoppingCart,
+  },
 
   // Restaurant
-  { type: "menu", label: "Menu", description: "Food and drink offerings", icon: Coffee },
+  {
+    type: "menu",
+    label: "Menu",
+    description: "Food and drink offerings",
+    icon: Coffee,
+  },
 
   // Hotel & Travel
-  { type: "rooms", label: "Rooms", description: "Accommodation options", icon: Bed },
-  { type: "amenities", label: "Amenities", description: "Facilities and services", icon: Heart },
+  {
+    type: "rooms",
+    label: "Rooms",
+    description: "Accommodation options",
+    icon: Bed,
+  },
+  {
+    type: "amenities",
+    label: "Amenities",
+    description: "Facilities and services",
+    icon: Heart,
+  },
   { type: "location", label: "Location", description: "Find us", icon: Map },
-  { type: "tours", label: "Tours", description: "Travel packages", icon: Plane },
+  {
+    type: "tours",
+    label: "Tours",
+    description: "Travel packages",
+    icon: Plane,
+  },
 
   // Service Pages
-  { type: "process", label: "Process", description: "How we work", icon: Clock },
-]
+  {
+    type: "process",
+    label: "Process",
+    description: "How we work",
+    icon: Clock,
+  },
+];
 
 /**
  * ----------------------------------------
@@ -71,7 +119,13 @@ export const pageOptions: PageOption[] = [
  * chooses a website category.
  */
 export const websitePagesMap: Record<
-  "portfolio" | "restaurant" | "hotel" | "travel agency" | "shop" | "marketing page",
+  | "portfolio"
+  | "restaurant"
+  | "hotel"
+  | "travel agency"
+  | "shop"
+  | "marketing page"
+  | "smallMediumBusiness",
   PageType[]
 > = {
   portfolio: ["home", "about", "projects", "services", "contact"],
@@ -84,8 +138,10 @@ export const websitePagesMap: Record<
 
   shop: ["home", "products", "about", "contact"],
 
-  "marketing page": ["home", "services", "about", "pricing", "contact"],
-}
+  "marketing page": ["home", "services", "about", "products", "contact"],
+
+  smallMediumBusiness: ["home", "services", "about", "products", "contact"],
+};
 
 /**
  * ----------------------------------------
@@ -96,12 +152,12 @@ export const websitePagesMap: Record<
  */
 export const pageSectionsMap: Record<PageType, SectionType[]> = {
   // Core Pages
-  home: [], 
+  home: [],
   about: ["content"],
-  contact: ["content"], 
+  contact: ["content"],
 
   // Portfolio & Business
-  projects: ["content"], 
+  projects: ["content"],
   services: ["content"], // services, explanation, price, CTA
   team: ["content"], // team info + intro content
 
@@ -120,136 +176,126 @@ export const pageSectionsMap: Record<PageType, SectionType[]> = {
 
   // Service Pages
   process: ["content"], // workflow + description
-  pricing: ["content"], // plans + pricing details
-}
+};
 
+export const defaultPagePlaceholders: Record<PageType, Omit<Section, "id">[]> =
+  {
+    home: [],
 
-export const defaultPagePlaceholders: Record<PageType, Omit<Section, "id">[]> = {
-  home: [],
+    about: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "👋 Tell visitors who you are, your story, mission, and what makes your business or project special.",
+      },
+    ],
 
-  about: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "👋 Tell visitors who you are, your story, mission, and what makes your business or project special.",
-    },
-  ],
+    contact: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "📞 Add your contact details here — address, phone number, email, or a form link so people can reach you easily.",
+      },
+    ],
 
-  contact: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "📞 Add your contact details here — address, phone number, email, or a form link so people can reach you easily.",
-    },
-  ],
+    projects: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "🧠 Highlight your best projects or case studies. Include a short description, results, or what made them special.",
+      },
+    ],
 
-  projects: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "🧠 Highlight your best projects or case studies. Include a short description, results, or what made them special.",
-    },
-  ],
+    services: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "💼 Describe the services you offer and how they help your clients. Be clear and confident.",
+      },
+    ],
 
-  services: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "💼 Describe the services you offer and how they help your clients. Be clear and confident.",
-    },
-  ],
+    team: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "👥 Introduce your team members. Mention their roles, skills, and what makes them awesome.",
+      },
+    ],
 
-  team: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "👥 Introduce your team members. Mention their roles, skills, and what makes them awesome.",
-    },
-  ],
+    products: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "🛒 Showcase your main products. Describe features, benefits, and why people should love them.",
+      },
+    ],
 
-  products: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "🛒 Showcase your main products. Describe features, benefits, and why people should love them.",
-    },
-  ],
+    shop: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "🛍️ Welcome visitors to your shop. Describe what kind of products you sell and what makes them unique.",
+      },
+    ],
 
-  shop: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "🛍️ Welcome visitors to your shop. Describe what kind of products you sell and what makes them unique.",
-    },
-  ],
+    menu: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "🍴 Add your restaurant’s menu highlights — signature dishes, specials, or must-try meals.",
+      },
+    ],
 
-  menu: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "🍴 Add your restaurant’s menu highlights — signature dishes, specials, or must-try meals.",
-    },
-  ],
+    rooms: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "🛏️ Describe your rooms — comfort, style, and what guests can expect. Mention any special amenities.",
+      },
+    ],
 
-  rooms: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "🛏️ Describe your rooms — comfort, style, and what guests can expect. Mention any special amenities.",
-    },
-  ],
+    amenities: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "🏊 Highlight your hotel’s facilities — pool, gym, spa, free WiFi, breakfast, and anything else guests will love.",
+      },
+    ],
 
-  amenities: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "🏊 Highlight your hotel’s facilities — pool, gym, spa, free WiFi, breakfast, and anything else guests will love.",
-    },
-  ],
+    location: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "📍 Tell visitors where you’re located and why it’s great — nearby attractions, transport links, or scenic views.",
+      },
+    ],
 
-  location: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "📍 Tell visitors where you’re located and why it’s great — nearby attractions, transport links, or scenic views.",
-    },
-  ],
+    tours: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "🗺️ Describe your available tours or travel packages. Mention what travelers can experience and enjoy.",
+      },
+    ],
 
-  tours: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "🗺️ Describe your available tours or travel packages. Mention what travelers can experience and enjoy.",
-    },
-  ],
-
-  process: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "🧩 Explain your workflow or process. Walk visitors through how you deliver your product or service.",
-    },
-  ],
-
-  pricing: [
-    {
-      type: "content",
-      content: "",
-      placeholder:
-        "💰 Outline your pricing plans or packages. Be transparent about what’s included and who it’s for.",
-    },
-  ],
-}
+    process: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "🧩 Explain your workflow or process. Walk visitors through how you deliver your product or service.",
+      },
+    ],
+  };
