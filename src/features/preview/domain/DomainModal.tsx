@@ -156,6 +156,10 @@ export function DomainModal({
           {successMessage && (
             <div className="text-green-600 text-sm">{successMessage}</div>
           )}
+          <div className="text-gray-500 text-sm">
+            only international TLDs are available (.com, .travel, .ai, .io, .us,
+            .uk)
+          </div>
         </div>
 
         {/* RESULTS */}

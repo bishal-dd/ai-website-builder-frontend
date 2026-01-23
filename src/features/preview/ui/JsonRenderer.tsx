@@ -5,6 +5,7 @@ import type { WebElement, SharedComponents } from "@/features/preview/types";
 import { createElement, type ReactElement, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/shared/session";
+import { Camera } from "lucide-react";
 
 interface JsonRendererProps {
   elements: WebElement[];
@@ -46,6 +47,8 @@ export function JsonRenderer({
 }: JsonRendererProps) {
   const { user } = useSession();
   const [hoveredImageId, setHoveredImageId] = useState<number | null>(null);
+  const [activeImageId, setActiveImageId] = useState<number | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleTextSave = (
@@ -129,6 +132,11 @@ export function JsonRenderer({
       src: attributes?.src,
     };
 
+    
+    
+    
+    
+    
     // --- INLINE EDITING LOGIC ---
     const isTextElement = content && !children && tag !== "img";
     const isEditable =
@@ -179,53 +187,70 @@ export function JsonRenderer({
       const isLogo = element.attributes?.["data-role"] === "logo";
       const fixedStyle = cssStringToObject(attributes?.style);
 
+      const isActive =
+        device === "desktop" ? hoveredImageId === id : activeImageId === id;
+
       return (
         <div
           key={id}
-          // CRITICAL: use 'inline-block' or 'flex' so it doesn't break the navbar line
-          className="relative group inline-block"
+          className="relative inline-flex"
           style={{
+            zIndex: isActive ? 50 : "auto",
             height: isLogo ? "100%" : "auto",
-            verticalAlign: "middle",
-            display: "inline-flex",
+            pointerEvents: "auto",
           }}
-          onMouseEnter={() => setHoveredImageId(id)}
-          onMouseLeave={() => setHoveredImageId(null)}
+          onMouseEnter={() => device === "desktop" && setHoveredImageId(id)}
+          onMouseLeave={() => device === "desktop" && setHoveredImageId(null)}
+          onClick={() => device !== "desktop" && setActiveImageId(id)}
         >
           {createElement("img", {
             ...props,
             src: imageSrc,
             style: {
               ...fixedStyle,
-              maxHeight: "100%",
               maxWidth: "100%",
-              width: "auto",
+              maxHeight: "100%",
+              width: isLogo ? "auto" : "100%",
               height: isLogo ? "100%" : "auto",
               objectFit: "contain",
               display: "block",
+              pointerEvents: "auto",
             },
           })}
 
-          {hoveredImageId === id && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded transition-opacity">
-              <Button
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                className="z-50"
+          {isActive && (
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{
+                backgroundColor: "rgba(0,0,0,0.35)",
+                zIndex: 9999,
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
+            >
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
+                className="rounded-md bg-yellow-400 px-4 py-2 text-sm font-medium text-black shadow-lg"
                 style={{
-                  backgroundColor: "#facc15",
-                  color: "#000",
-                  scale: isLogo ? "0.8" : "1", // Shrink button for small logos
+                  minWidth: isLogo ? 80 : 100,
+                  minHeight: 40,
+                  transform: isLogo ? "scale(0.85)" : "none",
                 }}
               >
                 Change
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => handleImageChange(e, id, componentKey)}
-                />
-              </Button>
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={(e) => handleImageChange(e, id, componentKey)}
+              />
             </div>
           )}
         </div>

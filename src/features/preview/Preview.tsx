@@ -50,7 +50,7 @@ export default function Preview() {
   const updateElementRecursive = (
     elements: WebElement[],
     elementId: number,
-    updates: Partial<WebElement>
+    updates: Partial<WebElement>,
   ): WebElement[] => {
     return elements.map((element) => {
       if (element.id === elementId) {
@@ -62,7 +62,7 @@ export default function Preview() {
           children: updateElementRecursive(
             element.children,
             elementId,
-            updates
+            updates,
           ),
         };
       }
@@ -73,7 +73,7 @@ export default function Preview() {
   const handleUpdateElement = async (
     pageId: string,
     elementId: number,
-    updates: Partial<WebElement>
+    updates: Partial<WebElement>,
   ) => {
     const newElements = websiteData.elements.map((page) =>
       page.page_id === pageId
@@ -82,10 +82,10 @@ export default function Preview() {
             pageContent: updateElementRecursive(
               page.pageContent,
               elementId,
-              updates
+              updates,
             ),
           }
-        : page
+        : page,
     );
 
     setWebsiteData((prev) => ({ ...prev, elements: newElements }));
@@ -99,14 +99,14 @@ export default function Preview() {
   const handleUpdateSharedElement = async (
     componentKey: "navbar" | "footer",
     elementId: number,
-    updates: Partial<WebElement>
+    updates: Partial<WebElement>,
   ) => {
     const newSharedComponents = {
       ...websiteData.sharedComponents,
       [componentKey]: updateElementRecursive(
         websiteData.sharedComponents[componentKey],
         elementId,
-        updates
+        updates,
       ),
     };
 
@@ -121,7 +121,7 @@ export default function Preview() {
     });
 
     console.log(
-      `Updated shared component ${componentKey} element ${elementId}`
+      `Updated shared component ${componentKey} element ${elementId}`,
     );
   };
 
@@ -140,10 +140,10 @@ export default function Preview() {
         {!isChatOpen && (
           <Button
             onClick={() => setIsChatOpen(true)}
-            className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all"
-            size="icon"
+            className="fixed bottom-6 right-6 z-50 h-14 px-4 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
           >
             <MessageSquare className="h-6 w-6" />
+            <span className="text-sm font-medium">AI Helper</span>
           </Button>
         )}
 

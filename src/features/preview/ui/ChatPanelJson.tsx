@@ -13,7 +13,6 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
-  timestamp: Date;
 }
 
 interface ChatPanelJsonProps {
@@ -27,8 +26,7 @@ export function ChatPanelJson({ onClose, websiteId }: ChatPanelJsonProps) {
       id: "1",
       role: "assistant",
       content:
-        "Hello! I'm sencill AI. Tell me about the website you'd like to create. What type of business is it for?",
-      timestamp: new Date(),
+        "Hello! I'm Sencill AI. Tell me what you want to improve in the website. Please be specific. Mention the page and section you want to change.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -52,7 +50,6 @@ export function ChatPanelJson({ onClose, websiteId }: ChatPanelJsonProps) {
       id: Date.now().toString(),
       role: "user",
       content: input,
-      timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -103,9 +100,9 @@ export function ChatPanelJson({ onClose, websiteId }: ChatPanelJsonProps) {
           </div>
           <div>
             <h2 className="text-lg font-semibold text-foreground">
-              sencill AI
+              Sencill AI
             </h2>
-            <p className="text-sm text-muted-foreground">Website Generator</p>
+            <p className="text-sm text-muted-foreground">Website Helper</p>
           </div>
         </div>
         {onClose && (
@@ -140,12 +137,6 @@ export function ChatPanelJson({ onClose, websiteId }: ChatPanelJsonProps) {
                 )}
               >
                 <p className="text-sm leading-relaxed">{message.content}</p>
-                <span className="mt-1 block text-xs opacity-60">
-                  {message.timestamp.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
               </div>
               {message.role === "user" && (
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20">
@@ -163,7 +154,7 @@ export function ChatPanelJson({ onClose, websiteId }: ChatPanelJsonProps) {
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe your website or ask to add a new page..."
+            placeholder="Describe your changes"
             className="min-h-[60px] max-h-[120px] resize-none"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
