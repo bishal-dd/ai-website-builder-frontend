@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
@@ -26,7 +26,7 @@ export default function WebsiteWizard() {
   const state = useWizardStore();
   const resetWizard = useWizardStore((state) => state.resetWizard);
 
-  const validateStep = (): boolean => {
+  const validateStep = useCallback((): boolean => {
     const errors: Record<string, string[]> = {};
 
     switch (currentStep) {
@@ -51,29 +51,34 @@ export default function WebsiteWizard() {
             "Please provide at least an email or phone number.",
           ];
         }
+        if (
+          state.contactEmail &&
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.contactEmail)
+        ) {
+          errors.contact = [
+            ...(errors.contact || []),
+            "Please enter a valid email address.",
+          ];
+        }
         break;
 
       case 4:
         state.selectedPages.forEach((page) => {
           const pageData = state.pageContents.find((p) => p.page === page);
-          const errorsForThisPage: string[] = [];
+          const invalidSectionIds: string[] = [];
 
-          if (!pageData || pageData.sections.length === 0) {
-            errorsForThisPage.push(`Page ${page} has no sections.`);
-          } else {
+          if (pageData) {
             pageData.sections.forEach((section) => {
               const hasContent =
                 section.content && section.content.trim().length > 0;
               const hasItems = section.items && section.items.length > 0;
-
               if (!section.aiGenerated && !hasContent && !hasItems) {
-                errorsForThisPage.push(`The ${section.type} section is empty.`);
+                invalidSectionIds.push(section.id);
               }
             });
           }
-
-          if (errorsForThisPage.length > 0) {
-            errors[page] = errorsForThisPage;
+          if (invalidSectionIds.length > 0) {
+            errors[page] = invalidSectionIds;
           }
         });
         break;
@@ -81,13 +86,31 @@ export default function WebsiteWizard() {
 
     setStepErrors(errors);
     return Object.keys(errors).length === 0;
-  };
+  }, [currentStep, state]);
+
+  useEffect(() => {
+    const hasExistingErrors = Object.keys(stepErrors).length > 0;
+    if (hasExistingErrors) {
+      validateStep();
+    }
+  }, [
+    stepErrors,
+    state.pageContents,
+    state.websiteName,
+    state.selectedPages,
+    validateStep,
+  ]);
 
   const handleNextStep = () => {
     if (validateStep()) {
       setStepErrors({});
       handleNext();
     }
+  };
+
+  const handleBackStep = () => {
+    setStepErrors({});
+    handleBack();
   };
 
   const handleComplete = async () => {
@@ -98,16 +121,13 @@ export default function WebsiteWizard() {
 
     try {
       const result = await createWebsiteAPI(state);
-
       if (!result.success) {
         setErrorMessage(result.error || "Failed to create website");
         return;
       }
-
       if (result.jobId) {
         setLoadingJobId(result.jobId);
       }
-
       resetWizard();
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : "Unknown error");
@@ -151,7 +171,7 @@ export default function WebsiteWizard() {
           <div className="flex justify-between items-center pt-6 border-t">
             <Button
               variant="outline"
-              onClick={handleBack}
+              onClick={handleBackStep}
               disabled={currentStep === 1 || isLoading}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />

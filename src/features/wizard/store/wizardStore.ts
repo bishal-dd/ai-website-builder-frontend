@@ -25,6 +25,8 @@ const defaultState: Omit<
   contactEmail: "",
   contactPhone: "",
   country: "",
+  description: "",
+  socialLinks: "",
   pageContents: [],
   websiteId: null,
 };
@@ -50,7 +52,7 @@ export const useWizardStore = create<WizardState>((set) => ({
   addSection: (page, section) =>
     set((state) => {
       const existingPageIndex = state.pageContents.findIndex(
-        (pc) => pc.page === page
+        (pc) => pc.page === page,
       );
       const newPageContents = [...state.pageContents];
 
@@ -76,7 +78,7 @@ export const useWizardStore = create<WizardState>((set) => ({
 
       const newPageContents = [...state.pageContents];
       const sectionIndex = newPageContents[pageIndex].sections.findIndex(
-        (s) => s.id === sectionId
+        (s) => s.id === sectionId,
       );
 
       if (sectionIndex >= 0) {

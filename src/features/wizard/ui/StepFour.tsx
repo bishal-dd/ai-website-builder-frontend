@@ -37,8 +37,8 @@ export function StepFour({ stepErrors }: StepFourProps) {
   if (selectedPages.length === 0) {
     return (
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-balance">Add Page Content</h2>
-        <p className="text-muted-foreground text-pretty">
+        <h2 className="text-3xl font-bold">Add Page Content</h2>
+        <p className="text-muted-foreground">
           No pages selected. Please go back and select at least one page.
         </p>
       </div>
@@ -48,60 +48,59 @@ export function StepFour({ stepErrors }: StepFourProps) {
   const currentPageContent = getCurrentPageContent();
   const isHomePage = activeTab === "home";
 
-  // Errors for the current page
-  const pageErrorMessages = stepErrors?.[activeTab] || [];
+  // Get errors specific to the current active page
+  const currentPageErrors = stepErrors?.[activeTab] || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-balance">Add Page Content</h2>
-        <p className="text-muted-foreground text-pretty">
+        <h2 className="text-3xl font-bold tracking-tight">Add Page Content</h2>
+        <p className="text-muted-foreground">
           Fill in content for each section on your pages
         </p>
       </div>
 
-      {/* Tabs */}
-      <div
-        className={cn(
-          "grid grid-cols-3 gap-2 max-w-2xl mx-auto",
-          pageErrorMessages.length > 0 && "ring-1 ring-red-500 rounded-lg p-2"
-        )}
-      >
-        {selectedPages.map((page) => (
-          <button
-            key={page}
-            className={cn(
-              "capitalize py-2 px-4 rounded transition-colors",
-              activeTab === page
-                ? "bg-primary text-white"
-                : "bg-muted text-muted-foreground"
-            )}
-            onClick={() => setActiveTab(page)}
-          >
-            {page}
-          </button>
-        ))}
+      {/* Tabs - Using Red Border instead of Dot */}
+      <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto">
+        {selectedPages.map((page) => {
+          const hasError = stepErrors?.[page] && stepErrors[page].length > 0;
+          const isActive = activeTab === page;
+
+          return (
+            <button
+              key={page}
+              onClick={() => setActiveTab(page)}
+              className={cn(
+                "relative py-2.5 px-4 rounded-md capitalize font-medium transition-all border-2",
+                // Base Active vs Inactive styles
+                isActive
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-muted text-muted-foreground border-transparent hover:bg-secondary",
+
+                // Error State Styles
+                hasError &&
+                  (isActive
+                    ? "bg-primary text-primary-foreground border-red-500 shadow-md"
+                    : "bg-red-50 text-red-700 border-red-500 hover:bg-red-100"),
+              )}
+            >
+              {page}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Page-level error messages */}
-      {pageErrorMessages.length > 0 && (
-        <div className="max-w-3xl mx-auto space-y-1">
-          {pageErrorMessages.map((msg, idx) => (
-            <p key={idx} className="text-sm text-red-500">
-              ⚠ {msg}
-            </p>
-          ))}
-        </div>
-      )}
-
-      {/* Sections */}
-      <div className="space-y-4 max-w-3xl mx-auto">
+      {/* Sections List */}
+      <div className="space-y-6 max-w-3xl mx-auto">
         {currentPageContent.sections.map((section) => {
-          const sectionError =
-            pageErrorMessages.find((err) =>
-              err.toLowerCase().includes(section.type.toLowerCase())
-            ) || null;
+          // Identify if THIS specific section has an error
+          // This works if your validation logic passes the section ID or Type in the array
+          const hasSectionError = currentPageErrors.some(
+            (err) =>
+              err.toLowerCase().includes(section.type.toLowerCase()) ||
+              err === section.id,
+          );
 
           return (
             <SectionEditor
@@ -113,7 +112,12 @@ export function StepFour({ stepErrors }: StepFourProps) {
               onAddItem={handleAddItem}
               onUpdateItem={handleUpdateItem}
               onDeleteItem={handleDeleteItem}
-              error={sectionError} // Pass error to SectionEditor
+              // Pass the error message down - SectionEditor will render it below the Textarea
+              error={
+                hasSectionError
+                  ? "This section requires content or AI generation"
+                  : null
+              }
             />
           );
         })}
