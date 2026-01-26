@@ -132,11 +132,6 @@ export function JsonRenderer({
       src: attributes?.src,
     };
 
-    
-    
-    
-    
-    
     // --- INLINE EDITING LOGIC ---
     const isTextElement = content && !children && tag !== "img";
     const isEditable =
@@ -258,10 +253,20 @@ export function JsonRenderer({
     }
 
     const childElements = children
-      ? children.map((child) => renderElement(child, componentKey))
+      ? children.flatMap((child, index) => {
+          const el = renderElement(child, componentKey);
+
+          // add space between inline text/span siblings
+          if (index < children.length - 1) {
+            return [el, " "];
+          }
+
+          return [el];
+        })
       : content
         ? [content]
         : [];
+
     return createElement(tag, props, ...childElements);
   };
 
