@@ -3,9 +3,7 @@
 import type React from "react";
 import type { WebElement, SharedComponents } from "@/features/preview/types";
 import { createElement, type ReactElement, useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { useSession } from "@/shared/session";
-import { Camera } from "lucide-react";
 
 interface JsonRendererProps {
   elements: WebElement[];
