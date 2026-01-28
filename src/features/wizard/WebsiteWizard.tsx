@@ -22,7 +22,10 @@ export default function WebsiteWizard() {
   const [loadingJobId, setLoadingJobId] = useState<string | null>(null);
   const [stepErrors, setStepErrors] = useState<Record<string, string[]>>({});
 
+  const [hasAttemptedComplete, setHasAttemptedComplete] = useState(false);
+
   const { currentStep, handleNext, handleBack } = useWebsiteWizard(TOTAL_STEPS);
+
   const state = useWizardStore();
   const resetWizard = useWizardStore((state) => state.resetWizard);
 
@@ -46,11 +49,13 @@ export default function WebsiteWizard() {
         if (!state.websiteName.trim()) {
           errors.websiteName = ["Website name is required."];
         }
+
         if (!state.contactEmail?.trim() && !state.contactPhone?.trim()) {
           errors.contact = [
             "Please provide at least an email or phone number.",
           ];
         }
+
         if (
           state.contactEmail &&
           !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.contactEmail)
@@ -65,18 +70,20 @@ export default function WebsiteWizard() {
       case 4:
         state.selectedPages.forEach((page) => {
           const pageData = state.pageContents.find((p) => p.page === page);
+
           const invalidSectionIds: string[] = [];
 
           if (pageData) {
             pageData.sections.forEach((section) => {
-              const hasContent =
-                section.content && section.content.trim().length > 0;
+              const hasContent = section.content?.trim().length > 0;
               const hasItems = section.items && section.items.length > 0;
+
               if (!section.aiGenerated && !hasContent && !hasItems) {
                 invalidSectionIds.push(section.id);
               }
             });
           }
+
           if (invalidSectionIds.length > 0) {
             errors[page] = invalidSectionIds;
           }
@@ -89,17 +96,11 @@ export default function WebsiteWizard() {
   }, [currentStep, state]);
 
   useEffect(() => {
-    const hasExistingErrors = Object.keys(stepErrors).length > 0;
-    if (hasExistingErrors) {
-      validateStep();
-    }
-  }, [
-    stepErrors,
-    state.pageContents,
-    state.websiteName,
-    state.selectedPages,
-    validateStep,
-  ]);
+    if (!hasAttemptedComplete) return;
+    if (currentStep !== 4) return;
+
+    validateStep();
+  }, [hasAttemptedComplete, currentStep, state.pageContents, validateStep]);
 
   const handleNextStep = () => {
     if (validateStep()) {
@@ -109,11 +110,14 @@ export default function WebsiteWizard() {
   };
 
   const handleBackStep = () => {
+    setHasAttemptedComplete(false);
     setStepErrors({});
     handleBack();
   };
 
   const handleComplete = async () => {
+    setHasAttemptedComplete(true);
+
     if (!validateStep()) return;
 
     setIsLoading(true);
@@ -121,13 +125,16 @@ export default function WebsiteWizard() {
 
     try {
       const result = await createWebsiteAPI(state);
+
       if (!result.success) {
         setErrorMessage(result.error || "Failed to create website");
         return;
       }
+
       if (result.jobId) {
         setLoadingJobId(result.jobId);
       }
+
       resetWizard();
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : "Unknown error");
