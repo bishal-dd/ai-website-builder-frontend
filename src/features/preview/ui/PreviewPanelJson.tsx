@@ -13,10 +13,24 @@ import {
   Sparkles,
   LayoutDashboard,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { JsonRenderer } from "./JsonRenderer";
 import type { WebElement, WebsiteData } from "../types/webElement";
 import { useRouter } from "next/navigation";
 import Frame from "react-frame-component";
+import { redeployWebsite } from "../api/redeployWebsite";
+import useGetGeneratedWebsite from "../hooks/useGetGeneratedWebsite";
+import { toast } from "sonner";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
@@ -48,6 +62,12 @@ export function PreviewPanelJson({
   const [device, setDevice] = useState<DeviceType>("desktop");
   const router = useRouter();
   const didInitPageRef = useRef(false);
+  const [isRedeploying, setIsRedeploying] = useState(false);
+
+  const { data: freshData, isLoading: isFetchingData } =
+    useGetGeneratedWebsite(websiteId);
+  const deploymentCount = freshData?.deployment_count ?? 0;
+  const isDeployed = deploymentCount > 0;
 
   useEffect(() => {
     const width = window.innerWidth;
@@ -82,7 +102,13 @@ export function PreviewPanelJson({
   }, [sortedPages, onPageChange]);
 
   const hasContent = currentPage && currentPage.pageContent.length > 0;
-
+  const handleRepublish = async () => {
+    await toast.promise(redeployWebsite(websiteId), {
+      loading: "🚀 Queueing your redeploy...",
+      success: "Website redeploy queued successfully!",
+      error: (err) => err.message || "Failed to redeploy website",
+    });
+  };
   return (
     <div className="flex h-screen flex-col bg-muted">
       {/* Header */}
@@ -114,9 +140,44 @@ export function PreviewPanelJson({
           <Button variant="ghost" size="icon" onClick={() => router.refresh()}>
             <RefreshCw className="h-4 w-4" />
           </Button>
-          <Button onClick={() => router.push(`/domain/${websiteId}`)}>
-            Publish
-          </Button>
+          {/* THE TOGGLE LOGIC */}
+          {/* ... inside your header action area ... */}
+          {isFetchingData ? (
+            <Button disabled variant="outline">
+              Checking status...
+            </Button>
+          ) : isDeployed ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button disabled={isRedeploying} variant="default">
+                  {isRedeploying ? "Republishing..." : "Republish"}
+                </Button>
+              </AlertDialogTrigger>
+
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will push your latest changes to the live production
+                    site. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleRepublish}
+                    className="bg-primary text-primary-foreground"
+                  >
+                    Confirm Republish
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <Button onClick={() => router.push(`/domain/${websiteId}`)}>
+              Publish
+            </Button>
+          )}
         </div>
       </div>
 
