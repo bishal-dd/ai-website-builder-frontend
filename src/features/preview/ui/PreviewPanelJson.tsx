@@ -62,7 +62,6 @@ export function PreviewPanelJson({
   const [device, setDevice] = useState<DeviceType>("desktop");
   const router = useRouter();
   const didInitPageRef = useRef(false);
-  const [isRedeploying, setIsRedeploying] = useState(false);
 
   const { data: freshData, isLoading: isFetchingData } =
     useGetGeneratedWebsite(websiteId);
@@ -149,9 +148,7 @@ export function PreviewPanelJson({
           ) : isDeployed ? (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button disabled={isRedeploying} variant="default">
-                  {isRedeploying ? "Republishing..." : "Republish"}
-                </Button>
+                <Button variant="default">Republish</Button>
               </AlertDialogTrigger>
 
               <AlertDialogContent>
