@@ -1,12 +1,5 @@
 import { WebsiteType } from "../types";
-import {
-  Briefcase,
-  Home,
-  Globe,
-  Sparkles,
-  Coffee,
-  Building,
-} from "lucide-react";
+import { Briefcase, Home, Globe, Coffee, Building } from "lucide-react";
 
 export const websiteTypes = [
   {
