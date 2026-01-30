@@ -10,7 +10,7 @@ import {
 import { useStepFourLogic } from "../hooks/useStepFourLogic";
 import { SectionType, sectionTypes } from "../types/section";
 import { cn } from "@/lib/utils";
-import { Plus, X, Lock } from "lucide-react";
+import { Plus, Lock } from "lucide-react";
 
 export function StepFour() {
   const {
@@ -19,7 +19,6 @@ export function StepFour() {
     setActiveTab,
     getCurrentPageContent,
     handleAddSection,
-    handleDeleteSection,
   } = useStepFourLogic();
 
   const [selectedSection, setSelectedSection] = useState("");

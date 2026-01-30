@@ -2,10 +2,8 @@ import {
   Sparkles,
   Grid3x3,
   MessageSquare,
-  Megaphone,
   Images,
   HelpCircle,
-  Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
