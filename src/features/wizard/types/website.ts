@@ -12,7 +12,6 @@ export type WizardStateForAPI = {
   description?: string;
   designType?: string;
   primaryColor?: string;
-  secondaryColor?: string;
   pageContents?: {
     page: string;
     sections: Section[];
