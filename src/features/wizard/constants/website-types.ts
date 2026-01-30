@@ -34,12 +34,6 @@ export const websiteTypes = [
     icon: Globe,
   },
   {
-    type: "marketing page" as WebsiteType,
-    label: "Marketing Page (Default)",
-    description: "Promote a product or service",
-    icon: Sparkles,
-  },
-  {
     type: "smallMediumBusiness" as WebsiteType,
     label: "Small & Medium Business",
     description:

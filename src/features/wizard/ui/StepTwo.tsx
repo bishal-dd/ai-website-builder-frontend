@@ -3,8 +3,12 @@
 import { Card } from "@/components/ui/card";
 import { useWizardStore } from "@/features/wizard/store/wizardStore";
 import { cn } from "@/lib/utils";
-import { pageOptions, websitePagesMap } from "../constants";
-import { Check } from "lucide-react";
+import {
+  pageOptions,
+  websitePagesMap,
+  websitePageDefaults,
+} from "../constants";
+import { Check, Lock } from "lucide-react";
 
 type StepTwoProps = {
   stepErrors: Record<string, string[]>;
@@ -17,8 +21,10 @@ export function StepTwo({ stepErrors }: StepTwoProps) {
   if (!websiteType) return null;
 
   const availablePages = websitePagesMap[websiteType] ?? [];
+  const pageConfig = websitePageDefaults[websiteType];
+
   const filteredOptions = pageOptions.filter((page) =>
-    availablePages.includes(page.type)
+    availablePages.includes(page.type),
   );
 
   return (
@@ -35,31 +41,44 @@ export function StepTwo({ stepErrors }: StepTwoProps) {
       <div
         className={cn(
           "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto",
-          hasError && "animate-shake"
+          hasError && "animate-shake",
         )}
       >
         {filteredOptions.map(({ type, label, description, icon: Icon }) => {
           const isSelected = selectedPages.includes(type);
+          const isRequired = pageConfig.required.includes(type);
+          const isDefault = pageConfig.defaultSelected.includes(type);
 
           return (
             <Card
               key={type}
               role="button"
-              tabIndex={0}
-              onClick={() => togglePage(type)}
+              tabIndex={isRequired ? -1 : 0}
+              onClick={() => !isRequired && togglePage(type)}
               className={cn(
-                "p-5 cursor-pointer relative transition-all duration-200",
-                "hover:shadow-lg hover:scale-[1.02]",
+                "p-5 relative transition-all duration-200",
+                isRequired
+                  ? "cursor-not-allowed opacity-80"
+                  : "cursor-pointer hover:shadow-lg hover:scale-[1.02]",
                 isSelected
                   ? "ring-2 ring-primary bg-primary/5"
                   : "hover:border-primary/50",
-                hasError && !isSelected && "border-red-500/40"
+                hasError && !isSelected && "border-red-500/40",
               )}
             >
-              {/* Selected Badge */}
+              {/* Badge */}
               {isSelected && (
-                <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                  <Check className="w-4 h-4" />
+                <div className="absolute top-3 right-3">
+                  {isRequired ? (
+                    <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                      <Lock className="w-3 h-3" />
+                      Required
+                    </span>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                      <Check className="w-4 h-4" />
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -69,7 +88,7 @@ export function StepTwo({ stepErrors }: StepTwoProps) {
                     "w-11 h-11 rounded-lg flex items-center justify-center transition-colors",
                     isSelected
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
+                      : "bg-muted text-muted-foreground",
                   )}
                 >
                   <Icon className="w-5 h-5" />
@@ -80,6 +99,12 @@ export function StepTwo({ stepErrors }: StepTwoProps) {
                   <p className="text-xs text-muted-foreground mt-1">
                     {description}
                   </p>
+
+                  {isDefault && !isRequired && (
+                    <p className="mt-1 text-[10px] text-muted-foreground">
+                      Recommended
+                    </p>
+                  )}
                 </div>
               </div>
             </Card>

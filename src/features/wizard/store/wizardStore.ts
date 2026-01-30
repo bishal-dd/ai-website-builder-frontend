@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { WizardState } from "../types";
-
-const REQUIRED_PAGE = "home";
+import { websitePageDefaults } from "../constants";
 
 const defaultState: Omit<
   WizardState,
@@ -18,7 +17,7 @@ const defaultState: Omit<
 > = {
   currentStep: 1,
   websiteType: null,
-  selectedPages: [REQUIRED_PAGE],
+  selectedPages: [],
   websiteName: "",
   tagline: "",
   designType: "",
@@ -40,11 +39,30 @@ export const useWizardStore = create<WizardState>((set) => ({
 
   setCurrentStep: (step) => set({ currentStep: step }),
 
-  setWebsiteType: (type) => set({ websiteType: type }),
+  setWebsiteType: (type) =>
+    set(() => {
+      if (!type) return { websiteType: null };
+
+      const config = websitePageDefaults[type];
+
+      return {
+        websiteType: type,
+        selectedPages: [
+          ...new Set([...config.required, ...config.defaultSelected]),
+        ],
+        pageContents: [],
+      };
+    }),
 
   togglePage: (page) =>
     set((state) => {
-      if (page === REQUIRED_PAGE) return state;
+      if (!state.websiteType) return state;
+
+      const { required } = websitePageDefaults[state.websiteType];
+
+      if (required.includes(page)) {
+        return state;
+      }
 
       return {
         selectedPages: state.selectedPages.includes(page)
@@ -121,5 +139,19 @@ export const useWizardStore = create<WizardState>((set) => ({
       return { pageContents: newPageContents };
     }),
 
-  resetWizard: () => set({ ...defaultState, selectedPages: [REQUIRED_PAGE] }),
+  resetWizard: () =>
+    set((state) => {
+      if (!state.websiteType) return defaultState;
+
+      const config = websitePageDefaults[state.websiteType];
+
+      return {
+        ...defaultState,
+        websiteType: state.websiteType,
+        selectedPages: [
+          ...new Set([...config.required, ...config.defaultSelected]),
+        ],
+        pageContents: [],
+      };
+    }),
 }));
