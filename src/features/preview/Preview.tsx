@@ -125,6 +125,10 @@ export default function Preview() {
     );
   };
 
+  const sortedPages = [...websiteData.elements].sort(
+    (a, b) => (a.sequence ?? 0) - (b.sequence ?? 0),
+  );
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-background flex flex-col">
       <main className="flex-1 relative overflow-hidden">
@@ -151,6 +155,8 @@ export default function Preview() {
           <div className="fixed inset-0 z-50 flex items-end justify-end pointer-events-none">
             <div className="pointer-events-auto h-[600px] w-full max-w-md m-4 rounded-lg shadow-2xl border border-border overflow-hidden">
               <ChatPanelJson
+                currentPageId={currentPageId}
+                pages={sortedPages}
                 websiteId={websiteId}
                 onClose={() => setIsChatOpen(false)}
               />

@@ -1,5 +1,6 @@
 export interface RegenerateWebsitePayload {
   websiteId: string;
+  pageId: string;
   userMessage: string;
 }
 
@@ -8,7 +9,7 @@ export interface RegenerateWebsiteResponse {
 }
 
 export async function regenerateWebsite(
-  payload: RegenerateWebsitePayload
+  payload: RegenerateWebsitePayload,
 ): Promise<RegenerateWebsiteResponse> {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/website/regenerate`,
@@ -19,7 +20,7 @@ export async function regenerateWebsite(
       },
       body: JSON.stringify(payload),
       credentials: "include",
-    }
+    },
   );
 
   if (!res.ok) {

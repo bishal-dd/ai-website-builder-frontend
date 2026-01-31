@@ -36,6 +36,50 @@ const cssStringToObject = (
   return style as React.CSSProperties;
 };
 
+const hasExplicitSize = (className?: string) =>
+  !!className?.match(/\b(w|h)-(\d+|\[.+?\])\b/);
+
+const normalizeAttributes = (
+  attrs?: Record<string, unknown>,
+): Record<string, unknown> => {
+  if (!attrs) return {};
+
+  const result: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key === "style") continue;
+
+    // 1️⃣ Preserve data-* EXACTLY
+    if (key.startsWith("data-")) {
+      result[key] = value;
+      continue;
+    }
+
+    // 2️⃣ Preserve aria-* EXACTLY
+    if (key.startsWith("aria-")) {
+      result[key] = value;
+      continue;
+    }
+
+    // 3️⃣ Event handlers must be FUNCTIONS
+    if (key.toLowerCase().startsWith("on")) {
+      // Ignore string-based handlers (HTML-style)
+      if (typeof value === "function") {
+        const reactEvent = "on" + key.slice(2, 3).toUpperCase() + key.slice(3);
+        result[reactEvent] = value;
+      }
+      continue;
+    }
+
+    // 4️⃣ Convert kebab-case → camelCase (SVG & HTML attrs)
+    const camelKey = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+
+    result[camelKey] = value;
+  }
+
+  return result;
+};
+
 export function JsonRenderer({
   elements,
   sharedComponents,
@@ -125,9 +169,10 @@ export function JsonRenderer({
     const props: React.AllHTMLAttributes<HTMLElement> & { key: React.Key } = {
       key: `${id}-${device}`,
       className: className,
-      style: cssStringToObject(attributes?.style),
-      href: attributes?.href,
-      src: attributes?.src,
+      ...normalizeAttributes(attributes),
+      style: {
+        ...cssStringToObject(attributes?.style),
+      },
     };
 
     // --- INLINE EDITING LOGIC ---
@@ -174,10 +219,12 @@ export function JsonRenderer({
 
     // --- IMAGE LOGIC ---
     // Inside renderElement, replace the img logic:
+    const hasSize = hasExplicitSize(className);
 
     if (tag === "img") {
       const imageSrc = content?.startsWith("http") ? content : attributes?.src;
       const isLogo = element.attributes?.["data-role"] === "logo";
+      const isIcon = element.attributes?.["data-role"] === "social-icon";
       const fixedStyle = cssStringToObject(attributes?.style);
 
       const isActive =
@@ -191,6 +238,8 @@ export function JsonRenderer({
             zIndex: isActive ? 50 : "auto",
             height: isLogo ? "100%" : "auto",
             pointerEvents: "auto",
+            display: isIcon ? "inline-block" : "inline-flex",
+            lineHeight: 0,
           }}
           onMouseEnter={() => device === "desktop" && setHoveredImageId(id)}
           onMouseLeave={() => device === "desktop" && setHoveredImageId(null)}
@@ -201,13 +250,19 @@ export function JsonRenderer({
             src: imageSrc,
             style: {
               ...fixedStyle,
-              maxWidth: "100%",
-              maxHeight: "100%",
-              width: isLogo ? "auto" : "100%",
-              height: isLogo ? "100%" : "auto",
-              objectFit: "contain",
+              ...(isIcon
+                ? {}
+                : {
+                    ...fixedStyle,
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    width: isLogo || hasSize ? "auto" : "100%",
+                    height: isLogo || hasSize ? "auto" : "auto",
+                    objectFit: "contain",
+                    pointerEvents: "auto",
+                  }),
+
               display: "block",
-              pointerEvents: "auto",
             },
           })}
 
@@ -248,6 +303,14 @@ export function JsonRenderer({
           )}
         </div>
       );
+    }
+
+    if (tag === "svg") {
+      props.style = {
+        ...props.style,
+        flexShrink: 0, // Prevent icons from squishing in flex containers
+        display: "block",
+      };
     }
 
     const childElements = children
