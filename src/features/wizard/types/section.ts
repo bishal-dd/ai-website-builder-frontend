@@ -2,10 +2,8 @@ import {
   Sparkles,
   Grid3x3,
   MessageSquare,
-  Megaphone,
   Images,
   HelpCircle,
-  Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -16,11 +14,9 @@ export type SectionType =
   | "hero"
   | "features"
   | "testimonials"
-  | "cta"
   | "gallery"
   | "content"
-  | "faq"
-  | "team";
+  | "faq";
 
 /**
  * A single section in a page.
@@ -63,12 +59,6 @@ export const sectionTypes: {
     description: "Customer reviews and social proof",
   },
   {
-    value: "cta",
-    label: "Call to Action",
-    icon: Megaphone,
-    description: "Encourage users to take action",
-  },
-  {
     value: "gallery",
     label: "Gallery",
     icon: Images,
@@ -79,11 +69,5 @@ export const sectionTypes: {
     label: "FAQ",
     icon: HelpCircle,
     description: "Frequently asked questions section",
-  },
-  {
-    value: "team",
-    label: "Team",
-    icon: Users,
-    description: "Show your team members with roles and bios",
   },
 ];

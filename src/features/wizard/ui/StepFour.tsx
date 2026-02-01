@@ -1,130 +1,99 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
-import { SectionEditor } from "./SectionEditor";
 import { useStepFourLogic } from "../hooks/useStepFourLogic";
 import { SectionType, sectionTypes } from "../types/section";
 import { cn } from "@/lib/utils";
+import { Plus, Lock } from "lucide-react";
 
-type StepFourProps = {
-  stepErrors?: Record<string, string[]>;
-};
-
-export function StepFour({ stepErrors }: StepFourProps) {
+export function StepFour() {
   const {
     selectedPages,
     activeTab,
     setActiveTab,
     getCurrentPageContent,
     handleAddSection,
-    handleUpdateSection,
-    handleDeleteSection,
-    handleAddItem,
-    handleUpdateItem,
-    handleDeleteItem,
   } = useStepFourLogic();
 
   const [selectedSection, setSelectedSection] = useState("");
 
-  if (selectedPages.length === 0) {
-    return (
-      <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">Add Page Content</h2>
-        <p className="text-muted-foreground">
-          No pages selected. Please go back and select at least one page.
-        </p>
-      </div>
-    );
-  }
+  if (selectedPages.length === 0) return null;
 
   const currentPageContent = getCurrentPageContent();
   const isHomePage = activeTab === "home";
 
-  // Get errors specific to the current active page
-  const currentPageErrors = stepErrors?.[activeTab] || [];
-
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="max-w-xl mx-auto space-y-12">
+      {/* 1. Simple Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Add Page Content</h2>
-        <p className="text-muted-foreground">
-          Fill in content for each section on your pages
+        <h2 className="text-2xl font-semibold tracking-tight">
+          Page Structure
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Arrange the sections for your website. AI handles the content.
         </p>
       </div>
 
-      {/* Tabs - Using Red Border instead of Dot */}
-      <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto">
-        {selectedPages.map((page) => {
-          const hasError = stepErrors?.[page] && stepErrors[page].length > 0;
-          const isActive = activeTab === page;
-
-          return (
-            <button
-              key={page}
-              onClick={() => setActiveTab(page)}
-              className={cn(
-                "relative py-2.5 px-4 rounded-md capitalize font-medium transition-all border-2",
-                // Base Active vs Inactive styles
-                isActive
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                  : "bg-muted text-muted-foreground border-transparent hover:bg-secondary",
-
-                // Error State Styles
-                hasError &&
-                  (isActive
-                    ? "bg-primary text-primary-foreground border-red-500 shadow-md"
-                    : "bg-red-50 text-red-700 border-red-500 hover:bg-red-100"),
-              )}
-            >
-              {page}
-            </button>
-          );
-        })}
+      {/* 2. Navigation */}
+      <div className="flex justify-center border-b">
+        {selectedPages.map((page) => (
+          <button
+            key={page}
+            onClick={() => setActiveTab(page)}
+            className={cn(
+              "px-6 py-3 text-sm font-medium capitalize transition-all border-b-2 -mb-[2px]",
+              activeTab === page
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {page}
+          </button>
+        ))}
       </div>
 
-      {/* Sections List */}
-      <div className="space-y-6 max-w-3xl mx-auto">
+      {/* 3. The Section List with Descriptions */}
+      <div className="space-y-3">
         {currentPageContent.sections.map((section) => {
-          // Identify if THIS specific section has an error
-          // This works if your validation logic passes the section ID or Type in the array
-          const hasSectionError = currentPageErrors.some(
-            (err) =>
-              err.toLowerCase().includes(section.type.toLowerCase()) ||
-              err === section.id,
-          );
+          const isHero = section.type === "hero";
+          const typeInfo = sectionTypes.find((t) => t.value === section.type);
 
           return (
-            <SectionEditor
+            <div
               key={section.id}
-              section={section}
-              page={currentPageContent.page}
-              onUpdate={handleUpdateSection}
-              onDelete={handleDeleteSection}
-              onAddItem={handleAddItem}
-              onUpdateItem={handleUpdateItem}
-              onDeleteItem={handleDeleteItem}
-              // Pass the error message down - SectionEditor will render it below the Textarea
-              error={
-                hasSectionError
-                  ? "This section requires content or AI generation"
-                  : null
-              }
-            />
+              className="flex items-center justify-between p-4 bg-card border rounded-lg transition-colors hover:border-muted-foreground/20"
+            >
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold capitalize">
+                    {section.type.replace("-", " ")}
+                  </span>
+                  {/* Keep the badge only for the Hero to show it's the anchor */}
+                  {isHero && (
+                    <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-tighter font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                      <Lock className="w-2.5 h-2.5" /> Fixed
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {typeInfo?.description || "Content will be generated by AI."}
+                </p>
+              </div>
+
+              {/* The delete button is gone. Total simplicity. */}
+            </div>
           );
         })}
 
-        {/* Add section button (Home only) */}
+        {/* 4. Minimalist Add Button */}
         {isHomePage && (
-          <Card className="p-4 border-dashed">
+          <div className="pt-2">
             <Select
               value={selectedSection}
               onValueChange={(value: string) => {
@@ -132,29 +101,30 @@ export function StepFour({ stepErrors }: StepFourProps) {
                 setSelectedSection("");
               }}
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Add another section" />
+              <SelectTrigger className="w-full h-12 bg-transparent border-dashed border-2 hover:bg-muted/30 transition-all">
+                <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm font-medium">
+                  <Plus className="w-4 h-4" />
+                  <span>Add Section</span>
+                </div>
               </SelectTrigger>
               <SelectContent>
-                {sectionTypes.map((type) => {
-                  const Icon = type.icon;
-                  return (
+                {sectionTypes
+                  .filter((t) => t.value !== "hero")
+                  .map((type) => (
                     <SelectItem key={type.value} value={type.value}>
-                      <div className="flex items-center gap-2">
-                        <Icon className="w-4 h-4" />
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">{type.label}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {type.description}
-                          </span>
-                        </div>
+                      <div className="flex flex-col py-0.5">
+                        <span className="font-medium text-sm">
+                          {type.label}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground leading-tight">
+                          {type.description}
+                        </span>
                       </div>
                     </SelectItem>
-                  );
-                })}
+                  ))}
               </SelectContent>
             </Select>
-          </Card>
+          </div>
         )}
       </div>
     </div>

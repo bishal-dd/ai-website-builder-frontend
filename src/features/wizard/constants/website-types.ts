@@ -1,12 +1,5 @@
 import { WebsiteType } from "../types";
-import {
-  Briefcase,
-  Home,
-  Globe,
-  Sparkles,
-  Coffee,
-  Building,
-} from "lucide-react";
+import { Briefcase, Home, Globe, Coffee, Building } from "lucide-react";
 
 export const websiteTypes = [
   {
@@ -32,12 +25,6 @@ export const websiteTypes = [
     label: "Travel Agency",
     description: "Promote travel packages and bookings",
     icon: Globe,
-  },
-  {
-    type: "marketing page" as WebsiteType,
-    label: "Marketing Page (Default)",
-    description: "Promote a product or service",
-    icon: Sparkles,
   },
   {
     type: "smallMediumBusiness" as WebsiteType,

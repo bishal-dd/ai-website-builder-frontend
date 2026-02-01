@@ -5,7 +5,6 @@ export type WebsiteType =
   | "restaurant"
   | "hotel"
   | "travel agency"
-  | "marketing page"
   | "smallMediumBusiness";
 
 export type WizardStateForAPI = {
@@ -13,7 +12,6 @@ export type WizardStateForAPI = {
   description?: string;
   designType?: string;
   primaryColor?: string;
-  secondaryColor?: string;
   pageContents?: {
     page: string;
     sections: Section[];

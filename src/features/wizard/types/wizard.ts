@@ -7,10 +7,8 @@ export interface WizardState {
   websiteType: WebsiteType | null;
   selectedPages: PageType[];
   websiteName: string;
-  tagline?: string;
   designType: string;
   primaryColor: string;
-  secondaryColor: string;
   contactEmail?: string;
   contactPhone?: string;
   country: string;
@@ -26,10 +24,8 @@ export interface WizardState {
   setWebsiteInfo: (
     info: Partial<{
       websiteName: string;
-      tagline: string;
       designType: string;
       primaryColor: string;
-      secondaryColor: string;
       contactEmail: string;
       contactPhone: string;
       country: string;

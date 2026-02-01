@@ -124,7 +124,6 @@ export const websitePagesMap: Record<
   | "hotel"
   | "travel agency"
   | "shop"
-  | "marketing page"
   | "smallMediumBusiness",
   PageType[]
 > = {
@@ -138,9 +137,45 @@ export const websitePagesMap: Record<
 
   shop: ["home", "products", "about", "contact"],
 
-  "marketing page": ["home", "services", "about", "products", "contact"],
-
   smallMediumBusiness: ["home", "services", "about", "products", "contact"],
+};
+
+export const websitePageDefaults: Record<
+  keyof typeof websitePagesMap,
+  {
+    required: PageType[];
+    defaultSelected: PageType[];
+  }
+> = {
+  portfolio: {
+    required: ["home"],
+    defaultSelected: ["about", "projects", "contact"],
+  },
+
+  restaurant: {
+    required: ["home"],
+    defaultSelected: ["menu", "about", "contact"],
+  },
+
+  hotel: {
+    required: ["home"],
+    defaultSelected: ["rooms", "amenities", "contact"],
+  },
+
+  "travel agency": {
+    required: ["home"],
+    defaultSelected: ["tours", "about", "contact"],
+  },
+
+  shop: {
+    required: ["home"],
+    defaultSelected: ["products", "about", "contact"],
+  },
+
+  smallMediumBusiness: {
+    required: ["home"],
+    defaultSelected: ["services", "about", "contact"],
+  },
 };
 
 /**

@@ -50,6 +50,7 @@ export default function WebsiteWizard() {
           errors.websiteName = ["Website name is required."];
         }
 
+        // Email and Phone validation
         if (!state.contactEmail?.trim() && !state.contactPhone?.trim()) {
           errors.contact = [
             "Please provide at least an email or phone number.",
@@ -68,26 +69,8 @@ export default function WebsiteWizard() {
         break;
 
       case 4:
-        state.selectedPages.forEach((page) => {
-          const pageData = state.pageContents.find((p) => p.page === page);
-
-          const invalidSectionIds: string[] = [];
-
-          if (pageData) {
-            pageData.sections.forEach((section) => {
-              const hasContent = section.content?.trim().length > 0;
-              const hasItems = section.items && section.items.length > 0;
-
-              if (!section.aiGenerated && !hasContent && !hasItems) {
-                invalidSectionIds.push(section.id);
-              }
-            });
-          }
-
-          if (invalidSectionIds.length > 0) {
-            errors[page] = invalidSectionIds;
-          }
-        });
+        // Removed content/item validation since AI generates all content.
+        // Step 4 is now effectively always valid as long as the state exists.
         break;
     }
 
@@ -95,12 +78,12 @@ export default function WebsiteWizard() {
     return Object.keys(errors).length === 0;
   }, [currentStep, state]);
 
+  // Cleaned up effect: only validate if relevant.
+  // Step 4 content validation is removed, so this effect is mostly defensive now.
   useEffect(() => {
     if (!hasAttemptedComplete) return;
-    if (currentStep !== 4) return;
-
     validateStep();
-  }, [hasAttemptedComplete, currentStep, state.pageContents, validateStep]);
+  }, [hasAttemptedComplete, currentStep, validateStep]);
 
   const handleNextStep = () => {
     if (validateStep()) {
@@ -152,7 +135,7 @@ export default function WebsiteWizard() {
       case 3:
         return <StepThree stepErrors={stepErrors} />;
       case 4:
-        return <StepFour stepErrors={stepErrors} />;
+        return <StepFour />;
       default:
         return null;
     }
@@ -162,22 +145,28 @@ export default function WebsiteWizard() {
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold mb-2">Create Your Website</h1>
+          <h1 className="text-4xl font-bold mb-2 tracking-tight">
+            Create Your Website
+          </h1>
           <p className="text-lg text-muted-foreground">
             Generate your perfect website in just a few steps
           </p>
         </div>
 
-        <Card className="p-6 sm:p-8">
+        <Card className="p-6 sm:p-8 border-none shadow-xl bg-card/50 backdrop-blur-sm">
           <ProgressBar currentStep={currentStep} totalSteps={TOTAL_STEPS} />
 
           <div className="min-h-[400px] mb-8">{renderStep()}</div>
 
-          {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
+          {errorMessage && (
+            <div className="p-3 mb-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
+              {errorMessage}
+            </div>
+          )}
 
           <div className="flex justify-between items-center pt-6 border-t">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={handleBackStep}
               disabled={currentStep === 1 || isLoading}
             >
@@ -186,18 +175,26 @@ export default function WebsiteWizard() {
             </Button>
 
             {currentStep < TOTAL_STEPS ? (
-              <Button onClick={handleNextStep} disabled={isLoading}>
-                Next
+              <Button
+                onClick={handleNextStep}
+                disabled={isLoading}
+                className="px-8 transition-all active:scale-95"
+              >
+                Next Step
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             ) : (
-              <Button onClick={handleComplete} disabled={isLoading}>
+              <Button
+                onClick={handleComplete}
+                disabled={isLoading}
+                className="px-8 bg-primary hover:bg-primary/90 transition-all active:scale-95"
+              >
                 {isLoading ? (
-                  "Submitting..."
+                  "Generating Site..."
                 ) : (
                   <>
                     <Check className="w-4 h-4 mr-2" />
-                    Complete
+                    Complete Setup
                   </>
                 )}
               </Button>
