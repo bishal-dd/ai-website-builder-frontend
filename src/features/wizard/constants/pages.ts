@@ -215,7 +215,14 @@ export const pageSectionsMap: Record<PageType, SectionType[]> = {
 
 export const defaultPagePlaceholders: Record<PageType, Omit<Section, "id">[]> =
   {
-    home: [],
+    home: [
+      {
+        type: "cta",
+        content: "",
+        placeholder:
+          "👋 Welcome visitors to your website! Share your brand story, mission, and what makes your business or project special.",
+      },
+    ],
 
     about: [
       {

@@ -176,7 +176,17 @@ export function JsonRenderer({
     };
 
     // --- INLINE EDITING LOGIC ---
-    const isTextElement = content && !children && tag !== "img";
+    const isLink = tag === "a";
+    if (isLink) {
+      props.onClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+    }
+    // A text element is either a tag with direct content OR a span/p/label etc.
+    const isTextElement =
+      typeof content === "string" && !children && tag !== "img";
+
     const isEditable =
       isTextElement && (onUpdateElement || onUpdateSharedElement);
 
@@ -191,12 +201,10 @@ export function JsonRenderer({
 
       props.onFocus = (e) => {
         e.currentTarget.style.outline = "2px solid #facc15"; // yellow
-        e.currentTarget.style.backgroundColor = "rgba(250, 204, 21, 0.15)";
       };
 
       props.onBlur = (e) => {
         e.currentTarget.style.outline = "none";
-        e.currentTarget.style.backgroundColor = "transparent";
         handleTextSave(id, componentKey, e.currentTarget.innerText);
       };
 

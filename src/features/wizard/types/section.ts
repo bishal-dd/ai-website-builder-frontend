@@ -16,7 +16,8 @@ export type SectionType =
   | "testimonials"
   | "gallery"
   | "content"
-  | "faq";
+  | "faq"
+  | "cta";
 
 /**
  * A single section in a page.
