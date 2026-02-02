@@ -50,7 +50,10 @@ export default function WebsiteWizard() {
           errors.websiteName = ["Website name is required."];
         }
 
-        // Email and Phone validation
+        if (!state.description.trim()) {
+          errors.description = ["Website description is required."];
+        }
+
         if (!state.contactEmail?.trim() && !state.contactPhone?.trim()) {
           errors.contact = [
             "Please provide at least an email or phone number.",
