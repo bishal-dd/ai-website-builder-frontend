@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -9,91 +9,99 @@ import {
 } from "@/components/ui/select";
 import { useStepFourLogic } from "../hooks/useStepFourLogic";
 import { SectionType, sectionTypes } from "../types/section";
-import { cn } from "@/lib/utils";
-import { Plus, Lock } from "lucide-react";
+import { Plus, Lock, FileText, CheckCircle2, X } from "lucide-react";
 
 export function StepFour() {
   const {
     selectedPages,
-    activeTab,
     setActiveTab,
     getCurrentPageContent,
     handleAddSection,
+    handleDeleteSection,
   } = useStepFourLogic();
 
   const [selectedSection, setSelectedSection] = useState("");
 
+  useEffect(() => {
+    setActiveTab("home");
+  }, [setActiveTab]);
+
   if (selectedPages.length === 0) return null;
 
-  const currentPageContent = getCurrentPageContent();
-  const isHomePage = activeTab === "home";
+  const homePageContent = getCurrentPageContent();
+  const otherPages = selectedPages.filter((p) => p !== "home");
 
   return (
-    <div className="max-w-xl mx-auto space-y-12">
-      {/* 1. Simple Header */}
+    <div className="max-w-4xl mx-auto space-y-10 px-4">
+      {/* 1. Header */}
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-semibold tracking-tight">
-          Page Structure
+          Finalize Structure
         </h2>
         <p className="text-muted-foreground text-sm">
-          Arrange the sections for your website. AI handles the content.
+          Customize your homepage. Subpages will be auto-generated.
         </p>
       </div>
 
-      {/* 2. Navigation */}
-      <div className="flex justify-center border-b">
-        {selectedPages.map((page) => (
-          <button
-            key={page}
-            onClick={() => setActiveTab(page)}
-            className={cn(
-              "px-6 py-3 text-sm font-medium capitalize transition-all border-b-2 -mb-[2px]",
-              activeTab === page
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {page}
-          </button>
-        ))}
-      </div>
+      {/* 2. Home Page Layout Section */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b pb-2">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/70">
+              Homepage Layout
+            </h3>
+          </div>
+          <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">
+            EDITABLE
+          </span>
+        </div>
 
-      {/* 3. The Section List with Descriptions */}
-      <div className="space-y-3">
-        {currentPageContent.sections.map((section) => {
-          const isHero = section.type === "hero";
-          const typeInfo = sectionTypes.find((t) => t.value === section.type);
+        {/* Responsive Grid: 1 column on mobile, 2 columns on tablet/desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {homePageContent.sections.map((section) => {
+            const isHero = section.type === "hero";
+            const typeInfo = sectionTypes.find((t) => t.value === section.type);
 
-          return (
-            <div
-              key={section.id}
-              className="flex items-center justify-between p-4 bg-card border rounded-lg transition-colors hover:border-muted-foreground/20"
-            >
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold capitalize">
-                    {section.type.replace("-", " ")}
-                  </span>
-                  {/* Keep the badge only for the Hero to show it's the anchor */}
-                  {isHero && (
-                    <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-tighter font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                      <Lock className="w-2.5 h-2.5" /> Fixed
-                    </span>
-                  )}
+            return (
+              <div
+                key={section.id}
+                className="group relative flex flex-col justify-between p-4 bg-card border rounded-xl transition-all hover:shadow-md hover:border-primary/20"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold capitalize">
+                        {section.type.replace("-", " ")}
+                      </span>
+                      {isHero && (
+                        <span className="inline-flex items-center gap-1 text-[9px] uppercase font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                          <Lock className="w-2.5 h-2.5" /> Fixed
+                        </span>
+                      )}
+                    </div>
+
+                    {/* X Button: Hidden for Hero, visible for others */}
+                    {!isHero && (
+                      <button
+                        onClick={() => handleDeleteSection(section.id)}
+                        className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    {typeInfo?.description ||
+                      "Content will be generated by AI."}
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {typeInfo?.description || "Content will be generated by AI."}
-                </p>
               </div>
+            );
+          })}
 
-              {/* The delete button is gone. Total simplicity. */}
-            </div>
-          );
-        })}
-
-        {/* 4. Minimalist Add Button */}
-        {isHomePage && (
-          <div className="pt-2">
+          {/* Add Button: Now part of the grid so it sits "to the side" on desktop */}
+          <div className="h-full min-h-[80px]">
             <Select
               value={selectedSection}
               onValueChange={(value: string) => {
@@ -101,15 +109,15 @@ export function StepFour() {
                 setSelectedSection("");
               }}
             >
-              <SelectTrigger className="w-full h-12 bg-transparent border-dashed border-2 hover:bg-muted/30 transition-all">
-                <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm font-medium">
-                  <Plus className="w-4 h-4" />
-                  <span>Add Section</span>
-                </div>
+              <SelectTrigger className="w-full h-full min-h-[80px] bg-transparent border-dashed border-2 hover:bg-primary/5 hover:border-primary/50 transition-all flex flex-col items-center justify-center gap-1 rounded-xl">
+                <Plus className="w-5 h-5 text-primary" />
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Add Section
+                </span>
               </SelectTrigger>
               <SelectContent>
                 {sectionTypes
-                  .filter((t) => t.value !== "hero")
+                  .filter((t) => t.value !== "hero" && t.value !== "content")
                   .map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       <div className="flex flex-col py-0.5">
@@ -125,7 +133,29 @@ export function StepFour() {
               </SelectContent>
             </Select>
           </div>
-        )}
+        </div>
+      </div>
+
+      {/* 3. Included Subpages */}
+      <div className="pt-6 border-t">
+        <div className="flex items-center gap-2 mb-4 px-1">
+          <CheckCircle2 className="w-4 h-4 text-green-600" />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/70">
+            Included Pages
+          </h3>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {otherPages.map((page) => (
+            <div
+              key={page}
+              className="px-4 py-1.5 bg-muted/40 border rounded-full text-[11px] font-bold capitalize flex items-center gap-2"
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]" />
+              {page}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
