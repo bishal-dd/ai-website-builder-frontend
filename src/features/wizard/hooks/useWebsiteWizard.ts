@@ -4,6 +4,7 @@ export type WizardStepErrors = {
   websiteType?: string[];
   pages?: string[];
   websiteName?: string[];
+  websiteDescription?: string[];
   contact?: string[];
   pageErrors?: Record<string, string[]>;
 };
@@ -18,6 +19,7 @@ export const useWebsiteWizard = (totalSteps: number) => {
     pageContents,
     contactEmail,
     contactPhone,
+    description,
   } = useWizardStore();
 
   /** Validate current step and return structured errors */
@@ -37,6 +39,10 @@ export const useWebsiteWizard = (totalSteps: number) => {
       case 3:
         if (!websiteName?.trim())
           errors.websiteName = ["Website name is required"];
+
+        if (!description?.trim()) {
+          errors.websiteDescription = ["Website description is required"];
+        }
 
         if (!contactEmail?.trim() && !contactPhone?.trim()) {
           errors.contact = ["Provide at least an email or a phone number"];
@@ -60,7 +66,7 @@ export const useWebsiteWizard = (totalSteps: number) => {
             .filter(
               (section) =>
                 !section.aiGenerated &&
-                (!section.content || !section.content.trim())
+                (!section.content || !section.content.trim()),
             )
             .map((section) => section.type);
           if (emptySections.length > 0) pageErrors[page] = emptySections;

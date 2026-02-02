@@ -83,13 +83,25 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                 <Label htmlFor="description">
                   Website Description <span className="text-red-500">*</span>
                 </Label>
+
                 <Textarea
                   id="description"
                   placeholder="Describe your business and services..."
-                  className="min-h-[100px] resize-none"
+                  className={cn(
+                    "min-h-[100px] resize-none",
+                    Boolean(stepErrors.websiteDescription?.length) &&
+                      "border-red-500 focus-visible:ring-red-500",
+                  )}
                   value={description}
                   onChange={(e) => handleChange("description", e.target.value)}
                 />
+
+                {stepErrors.description?.map((msg, idx) => (
+                  <p key={idx} className="text-sm text-red-500">
+                    {msg}
+                  </p>
+                ))}
+
                 <p className="text-xs text-muted-foreground">
                   Detailed descriptions help our AI generate better sections.
                 </p>
