@@ -31,6 +31,8 @@ import Frame from "react-frame-component";
 import { redeployWebsite } from "../api/redeployWebsite";
 import useGetGeneratedWebsite from "../hooks/useGetGeneratedWebsite";
 import { toast } from "sonner";
+import Image from "next/image";
+import Link from "next/link";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
@@ -132,47 +134,95 @@ export function PreviewPanelJson({
           </Tabs>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={() => router.push("/dashboard")}>
-            <LayoutDashboard className="h-4 w-4" />
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          {/* Ask for help */}
+          <Button
+            asChild
+            className="bg-green-600 hover:bg-green-700 text-white shadow-sm
+                       px-2 sm:px-3"
+          >
+            <a
+              href="https://wa.me/97517959259?text=Hi%20I%20need%20help%20with%20my%20website"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center"
+            >
+              <Image
+                src="https://d343yoq90h416j.cloudfront.net/default-images/social-icons/whatsapp-icon.svg"
+                alt="WhatsApp"
+                width={18}
+                height={18}
+              />
+              <span className="hidden sm:inline text-sm font-medium">
+                Ask for help
+              </span>
+            </a>
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => router.refresh()}>
+
+          {/* Dashboard */}
+          <Button variant="outline" asChild>
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <LayoutDashboard className="h-4 w-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </Link>
+          </Button>
+
+          {/* Refresh */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => router.refresh()}
+          >
             <RefreshCw className="h-4 w-4" />
           </Button>
-          {/* THE TOGGLE LOGIC */}
-          {/* ... inside your header action area ... */}
+
+          {/* Publish / Republish */}
           {isFetchingData ? (
-            <Button disabled variant="outline">
-              Checking status...
+            <Button disabled variant="outline" className="px-3">
+              <span className="hidden sm:inline">Checking status...</span>
+              <span className="sm:hidden">…</span>
             </Button>
           ) : isDeployed ? (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="default">Republish</Button>
+                <Button variant="default" className="px-3">
+                  <span className="hidden sm:inline">Republish</span>
+                  <span className="sm:hidden">Publish</span>
+                </Button>
               </AlertDialogTrigger>
-
               <AlertDialogContent>
+                {" "}
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  {" "}
+                  <AlertDialogTitle>
+                    Are you absolutely sure?
+                  </AlertDialogTitle>{" "}
                   <AlertDialogDescription>
+                    {" "}
                     This will push your latest changes to the live production
-                    site. This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
+                    site. This action cannot be undone.{" "}
+                  </AlertDialogDescription>{" "}
+                </AlertDialogHeader>{" "}
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  {" "}
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>{" "}
                   <AlertDialogAction
                     onClick={handleRepublish}
                     className="bg-primary text-primary-foreground"
                   >
-                    Confirm Republish
-                  </AlertDialogAction>
-                </AlertDialogFooter>
+                    {" "}
+                    Confirm Republish{" "}
+                  </AlertDialogAction>{" "}
+                </AlertDialogFooter>{" "}
               </AlertDialogContent>
             </AlertDialog>
           ) : (
-            <Button onClick={() => router.push(`/domain/${websiteId}`)}>
-              Publish
+            <Button
+              className="px-3"
+              onClick={() => router.push(`/domain/${websiteId}`)}
+            >
+              <span className="hidden sm:inline">Publish</span>
+              <span className="sm:hidden">Go</span>
             </Button>
           )}
         </div>

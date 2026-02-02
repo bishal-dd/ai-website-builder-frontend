@@ -26,7 +26,7 @@ export function PaymentSummary({
   countryCode,
 }: PaymentSummaryProps) {
   const { status, setStatus, progress } = useWebsiteDeploymentStatus(
-    websiteId!
+    websiteId!,
   );
 
   const hostingPrice = selectedDomain.hostingPrice ?? 0;
@@ -69,18 +69,18 @@ export function PaymentSummary({
               <span>{selectedDomain.domain}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>Domain Registration (1 year)</span>
+              <span>Domain Registration (per year)</span>
               <span>{formatPrice(selectedDomain.price)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>Hosting Service</span>
+              <span>Hosting Service (per year)</span>
               <span>{formatPrice(hostingPrice)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span>Website Generation</span>
               <span>{formatPrice(websitePrice)}</span>
             </div>
-            <div className="flex items-center justify-between font-bold text-primary">
+            <div className="flex items-center justify-between font-bold text-shadow-primary-foreground">
               <span>Total Amount</span>
               <span>{formatPrice(totalPrice)}</span>
             </div>

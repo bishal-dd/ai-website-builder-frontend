@@ -178,11 +178,10 @@ export function JsonRenderer({
     // --- INLINE EDITING LOGIC ---
     const isLink = tag === "a";
     if (isLink) {
-      props.onClick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      };
+      props.href = undefined;
+      props.onClick = undefined;
     }
+
     // A text element is either a tag with direct content OR a span/p/label etc.
     const isTextElement =
       typeof content === "string" && !children && tag !== "img";
@@ -193,6 +192,7 @@ export function JsonRenderer({
     if (isEditable) {
       props.contentEditable = true;
       props.suppressContentEditableWarning = true;
+
       props.style = {
         ...(props.style || {}),
         cursor: "text",

@@ -95,7 +95,15 @@ export function DomainModal({
       (selectedDomain.websitePrice ?? 0);
 
     const message = encodeURIComponent(
-      `Hi! I'd like to purchase:\n\nDomain: ${selectedDomain.domain}\nDomain Price: ${selectedDomain.price}\nHosting: ${selectedDomain.hostingPrice}\nWebsite Generation: ${selectedDomain.websitePrice}\nTotal: ${total}\nContact: ${contact.email}`,
+      `Hi! I'd like to purchase:
+
+  Website ID: ${websiteId}
+
+  Domain: ${selectedDomain.domain}
+  Domain Price: ${selectedDomain.price}
+  Hosting: ${selectedDomain.hostingPrice}
+  Website Generation: ${selectedDomain.websitePrice}
+  Total: ${total}`,
     );
 
     window.open(`https://wa.me/17959259?text=${message}`, "_blank");
