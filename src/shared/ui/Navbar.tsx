@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Wand2, LogOut, ArrowLeft } from "lucide-react";
+import { LogOut, ArrowLeft } from "lucide-react";
 import { useSession } from "@/shared/session/useSession";
 import Image from "next/image";
 
@@ -37,14 +37,16 @@ export default function Navbar() {
           {/* Brand */}
           <Link
             href="/dashboard"
-            className="flex items-center gap-2 transition-opacity hover:opacity-80"
+            className="flex items-center transition-opacity hover:opacity-80"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <Wand2 className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-semibold text-gray-900">
-              Sencill AI
-            </span>
+            <Image
+              src="/SencillAI-logo.webp"
+              alt="Sencill AI"
+              width={150}
+              height={150}
+              className="rounded-lg"
+              priority
+            />
           </Link>
         </div>
 

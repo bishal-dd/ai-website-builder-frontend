@@ -1,10 +1,4 @@
-import {
-  Sparkles,
-  Grid3x3,
-  MessageSquare,
-  Images,
-  HelpCircle,
-} from "lucide-react";
+import { Sparkles, Grid3x3, MessageSquare } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 /**
@@ -17,6 +11,8 @@ export type SectionType =
   | "gallery"
   | "content"
   | "faq"
+  | "how-it-works"
+  | "about-preview"
   | "cta";
 
 /**
@@ -48,27 +44,21 @@ export const sectionTypes: {
     description: "Large banner with headline and CTA",
   },
   {
-    value: "features",
-    label: "Features",
+    value: "how-it-works",
+    label: "How It Works",
     icon: Grid3x3,
-    description: "Highlight key features or services",
+    description: "Detailed explanation of how your product or service works",
+  },
+  {
+    value: "faq",
+    label: "Frequently Asked Questions",
+    icon: Grid3x3,
+    description: "Answers to common questions about your product or service",
   },
   {
     value: "testimonials",
     label: "Testimonials",
     icon: MessageSquare,
     description: "Customer reviews and social proof",
-  },
-  {
-    value: "gallery",
-    label: "Gallery",
-    icon: Images,
-    description: "Image showcase or portfolio",
-  },
-  {
-    value: "faq",
-    label: "FAQ",
-    icon: HelpCircle,
-    description: "Frequently asked questions section",
   },
 ];

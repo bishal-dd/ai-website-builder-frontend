@@ -119,10 +119,6 @@ export default function Preview() {
       websiteId,
       body: { shared_components: newSharedComponents },
     });
-
-    console.log(
-      `Updated shared component ${componentKey} element ${elementId}`,
-    );
   };
 
   const sortedPages = [...websiteData.elements].sort(

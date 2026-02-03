@@ -63,7 +63,7 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
           duration: 0.6,
           ease: "back.out(1.7)",
         },
-        "-=0.1"
+        "-=0.1",
       );
 
       gsap.set(spinnerRef.current, { scale: 0, rotation: -180 });
@@ -75,7 +75,7 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
           duration: 0.5,
           ease: "back.out(1.4)",
         },
-        "-=0.3"
+        "-=0.3",
       );
 
       gsap.set(iconRef.current, { scale: 0 });
@@ -86,7 +86,7 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
           duration: 0.4,
           ease: "elastic.out(1, 0.6)",
         },
-        "-=0.2"
+        "-=0.2",
       );
 
       gsap.set([titleRef.current, descRef.current], { opacity: 0, y: 20 });
@@ -97,7 +97,7 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
           y: 0,
           duration: 0.4,
         },
-        "-=0.2"
+        "-=0.2",
       );
       tl.to(
         descRef.current,
@@ -106,7 +106,7 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
           y: 0,
           duration: 0.4,
         },
-        "-=0.3"
+        "-=0.3",
       );
 
       const stepElements = stepsContainerRef.current?.children;
@@ -121,7 +121,7 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
             stagger: 0.1,
             ease: "power2.out",
           },
-          "-=0.2"
+          "-=0.2",
         );
       }
     });
@@ -207,7 +207,7 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
             ease: "sine.inOut",
             yoyo: true,
             repeat: 3,
-          }
+          },
         );
       }
 
@@ -221,7 +221,7 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
             x: 0,
             duration: 0.6,
             ease: "power2.out",
-          }
+          },
         );
       }
 
@@ -269,7 +269,7 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
           scale: 1,
           duration: 0.5,
           ease: "back.out(1.5)",
-        }
+        },
       );
     }
   }, [currentThought, currentStep, isOpen]);
@@ -353,8 +353,8 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
                       isActive
                         ? "bg-primary/10 shadow-lg"
                         : isCompleted
-                        ? "opacity-50"
-                        : "opacity-30"
+                          ? "opacity-50"
+                          : "opacity-30"
                     }`}
                   >
                     <div
@@ -362,8 +362,8 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
                         isActive
                           ? "bg-primary text-primary-foreground shadow-md"
                           : isCompleted
-                          ? "bg-primary/50 text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
+                            ? "bg-primary/50 text-primary-foreground"
+                            : "bg-muted text-muted-foreground"
                       }`}
                     >
                       <Icon className="w-6 h-6" />
