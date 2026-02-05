@@ -14,6 +14,7 @@ export interface Session {
     name: string;
     email: string;
     emailVerified: boolean;
+    role?: string; // <-- Add this here
     image?: string | null;
   };
 }
