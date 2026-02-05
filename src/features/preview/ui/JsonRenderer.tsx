@@ -90,6 +90,7 @@ export function JsonRenderer({
   const { user } = useSession();
   const [hoveredImageId, setHoveredImageId] = useState<number | null>(null);
   const [activeImageId, setActiveImageId] = useState<number | null>(null);
+  const [uploadingImageId, setUploadingImageId] = useState<number | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -119,6 +120,7 @@ export function JsonRenderer({
           onUpdateSharedElement?.(componentKey, id, { content })
       : (content: string) => onUpdateElement?.(id, { content });
     try {
+      setUploadingImageId(id); // 👈 start loader
       const fileKey = `${crypto.randomUUID()}.${file.name.split(".").pop() || "png"}`;
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -150,6 +152,8 @@ export function JsonRenderer({
       updater(`${cloudfront}/${user?.id}/previews/images/${fileKey}`);
     } catch (err) {
       console.error("Upload failed", err);
+    } finally {
+      setUploadingImageId(null); // 👈 stop loader
     }
   };
 
@@ -283,28 +287,31 @@ export function JsonRenderer({
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                fileInputRef.current?.click();
+                if (!uploadingImageId) fileInputRef.current?.click();
               }}
             >
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  fileInputRef.current?.click();
-                }}
-                className="rounded-md bg-yellow-400 px-4 py-2 text-sm font-medium text-black shadow-lg"
-                style={{
-                  minWidth: isLogo ? 80 : 100,
-                  minHeight: 40,
-                  transform: isLogo ? "scale(0.85)" : "none",
-                }}
-              >
-                Change
-              </button>
+              {uploadingImageId === id ? (
+                <div className="flex flex-col items-center gap-2 text-white">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <span className="text-sm">Uploading...</span>
+                </div>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  className="rounded-md bg-yellow-400 px-4 py-2 text-sm font-medium text-black shadow-lg"
+                >
+                  Change
+                </button>
+              )}
 
               <input
                 ref={fileInputRef}
                 type="file"
                 className="hidden"
+                disabled={uploadingImageId === id}
                 onChange={(e) => handleImageChange(e, id, componentKey)}
               />
             </div>

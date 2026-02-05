@@ -15,6 +15,7 @@ import { PaymentSummary } from "./ui/PaymentSummary";
 import { ErrorMessage } from "./ui/ErrorMessage";
 import { useGeo } from "./hooks/useGeoContext";
 import { createPreOrder } from "./api/domainService";
+import { useSession } from "@/shared/session";
 
 interface DomainModalProps {
   onClose: () => void;
@@ -29,6 +30,7 @@ export function DomainModal({
   websiteId,
   userId,
 }: DomainModalProps) {
+  const { user } = useSession();
   const [step, setStep] = useState<"selection" | "pricing">("selection");
   const [selectedDomain, setSelectedDomain] = useState<SelectedDomain | null>(
     null,
@@ -63,8 +65,8 @@ export function DomainModal({
 
       setSuccessMessage(`✅ Domain ${domain.domain} reserved successfully!`);
 
-      const hostingPrice = countryCode === "BT" ? 3000 : 9.99;
-      const websitePrice = countryCode === "BT" ? 7000 : 49.99;
+      const hostingPrice = countryCode === "BT" ? 3000 : 33;
+      const websitePrice = countryCode === "BT" ? 7000 : 79.99;
 
       setSelectedDomain({
         domain: domain.domain,
@@ -110,9 +112,30 @@ export function DomainModal({
   };
 
   // Payment placeholder
-  const handleInternationalPayment = () =>
-    alert("Payment gateway integration goes here!");
+  const handleInternationalPayment = async () => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/one-time-payment`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          websiteId,
+          domain: selectedDomain?.domain,
+          domainPrice: selectedDomain?.price,
+          customerEmail: user?.email,
+        }),
+      },
+    );
 
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Backend error:", text);
+      throw new Error("Payment request failed");
+    }
+
+    const data = await res.json();
+    window.location.href = data.url;
+  };
   // Payment step
   if (step === "pricing" && selectedDomain) {
     return (
