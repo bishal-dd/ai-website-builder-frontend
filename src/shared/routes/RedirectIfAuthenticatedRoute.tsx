@@ -9,15 +9,20 @@ export const RedirectIfAuthenticatedRoute = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { authenticated, loading } = useSession();
+  const { authenticated, loading, session } = useSession();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading && authenticated) {
-      router.push("/dashboard");
-    }
-  }, [authenticated, loading, router]);
+      const role = session?.user?.role;
 
+      if (role === "admin") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
+    }
+  }, [authenticated, loading, router, session]);
   if (loading || authenticated) return null;
 
   return <>{children}</>;

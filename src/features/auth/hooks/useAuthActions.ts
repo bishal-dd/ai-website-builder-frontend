@@ -2,12 +2,13 @@ import { authClient } from "@/shared/helper/auth/authClient";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { SignInFormValues, SignUpFormValues } from "@/features/auth/utils/form";
+import { useSessionStore } from "@/shared/session";
 
 export const useAuthActions = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { setLoading, setError } = useAuthStore();
-
+  const { fetchSession } = useSessionStore();
   const isSignInPage = pathname === "/auth/login";
 
   const handleEmailAuth = async (data: SignInFormValues | SignUpFormValues) => {
@@ -19,13 +20,11 @@ export const useAuthActions = () => {
         ? await authClient.signIn.email({
             email: data.email,
             password: data.password,
-            callbackURL: "/dashboard",
           })
         : await authClient.signUp.email({
             email: data.email,
             password: data.password,
             name: (data as SignUpFormValues).name,
-            callbackURL: "/dashboard",
           });
 
       if (result.error) {
@@ -34,11 +33,11 @@ export const useAuthActions = () => {
         return;
       }
 
-      setLoading(false);
-      router.push("/dashboard");
+      await fetchSession();
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
+    } finally {
       setLoading(false);
     }
   };
@@ -84,7 +83,7 @@ export const useAuthActions = () => {
 
   const changePassword = async (
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
   ) => {
     setLoading(true);
     setError(null);
