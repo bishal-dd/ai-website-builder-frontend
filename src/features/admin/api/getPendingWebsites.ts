@@ -20,7 +20,7 @@ export interface WebsiteResponse {
 export async function getPendingWebsites(
   userId?: string,
   page: number = 1,
-  pageSize: number = 3,
+  pageSize: number = 10,
 ): Promise<WebsiteResponse> {
   // Changed from Website[] to WebsiteResponse
   const url = new URL(
