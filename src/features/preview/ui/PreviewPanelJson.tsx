@@ -114,7 +114,7 @@ export function PreviewPanelJson({
     <div className="flex h-screen flex-col bg-muted">
       {/* Header */}
       <div className="flex items-center justify-between border-b bg-card px-4 py-3">
-        <div className="flex items-center gap-2">
+        <div className="hidden md:flex  items-center gap-2">
           <h3 className="text-sm font-semibold">Preview</h3>
           <Tabs
             value={device}
@@ -148,7 +148,7 @@ export function PreviewPanelJson({
               className="flex items-center"
             >
               <Image
-                src="https://d343yoq90h416j.cloudfront.net/default-images/social-icons/whatsapp-icon.svg"
+                src="/whatsapp-icon.svg"
                 alt="WhatsApp"
                 width={18}
                 height={18}
@@ -187,7 +187,7 @@ export function PreviewPanelJson({
               <AlertDialogTrigger asChild>
                 <Button variant="default" className="px-3">
                   <span className="hidden sm:inline">Republish</span>
-                  <span className="sm:hidden">Publish</span>
+                  <span className="sm:hidden">Republish</span>
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -222,7 +222,7 @@ export function PreviewPanelJson({
               onClick={() => router.push(`/domain/${websiteId}`)}
             >
               <span className="hidden sm:inline">Publish</span>
-              <span className="sm:hidden">Go</span>
+              <span className="sm:hidden">Publish</span>
             </Button>
           )}
         </div>

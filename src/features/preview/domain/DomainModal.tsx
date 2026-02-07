@@ -108,7 +108,7 @@ export function DomainModal({
   Total: ${total}`,
     );
 
-    window.open(`https://wa.me/17959259?text=${message}`, "_blank");
+    window.open(`https://wa.me/17959259?text=${message}`);
   };
 
   // Payment placeholder

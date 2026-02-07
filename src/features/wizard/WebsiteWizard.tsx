@@ -13,6 +13,7 @@ import { StepFour } from "./ui/StepFour";
 import { useWizardStore } from "./store/wizardStore";
 import { createWebsiteAPI } from "@/features/wizard/api/createWebsite";
 import { WebsiteGenerator } from "./ui/WebsiteGenerator";
+import { scrollToFirstError } from "./utils/scrollToFirstError";
 
 const TOTAL_STEPS = 4;
 
@@ -26,7 +27,12 @@ export default function WebsiteWizard() {
 
   const { currentStep, handleNext, handleBack } = useWebsiteWizard(TOTAL_STEPS);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentStep]);
+
   const state = useWizardStore();
+
   const resetWizard = useWizardStore((state) => state.resetWizard);
 
   const validateStep = useCallback((): boolean => {
@@ -89,10 +95,15 @@ export default function WebsiteWizard() {
   }, [hasAttemptedComplete, currentStep, validateStep]);
 
   const handleNextStep = () => {
-    if (validateStep()) {
-      setStepErrors({});
-      handleNext();
+    const isValid = validateStep();
+
+    if (!isValid) {
+      scrollToFirstError(stepErrors);
+      return;
     }
+
+    setStepErrors({});
+    handleNext();
   };
 
   const handleBackStep = () => {
@@ -104,7 +115,11 @@ export default function WebsiteWizard() {
   const handleComplete = async () => {
     setHasAttemptedComplete(true);
 
-    if (!validateStep()) return;
+    const isValid = validateStep();
+    if (!isValid) {
+      scrollToFirstError(stepErrors);
+      return;
+    }
 
     setIsLoading(true);
     setErrorMessage(null);
