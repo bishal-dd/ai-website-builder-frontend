@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { SelectedDomain, DomainContact } from "../types/domain";
 import { useWebsiteDeploymentStatus } from "../hooks/useWebsiteDeploymentStatus";
 
