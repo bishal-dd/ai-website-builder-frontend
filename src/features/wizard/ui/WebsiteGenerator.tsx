@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoadingState } from "../loading/ui/LoadingState";
 import { useWizardStore } from "../store/wizardStore";
+import posthog from "posthog-js";
 
 export function WebsiteGenerator({ jobId }: { jobId: string }) {
   const [isOpen, setIsOpen] = useState(true);
@@ -27,6 +28,12 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
         if (data.status === "completed") {
           setWebsiteId(data.websiteId); // store the websiteId
 
+          // Capture website generation completed event
+          posthog.capture("website_generation_completed", {
+            job_id: jobId,
+            website_id: data.websiteId,
+          });
+
           setIsOpen(false);
           clearInterval(interval);
 
@@ -38,6 +45,12 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
           // Optional: redirect after short delay
           setTimeout(() => router.push(`/preview/${data.websiteId}`), 500);
         } else if (data.status === "failed") {
+          // Capture website generation failed event
+          posthog.capture("website_generation_failed", {
+            job_id: jobId,
+            error: data.error || "Unknown error",
+          });
+
           clearInterval(interval);
           setIsOpen(false);
           alert("Website generation failed. Try again.");

@@ -1,0 +1,72 @@
+[
+  {
+    "eventName": "user_signed_up",
+    "description": "User completes registration via email or social auth",
+    "filePath": "src/features/auth/hooks/useAuthActions.ts"
+  },
+  {
+    "eventName": "user_logged_in",
+    "description": "User successfully logs in via email or social auth",
+    "filePath": "src/features/auth/hooks/useAuthActions.ts"
+  },
+  {
+    "eventName": "social_auth_clicked",
+    "description": "User clicks to sign in/up with a social provider (Google)",
+    "filePath": "src/features/auth/hooks/useAuthActions.ts"
+  },
+  {
+    "eventName": "password_reset_requested",
+    "description": "User requests a password reset email",
+    "filePath": "src/features/auth/hooks/useAuthActions.ts"
+  },
+  {
+    "eventName": "wizard_step_completed",
+    "description": "User completes a step in the website creation wizard",
+    "filePath": "src/features/wizard/WebsiteWizard.tsx"
+  },
+  {
+    "eventName": "website_generation_started",
+    "description": "User submits the wizard to generate a website",
+    "filePath": "src/features/wizard/WebsiteWizard.tsx"
+  },
+  {
+    "eventName": "website_generation_completed",
+    "description": "Website generation job completes successfully",
+    "filePath": "src/features/wizard/ui/WebsiteGenerator.tsx"
+  },
+  {
+    "eventName": "website_generation_failed",
+    "description": "Website generation job fails",
+    "filePath": "src/features/wizard/ui/WebsiteGenerator.tsx"
+  },
+  {
+    "eventName": "domain_searched",
+    "description": "User searches for a domain in the domain modal",
+    "filePath": "src/features/preview/domain/hooks/useDomainModal.ts"
+  },
+  {
+    "eventName": "domain_selected",
+    "description": "User selects and reserves a domain for purchase",
+    "filePath": "src/features/preview/domain/DomainModal.tsx"
+  },
+  {
+    "eventName": "payment_initiated",
+    "description": "User initiates payment (WhatsApp or international)",
+    "filePath": "src/features/preview/domain/DomainModal.tsx"
+  },
+  {
+    "eventName": "ai_chat_opened",
+    "description": "User opens the AI helper chat in preview mode",
+    "filePath": "src/features/preview/Preview.tsx"
+  },
+  {
+    "eventName": "profile_updated",
+    "description": "User updates their profile information",
+    "filePath": "src/features/profile/hooks/useProfile.ts"
+  },
+  {
+    "eventName": "password_changed",
+    "description": "User changes their password from profile settings",
+    "filePath": "src/features/profile/hooks/useProfile.ts"
+  }
+]

@@ -14,6 +14,7 @@ import { mapApiToWebsiteData } from "@/features/preview/utils/mapApiToWebsiteDat
 import useUpdateWebsitePage from "./hooks/useUpdateWebsitePage";
 import useUpdateWebsite from "@/features/preview/hooks/useUpdateWebsite";
 import { useParams } from "next/navigation";
+import posthog from "posthog-js";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -139,7 +140,14 @@ export default function Preview() {
 
         {!isChatOpen && (
           <Button
-            onClick={() => setIsChatOpen(true)}
+            onClick={() => {
+              // Capture AI chat opened event
+              posthog.capture("ai_chat_opened", {
+                website_id: websiteId,
+                current_page_id: currentPageId,
+              });
+              setIsChatOpen(true);
+            }}
             className="fixed bottom-6 right-6 z-50 h-14 px-4 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
           >
             <MessageSquare className="h-6 w-6" />

@@ -8,6 +8,7 @@ import {
 } from "../api/domainService";
 import { DomainContact, DomainSuggestion } from "../types/domain";
 import { useGeo } from "./useGeoContext";
+import posthog from "posthog-js";
 
 export function useDomainModal() {
   const [keyword, setKeyword] = useState("");
@@ -27,6 +28,13 @@ export function useDomainModal() {
     try {
       const results = await searchDomainAPI(keyword.trim(), country);
 
+      // Capture domain searched event
+      posthog.capture("domain_searched", {
+        search_keyword: keyword.trim(),
+        results_count: results?.length || 0,
+        country_code: country,
+      });
+
       if (!results || results.length === 0) {
         setSuggestions([]);
         return;
@@ -44,6 +52,7 @@ export function useDomainModal() {
       console.error("Failed to search domains:", err);
       setError("Failed to search domains. Please try again.");
       setSuggestions([]);
+      posthog.captureException(err);
     } finally {
       setLoading(false);
     }
