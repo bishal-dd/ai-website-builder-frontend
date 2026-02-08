@@ -156,6 +156,9 @@ export function PreviewPanelJson({
               <span className="hidden sm:inline text-sm font-medium">
                 Ask for help
               </span>
+              <span className=" md:hidden sm:inline text-sm font-medium">
+                Help?
+              </span>
             </a>
           </Button>
 
@@ -163,7 +166,7 @@ export function PreviewPanelJson({
           <Button variant="outline" asChild>
             <Link href="/dashboard" className="flex items-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Dashboard</span>
+              <span className="sm:inline">Dashboard</span>
             </Link>
           </Button>
 
