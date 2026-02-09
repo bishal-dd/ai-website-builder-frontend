@@ -57,23 +57,21 @@ export function DomainModal({
     setSuccessMessage(null);
 
     try {
-      await createPreOrder({
+      const result = await createPreOrder({
         name: domain.domain,
         websiteId,
         userId,
+        country: countryCode,
       });
 
       setSuccessMessage(`✅ Domain ${domain.domain} reserved successfully!`);
 
-      const hostingPrice = countryCode === "BT" ? 3000 : 33;
-      const websitePrice = countryCode === "BT" ? 7000 : 79.99;
-
       setSelectedDomain({
-        domain: domain.domain,
-        price: domain.price,
-        hostingPrice,
-        websitePrice,
-        currency: countryCode === "BT" ? "BTN" : "USD",
+        domain: result.domain.name,
+        price: result.pricing.domainPrice,
+        hostingPrice: result.pricing.hostingPrice,
+        websitePrice: result.pricing.websitePrice,
+        currency: result.pricing.currency,
       });
 
       setStep("pricing");
