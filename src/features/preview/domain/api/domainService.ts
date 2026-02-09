@@ -4,7 +4,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export async function searchDomainAPI(
   keyword: string,
-  country?: string
+  country?: string,
 ): Promise<DomainSuggestion[]> {
   try {
     const url = new URL(`${BASE_URL}/domains/suggest`);
@@ -35,6 +35,7 @@ export async function createPreOrder(data: {
   name: string;
   websiteId: string;
   userId: string;
+  country: string;
 }) {
   const res = await fetch(`${BASE_URL}/domains`, {
     method: "POST",

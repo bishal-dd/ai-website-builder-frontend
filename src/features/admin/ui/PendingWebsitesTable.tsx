@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Website } from "../api/getPendingWebsites";
 import {
   Table,
@@ -15,39 +16,61 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useApprovePayment } from "@/features/admin/hooks/useApprovePayment";
+import { useDebouncedCallback } from "../hooks/useDebounce";
 
 interface PendingWebsitesTableProps {
   websites: Website[];
   refresh: () => void;
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
   currentPage: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
 }
 
 export const PendingWebsitesTable = ({
   websites,
   refresh,
-  searchQuery,
-  onSearchChange,
   currentPage,
   totalPages,
-  onPageChange,
 }: PendingWebsitesTableProps) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const { mutate, isPending, variables } = useApprovePayment(refresh);
+
+  // Get current search value from URL to display in empty state or input
+  const currentSearch = searchParams.get("websiteId") || "";
+
+  // 1. Unified function to update URL params (Stateless)
+  const updateQuery = useDebouncedCallback((key: string, value: string) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+
+    // Reset to page 1 whenever search changes
+    if (key === "websiteId") {
+      params.set("page", "1");
+    }
+
+    router.push(`${pathname}?${params.toString()}`);
+  }, 400);
 
   return (
     <Card className="mt-6">
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4">
         <CardTitle>Pending Approvals</CardTitle>
 
-        <div className="relative w-full max-sm">
+        <div className="relative w-full max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by User ID..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search by Website ID..."
+            // Senior Tip: Use defaultValue for debounced URL inputs
+            // to prevent the input from flickering/losing focus
+            defaultValue={currentSearch}
+            onChange={(e) => updateQuery("websiteId", e.target.value)}
             className="pl-8"
           />
         </div>
@@ -74,8 +97,8 @@ export const PendingWebsitesTable = ({
                     colSpan={6}
                     className="h-24 text-center text-muted-foreground"
                   >
-                    {searchQuery
-                      ? `No results found for "${searchQuery}"`
+                    {currentSearch
+                      ? `No results found for "${currentSearch}"`
                       : "No pending websites found 🎉"}
                   </TableCell>
                 </TableRow>
@@ -133,7 +156,7 @@ export const PendingWebsitesTable = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onPageChange(currentPage - 1)}
+              onClick={() => updateQuery("page", (currentPage - 1).toString())}
               disabled={currentPage <= 1}
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
@@ -142,7 +165,7 @@ export const PendingWebsitesTable = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onPageChange(currentPage + 1)}
+              onClick={() => updateQuery("page", (currentPage + 1).toString())}
               disabled={currentPage >= totalPages}
             >
               Next
