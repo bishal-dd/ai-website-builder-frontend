@@ -8,6 +8,7 @@ import {
 } from "../api/domainService";
 import { DomainContact, DomainSuggestion } from "../types/domain";
 import { useGeo } from "./useGeoContext";
+import { useWizardStore } from "@/features/wizard/store/wizardStore";
 
 export function useDomainModal() {
   const [keyword, setKeyword] = useState("");
@@ -15,6 +16,7 @@ export function useDomainModal() {
   const [loading, setLoading] = useState(false);
   const [buying, setBuying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const wizardCountry = useWizardStore((s) => s.country);
 
   const { country, loading: geoLoading } = useGeo();
 
@@ -33,10 +35,10 @@ export function useDomainModal() {
       }
 
       const exactMatch = results.find(
-        (r) => r.domain.toLowerCase() === keyword.trim().toLowerCase()
+        (r) => r.domain.toLowerCase() === keyword.trim().toLowerCase(),
       );
       const alternatives = results.filter(
-        (r) => r.domain.toLowerCase() !== keyword.trim().toLowerCase()
+        (r) => r.domain.toLowerCase() !== keyword.trim().toLowerCase(),
       );
 
       setSuggestions([...(exactMatch ? [exactMatch] : []), ...alternatives]);
@@ -75,13 +77,18 @@ export function useDomainModal() {
   const preOrderDomain = async (
     domain: string,
     websiteId: string,
-    userId: string
+    userId: string,
   ) => {
     setBuying(domain);
     setError(null);
 
     try {
-      const result = await createPreOrder({ name: domain, websiteId, userId });
+      const result = await createPreOrder({
+        name: domain,
+        websiteId,
+        userId,
+        country: wizardCountry || country || "",
+      });
       return result;
     } catch (err) {
       console.error("Failed to pre-order domain:", err);
