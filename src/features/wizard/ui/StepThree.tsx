@@ -9,7 +9,8 @@ import { useWizardStore } from "@/features/wizard/store/wizardStore";
 import { useGeo } from "@/features/preview/domain/hooks/useGeoContext";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { Globe, Mail, Palette, Share2 } from "lucide-react";
+import { Globe, Mail, MapPin, Palette, Share2 } from "lucide-react";
+import { LocationPicker } from "./LocationPicker";
 
 type StepThreeProps = {
   stepErrors: Record<string, string[]>;
@@ -25,7 +26,13 @@ export function StepThree({ stepErrors }: StepThreeProps) {
     description,
     socialLinks,
     setWebsiteInfo,
+    latitude,
+    longitude,
   } = useWizardStore();
+
+  const handleLocationChange = (lat: number, lng: number) => {
+    setWebsiteInfo({ latitude: lat, longitude: lng });
+  };
 
   const [emailError, setEmailError] = useState<string | null>(null);
 
@@ -169,12 +176,16 @@ export function StepThree({ stepErrors }: StepThreeProps) {
               <Label htmlFor="socialLinks" className="flex items-center gap-2">
                 <Share2 className="w-4 h-4" /> Social Media Links (Optional)
               </Label>
-              <Input
+              <Textarea
                 id="socialLinks"
                 placeholder="Paste links separated by commas"
                 value={socialLinks}
                 onChange={(e) => handleChange("socialLinks", e.target.value)}
+                className="min-h-[80px] resize-none"
               />
+              <p className="text-xs text-muted-foreground">
+                Separate multiple links with commas.
+              </p>
             </div>
           </section>
 
@@ -202,6 +213,43 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                   placeholder="#8b5cf6"
                   className="max-w-[140px] font-mono"
                 />
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <MapPin className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold text-lg">Business Location</h3>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Click on the map to pin your exact business location for
+                customers.
+              </p>
+
+              <div className="border rounded-lg overflow-hidden">
+                <LocationPicker
+                  lat={latitude}
+                  lng={longitude}
+                  onLocationSelect={handleLocationChange}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-xs">Latitude</Label>
+                  <Input value={latitude || ""} readOnly className="bg-muted" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Longitude</Label>
+                  <Input
+                    value={longitude || ""}
+                    readOnly
+                    className="bg-muted"
+                  />
+                </div>
               </div>
             </div>
           </section>
