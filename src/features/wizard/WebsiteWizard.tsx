@@ -13,6 +13,8 @@ import { StepFour } from "./ui/StepFour";
 import { useWizardStore } from "./store/wizardStore";
 import { createWebsiteAPI } from "@/features/wizard/api/createWebsite";
 import { WebsiteGenerator } from "./ui/WebsiteGenerator";
+import { scrollToFirstError } from "./utils/scrollToFirstError";
+import posthog from "posthog-js";
 
 const TOTAL_STEPS = 4;
 
@@ -26,7 +28,12 @@ export default function WebsiteWizard() {
 
   const { currentStep, handleNext, handleBack } = useWebsiteWizard(TOTAL_STEPS);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentStep]);
+
   const state = useWizardStore();
+
   const resetWizard = useWizardStore((state) => state.resetWizard);
 
   const validateStep = useCallback((): boolean => {
@@ -89,10 +96,23 @@ export default function WebsiteWizard() {
   }, [hasAttemptedComplete, currentStep, validateStep]);
 
   const handleNextStep = () => {
-    if (validateStep()) {
-      setStepErrors({});
-      handleNext();
+    const isValid = validateStep();
+
+    if (!isValid) {
+      scrollToFirstError(stepErrors);
+      return;
     }
+
+    // Capture wizard step completed event
+    posthog.capture("wizard_step_completed", {
+      step_number: currentStep,
+      total_steps: TOTAL_STEPS,
+      website_type: state.websiteType,
+      selected_pages_count: state.selectedPages.length,
+    });
+
+    setStepErrors({});
+    handleNext();
   };
 
   const handleBackStep = () => {
@@ -104,7 +124,11 @@ export default function WebsiteWizard() {
   const handleComplete = async () => {
     setHasAttemptedComplete(true);
 
-    if (!validateStep()) return;
+    const isValid = validateStep();
+    if (!isValid) {
+      scrollToFirstError(stepErrors);
+      return;
+    }
 
     setIsLoading(true);
     setErrorMessage(null);
@@ -118,12 +142,22 @@ export default function WebsiteWizard() {
       }
 
       if (result.jobId) {
+        // Capture website generation started event
+        posthog.capture("website_generation_started", {
+          job_id: result.jobId,
+          website_type: state.websiteType,
+          website_name: state.websiteName,
+          selected_pages: state.selectedPages,
+          selected_pages_count: state.selectedPages.length,
+        });
+
         setLoadingJobId(result.jobId);
       }
 
       resetWizard();
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : "Unknown error");
+      posthog.captureException(err);
     } finally {
       setIsLoading(false);
     }

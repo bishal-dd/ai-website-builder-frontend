@@ -335,7 +335,7 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
               ref={descRef}
               className="text-sm text-muted-foreground text-center mb-8 text-balance"
             >
-              Hold tight while we craft something extraordinary
+              It takes 2 - 3 minutes.
             </p>
 
             <div ref={stepsContainerRef} className="space-y-3">

@@ -16,6 +16,7 @@ import { ErrorMessage } from "./ui/ErrorMessage";
 import { useGeo } from "./hooks/useGeoContext";
 import { createPreOrder } from "./api/domainService";
 import { useSession } from "@/shared/session";
+import posthog from "posthog-js";
 
 interface DomainModalProps {
   onClose: () => void;
@@ -74,10 +75,20 @@ export function DomainModal({
         currency: result.pricing.currency,
       });
 
+      // Capture domain selected event
+      posthog.capture("domain_selected", {
+        domain: domain.domain,
+        domain_price: domain.price,
+        website_id: websiteId,
+        country_code: countryCode,
+        currency: countryCode === "BT" ? "BTN" : "USD",
+      });
+
       setStep("pricing");
     } catch (err) {
       console.error(err);
       setError("❌ Failed to reserve domain. Try again.");
+      posthog.captureException(err);
     } finally {
       setLoading(false);
     }
@@ -94,6 +105,18 @@ export function DomainModal({
       (selectedDomain.hostingPrice ?? 0) +
       (selectedDomain.websitePrice ?? 0);
 
+    // Capture payment initiated event
+    posthog.capture("payment_initiated", {
+      payment_method: "whatsapp",
+      domain: selectedDomain.domain,
+      domain_price: selectedDomain.price,
+      hosting_price: selectedDomain.hostingPrice,
+      website_price: selectedDomain.websitePrice,
+      total_amount: total,
+      currency: selectedDomain.currency,
+      website_id: websiteId,
+    });
+
     const message = encodeURIComponent(
       `Hi! I'd like to purchase:
 
@@ -106,11 +129,30 @@ export function DomainModal({
   Total: ${total}`,
     );
 
-    window.open(`https://wa.me/17959259?text=${message}`, "_blank");
+    window.open(`https://wa.me/17959259?text=${message}`);
   };
 
   // Payment placeholder
   const handleInternationalPayment = async () => {
+    // Capture payment initiated event for international payment
+    if (selectedDomain) {
+      const total =
+        selectedDomain.price +
+        (selectedDomain.hostingPrice ?? 0) +
+        (selectedDomain.websitePrice ?? 0);
+
+      posthog.capture("payment_initiated", {
+        payment_method: "international",
+        domain: selectedDomain.domain,
+        domain_price: selectedDomain.price,
+        hosting_price: selectedDomain.hostingPrice,
+        website_price: selectedDomain.websitePrice,
+        total_amount: total,
+        currency: selectedDomain.currency,
+        website_id: websiteId,
+      });
+    }
+
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/one-time-payment`,
       {
@@ -128,6 +170,7 @@ export function DomainModal({
     if (!res.ok) {
       const text = await res.text();
       console.error("Backend error:", text);
+      posthog.captureException(new Error(`Payment request failed: ${text}`));
       throw new Error("Payment request failed");
     }
 

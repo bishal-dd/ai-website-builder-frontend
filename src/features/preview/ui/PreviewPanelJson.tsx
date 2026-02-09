@@ -114,7 +114,7 @@ export function PreviewPanelJson({
     <div className="flex h-screen flex-col bg-muted">
       {/* Header */}
       <div className="flex items-center justify-between border-b bg-card px-4 py-3">
-        <div className="flex items-center gap-2">
+        <div className="hidden md:flex  items-center gap-2">
           <h3 className="text-sm font-semibold">Preview</h3>
           <Tabs
             value={device}
@@ -148,13 +148,16 @@ export function PreviewPanelJson({
               className="flex items-center"
             >
               <Image
-                src="https://d343yoq90h416j.cloudfront.net/default-images/social-icons/whatsapp-icon.svg"
+                src="/whatsapp-icon.svg"
                 alt="WhatsApp"
                 width={18}
                 height={18}
               />
               <span className="hidden sm:inline text-sm font-medium">
                 Ask for help
+              </span>
+              <span className=" md:hidden sm:inline text-sm font-medium">
+                Help?
               </span>
             </a>
           </Button>
@@ -163,7 +166,7 @@ export function PreviewPanelJson({
           <Button variant="outline" asChild>
             <Link href="/dashboard" className="flex items-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Dashboard</span>
+              <span className="sm:inline">Dashboard</span>
             </Link>
           </Button>
 
@@ -187,7 +190,7 @@ export function PreviewPanelJson({
               <AlertDialogTrigger asChild>
                 <Button variant="default" className="px-3">
                   <span className="hidden sm:inline">Republish</span>
-                  <span className="sm:hidden">Publish</span>
+                  <span className="sm:hidden">Republish</span>
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -222,7 +225,7 @@ export function PreviewPanelJson({
               onClick={() => router.push(`/domain/${websiteId}`)}
             >
               <span className="hidden sm:inline">Publish</span>
-              <span className="sm:hidden">Go</span>
+              <span className="sm:hidden">Publish</span>
             </Button>
           )}
         </div>

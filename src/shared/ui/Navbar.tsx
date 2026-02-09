@@ -68,7 +68,7 @@ export default function Navbar() {
                 className="flex items-center"
               >
                 <Image
-                  src="https://d343yoq90h416j.cloudfront.net/default-images/social-icons/whatsapp-icon.svg"
+                  src="/whatsapp-icon.svg"
                   alt="WhatsApp"
                   width={22}
                   height={22}

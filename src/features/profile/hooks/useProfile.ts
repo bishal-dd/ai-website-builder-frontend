@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSession } from "@/shared/session/useSession";
 import { useAuthActions } from "@/features/auth/hooks/useAuthActions";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 
 export function useProfileLogic() {
   const { user } = useSession();
@@ -41,9 +42,16 @@ export function useProfileLogic() {
           error: "Failed to update email",
         });
       }
+
+      // Capture profile updated event
+      posthog.capture("profile_updated", {
+        name_changed: name !== user?.name,
+        email_changed: email !== user?.email,
+      });
     } catch (err) {
       toast.error("Something went wrong while updating profile.");
       console.error(err);
+      posthog.captureException(err);
     } finally {
       setIsLoading(false);
     }
@@ -72,11 +80,15 @@ export function useProfileLogic() {
         error: "Failed to update password",
       });
 
+      // Capture password changed event
+      posthog.capture("password_changed");
+
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
       console.error(err);
+      posthog.captureException(err);
     } finally {
       setIsLoading(false);
     }
