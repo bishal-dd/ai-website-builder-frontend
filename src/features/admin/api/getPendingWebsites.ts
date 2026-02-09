@@ -17,34 +17,35 @@ export interface WebsiteResponse {
   };
 }
 
-export async function getPendingWebsites(
-  userId?: string,
-  page: number = 1,
-  pageSize: number = 10,
-): Promise<WebsiteResponse> {
-  // Changed from Website[] to WebsiteResponse
+export async function getPendingWebsites({
+  websiteId,
+  page = 1,
+  pageSize = 10,
+}: {
+  websiteId?: string;
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<WebsiteResponse> {
   const url = new URL(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/pending-websites`,
   );
 
-  // Append Search Query
-  if (userId) {
-    url.searchParams.append("userId", userId);
+  if (websiteId?.trim()) {
+    url.searchParams.append("websiteId", websiteId.trim());
   }
 
-  // Append Pagination Params
   url.searchParams.append("page", page.toString());
   url.searchParams.append("pageSize", pageSize.toString());
 
   const res = await fetch(url.toString(), {
     credentials: "include",
+    next: { tags: ["pending-websites"] },
   });
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Failed to fetch pending websites: ${text}`);
+    throw new Error(`Error ${res.status}: ${text}`);
   }
 
-  // Returns the full object: { websites: [...], pagination: {...} }
-  return await res.json();
+  return res.json();
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react"; // Added useEffect
+import { useSearchParams } from "next/navigation"; // Added this
 import usePendingWebsites from "@/features/admin/hooks/usePendingWebsites";
 import { PendingWebsitesTable } from "./ui/PendingWebsitesTable";
 import { LogOut, LayoutDashboard, AlertCircle } from "lucide-react";
@@ -9,25 +9,18 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { useDebounce } from "./hooks/useDebounce";
 
 export default function AdminDashboard() {
   const { signOut } = useSession();
+  const searchParams = useSearchParams();
 
-  // 1. Search & Pagination State
-  const [searchQuery, setSearchQuery] = useState("");
-  const [page, setPage] = useState(1);
+  // 1. Get current state DIRECTLY from the URL
+  const websiteId = searchParams.get("websiteId") || "";
+  const page = Number(searchParams.get("page")) || 1;
 
-  const debouncedSearch = useDebounce(searchQuery, 500);
-
-  // 2. Reset page to 1 whenever search query changes
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch]);
-
-  // 3. Pass both debouncedSearch and current page to the hook
+  // 2. The hook now automatically reacts whenever the URL changes
   const { websites, pagination, isLoading, error, refetch } =
-    usePendingWebsites(debouncedSearch, page);
+    usePendingWebsites(websiteId, page);
 
   if (error) {
     return (
@@ -56,7 +49,7 @@ export default function AdminDashboard() {
                 Admin Dashboard
               </h1>
               <p className="text-muted-foreground text-sm">
-                Manage pending deployments and platform approvals.
+                Manage pending deployments.
               </p>
             </div>
           </div>
@@ -87,21 +80,16 @@ export default function AdminDashboard() {
         <main className="animate-in fade-in duration-500">
           {isLoading ? (
             <div className="space-y-6">
-              <div className="flex justify-between">
-                <Skeleton className="h-10 w-64 bg-slate-200" />
-                <Skeleton className="h-10 w-40 bg-slate-200" />
-              </div>
               <Skeleton className="h-[400px] w-full rounded-xl bg-slate-200" />
             </div>
           ) : (
             <PendingWebsitesTable
               websites={websites}
               refresh={refetch}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
               currentPage={page}
               totalPages={pagination?.totalPages || 1}
-              onPageChange={setPage}
+              // Notice: We no longer pass search handlers!
+              // The table manages its own URL updates.
             />
           )}
         </main>
