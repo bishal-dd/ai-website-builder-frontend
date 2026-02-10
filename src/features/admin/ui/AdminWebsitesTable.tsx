@@ -64,8 +64,8 @@ export const AdminWebsitesTable = ({
     <Card className="mt-6">
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4">
         <CardTitle className="capitalize">
-          {status === "approval"
-            ? "Pending Approvals"
+          {status === "pending"
+            ? "Pending pendings"
             : status === "approved"
               ? "Approved Websites"
               : "Rejected Websites"}
@@ -94,8 +94,8 @@ export const AdminWebsitesTable = ({
                 <TableHead>Domain Price</TableHead>
                 <TableHead>Hosting Price</TableHead>
                 <TableHead>Website Generation Price</TableHead>
-                {status === "approval" && <TableHead>Status</TableHead>}
-                {status === "approval" && (
+                {status === "pending" && <TableHead>Status</TableHead>}
+                {status === "pending" && (
                   <TableHead className="text-right">Action</TableHead>
                 )}
               </TableRow>
@@ -110,7 +110,7 @@ export const AdminWebsitesTable = ({
                   >
                     {currentSearch
                       ? `No results found for "${currentSearch}"`
-                      : status === "approval"
+                      : status === "pending"
                         ? "No pending websites found 🎉"
                         : status === "approved"
                           ? "No approved websites found 🎉"
@@ -133,14 +133,14 @@ export const AdminWebsitesTable = ({
                       <TableCell>{site.websitePrice}</TableCell>
 
                       <TableCell>
-                        {status === "approval" && (
+                        {status === "pending" && (
                           <Badge variant="secondary" className="capitalize">
                             {site.deploymentStatus}
                           </Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        {status === "approval" && (
+                        {status === "pending" && (
                           <Button
                             size="sm"
                             className="bg-green-600 hover:bg-green-700 text-white"

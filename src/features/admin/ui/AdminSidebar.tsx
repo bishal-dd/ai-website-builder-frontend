@@ -31,7 +31,7 @@ import { useSearchParams } from "next/navigation";
 export function AdminSidebar() {
   const { user, signOut } = useSession();
   const searchParams = useSearchParams();
-  const currentStatus = searchParams.get("status") || "approval";
+  const currentStatus = searchParams.get("status") || "pending";
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
@@ -59,10 +59,10 @@ export function AdminSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={currentStatus === "approval"}
+                  isActive={currentStatus === "pending"}
                   tooltip="Pending Approvals"
                 >
-                  <Link href="/admin/dashboard?status=approval">
+                  <Link href="/admin/dashboard?status=pending">
                     <LayoutDashboard className="size-4" />
                     <span>Pending Websites</span>
                   </Link>

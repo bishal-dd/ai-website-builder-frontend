@@ -14,7 +14,7 @@ export default function AdminDashboard() {
   // 1. Get current state DIRECTLY from the URL
   const websiteId = searchParams.get("websiteId") || "";
   const page = Number(searchParams.get("page")) || 1;
-  const status = searchParams.get("status") || "approval";
+  const status = searchParams.get("status") || "pending";
 
   // 2. The hook now automatically reacts whenever the URL changes
   const { websites, pagination, isLoading, error, refetch } = useAdminWebsites(
