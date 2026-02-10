@@ -1,17 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
-import { getPendingWebsites, WebsiteResponse } from "../api/getPendingWebsites";
+import { getAdminWebsites, WebsiteResponse } from "../api/getAdminWebsites";
 
-// 1. Accept page as a parameter alongside searchQuery
-const usePendingWebsites = (searchQuery: string = "", page: number = 1) => {
+const useAdminWebsites = (
+  searchQuery: string = "",
+  page: number = 1,
+  status: string = "pending",
+) => {
   const { data, isLoading, isPlaceholderData, error, refetch } =
     useQuery<WebsiteResponse>({
-      queryKey: ["pending-websites", searchQuery, page],
+      queryKey: ["admin-websites", searchQuery, page, status],
 
-      // Pass object instead of separate args
       queryFn: () =>
-        getPendingWebsites({
+        getAdminWebsites({
           websiteId: searchQuery,
           page,
+          status,
         }),
 
       staleTime: 1000 * 60,
@@ -28,4 +31,4 @@ const usePendingWebsites = (searchQuery: string = "", page: number = 1) => {
   };
 };
 
-export default usePendingWebsites;
+export default useAdminWebsites;
