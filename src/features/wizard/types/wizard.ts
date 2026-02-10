@@ -16,7 +16,7 @@ export interface WizardState {
   socialLinks: string;
   pageContents: PageContent[];
   websiteId: string | null;
-  state: string;
+  states: string;
   street?: string;
 
   setWebsiteId: (id: string) => void;
@@ -33,7 +33,7 @@ export interface WizardState {
       country: string;
       description: string;
       socialLinks: string;
-      state: string;
+      states: string;
       street: string;
     }>,
   ) => void;

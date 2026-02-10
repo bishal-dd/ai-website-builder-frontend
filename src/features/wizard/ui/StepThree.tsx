@@ -49,7 +49,7 @@ export function StepThree({ stepErrors }: StepThreeProps) {
     description,
     socialLinks,
     setWebsiteInfo,
-    state,
+    states,
     street,
   } = useWizardStore();
 
@@ -277,7 +277,7 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                       disabled={!country || isLoadingStates}
                       className={cn(
                         "w-full justify-between font-normal",
-                        !state && "text-muted-foreground",
+                        !states && "text-muted-foreground",
                       )}
                     >
                       {isLoadingStates ? (
@@ -285,8 +285,8 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Loading states...
                         </div>
-                      ) : state ? (
-                        statesList.find((s) => s.iso2 === state)?.name
+                      ) : states ? (
+                        statesList.find((s) => s.iso2 === states)?.name
                       ) : (
                         "Select state..."
                       )}
@@ -314,7 +314,7 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  state === s.iso2
+                                  states === s.iso2
                                     ? "opacity-100"
                                     : "opacity-0",
                                 )}
