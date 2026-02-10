@@ -9,8 +9,31 @@ import { useWizardStore } from "@/features/wizard/store/wizardStore";
 import { useGeo } from "@/features/preview/domain/hooks/useGeoContext";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { Globe, Mail, MapPin, Palette, Share2 } from "lucide-react";
-import { LocationPicker } from "./LocationPicker";
+import {
+  Check,
+  ChevronsUpDown,
+  Globe,
+  Loader2,
+  Mail,
+  MapPin,
+  Palette,
+  Share2,
+} from "lucide-react";
+import { getStates } from "@/lib/geo-api";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 type StepThreeProps = {
   stepErrors: Record<string, string[]>;
@@ -26,19 +49,38 @@ export function StepThree({ stepErrors }: StepThreeProps) {
     description,
     socialLinks,
     setWebsiteInfo,
-    latitude,
-    longitude,
+    state,
+    street,
   } = useWizardStore();
 
-  const handleLocationChange = (lat: number, lng: number) => {
-    setWebsiteInfo({ latitude: lat, longitude: lng });
-  };
-
+  const [open, setOpen] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [statesList, setStatesList] = useState<
+    { name: string; iso2: string }[]
+  >([]);
+  const [isLoadingStates, setIsLoadingStates] = useState(false);
 
   useEffect(() => {
     if (country) setWebsiteInfo({ country });
   }, [country, setWebsiteInfo]);
+
+  useEffect(() => {
+    const loadStates = async () => {
+      if (!country) return;
+
+      setIsLoadingStates(true);
+      try {
+        const data = await getStates(country);
+        setStatesList(data);
+      } catch (error) {
+        console.error("Error loading states:", error);
+      } finally {
+        setIsLoadingStates(false);
+      }
+    };
+
+    loadStates();
+  }, [country]);
 
   const handleChange = (field: string, value: string) => {
     setWebsiteInfo({ [field]: value });
@@ -223,33 +265,77 @@ export function StepThree({ stepErrors }: StepThreeProps) {
               <h3 className="font-semibold text-lg">Business Location</h3>
             </div>
 
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Click on the map to pin your exact business location for
-                customers.
-              </p>
-
-              <div className="border rounded-lg overflow-hidden">
-                <LocationPicker
-                  lat={latitude}
-                  lng={longitude}
-                  onLocationSelect={handleLocationChange}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2 flex flex-col">
+                <Label htmlFor="state">State / Province</Label>
+                <Popover open={open} onOpenChange={setOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={open}
+                      disabled={!country || isLoadingStates}
+                      className={cn(
+                        "w-full justify-between font-normal",
+                        !state && "text-muted-foreground",
+                      )}
+                    >
+                      {isLoadingStates ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Loading states...
+                        </div>
+                      ) : state ? (
+                        statesList.find((s) => s.iso2 === state)?.name
+                      ) : (
+                        "Select state..."
+                      )}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-[--radix-popover-trigger-width] p-0"
+                    align="start"
+                  >
+                    <Command>
+                      <CommandInput placeholder="Search state..." />
+                      <CommandList>
+                        <CommandEmpty>No state found.</CommandEmpty>
+                        <CommandGroup>
+                          {statesList.map((s) => (
+                            <CommandItem
+                              key={s.iso2}
+                              value={s.name}
+                              onSelect={() => {
+                                handleChange("state", s.iso2);
+                                setOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  state === s.iso2
+                                    ? "opacity-100"
+                                    : "opacity-0",
+                                )}
+                              />
+                              {s.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label className="text-xs">Latitude</Label>
-                  <Input value={latitude || ""} readOnly className="bg-muted" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Longitude</Label>
-                  <Input
-                    value={longitude || ""}
-                    readOnly
-                    className="bg-muted"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="street">Address</Label>
+                <Input
+                  id="street"
+                  placeholder="123 Business Way"
+                  value={street}
+                  onChange={(e) => handleChange("street", e.target.value)}
+                />
               </div>
             </div>
           </section>

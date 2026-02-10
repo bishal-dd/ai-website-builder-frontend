@@ -16,8 +16,8 @@ export interface WizardState {
   socialLinks: string;
   pageContents: PageContent[];
   websiteId: string | null;
-  latitude: number | null;
-  longitude: number | null;
+  state: string;
+  street?: string;
 
   setWebsiteId: (id: string) => void;
   setCurrentStep: (step: number) => void;
@@ -33,8 +33,8 @@ export interface WizardState {
       country: string;
       description: string;
       socialLinks: string;
-      latitude: number | null;
-      longitude: number | null;
+      state: string;
+      street: string;
     }>,
   ) => void;
 
@@ -48,4 +48,3 @@ export interface WizardState {
   reorderSections: (page: PageType, sections: Section[]) => void;
   resetWizard: () => void;
 }
-
