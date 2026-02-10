@@ -5,6 +5,8 @@ export interface Website {
   createdAt: string;
   deploymentStatus: string;
   domainPrice?: number | null;
+  hostingPrice?: number | null;
+  websitePrice?: number | null;
 }
 
 // New interface to match the backend response

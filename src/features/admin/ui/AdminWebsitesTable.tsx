@@ -91,10 +91,10 @@ export const AdminWebsitesTable = ({
               <TableRow>
                 <TableHead>Website ID</TableHead>
                 <TableHead>Website Title</TableHead>
-                <TableHead>Owner ID</TableHead>
-                <TableHead>Submitted At</TableHead>
                 <TableHead>Domain Price</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Hosting Price</TableHead>
+                <TableHead>Website Generation Price</TableHead>
+                {status === "approval" && <TableHead>Status</TableHead>}
                 {status === "approval" && (
                   <TableHead className="text-right">Action</TableHead>
                 )}
@@ -128,17 +128,16 @@ export const AdminWebsitesTable = ({
                       <TableCell className="font-medium">
                         {site.title}
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {site.userId}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(site.createdAt).toLocaleDateString()}
-                      </TableCell>
                       <TableCell>{site.domainPrice}</TableCell>
+                      <TableCell>{site.hostingPrice}</TableCell>
+                      <TableCell>{site.websitePrice}</TableCell>
+
                       <TableCell>
-                        <Badge variant="secondary" className="capitalize">
-                          {site.deploymentStatus}
-                        </Badge>
+                        {status === "approval" && (
+                          <Badge variant="secondary" className="capitalize">
+                            {site.deploymentStatus}
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         {status === "approval" && (
