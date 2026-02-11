@@ -267,7 +267,7 @@ export function StepThree({ stepErrors }: StepThreeProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 flex flex-col">
-                <Label htmlFor="state">State / Province</Label>
+                <Label htmlFor="states">State / Province</Label>
                 <Popover open={open} onOpenChange={setOpen}>
                   <PopoverTrigger asChild>
                     <Button
@@ -286,7 +286,7 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                           Loading states...
                         </div>
                       ) : states ? (
-                        statesList.find((s) => s.iso2 === states)?.name
+                        statesList.find((s) => s.name === states)?.name
                       ) : (
                         "Select state..."
                       )}
@@ -307,14 +307,14 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                               key={s.iso2}
                               value={s.name}
                               onSelect={() => {
-                                handleChange("state", s.iso2);
+                                handleChange("states", s.name);
                                 setOpen(false);
                               }}
                             >
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  states === s.iso2
+                                  states === s.name
                                     ? "opacity-100"
                                     : "opacity-0",
                                 )}
