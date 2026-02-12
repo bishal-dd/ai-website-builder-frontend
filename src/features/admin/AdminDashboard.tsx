@@ -1,26 +1,27 @@
 "use client";
 
-import { useSearchParams } from "next/navigation"; // Added this
-import usePendingWebsites from "@/features/admin/hooks/usePendingWebsites";
-import { PendingWebsitesTable } from "./ui/PendingWebsitesTable";
-import { LogOut, LayoutDashboard, AlertCircle } from "lucide-react";
-import { useSession } from "@/shared/session";
-import { Button } from "@/components/ui/button";
+import { useSearchParams } from "next/navigation";
+import { AdminWebsitesTable } from "./ui/AdminWebsitesTable";
+import { LayoutDashboard, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import useAdminWebsites from "@/features/admin/hooks/useAdminWebsites";
 
 export default function AdminDashboard() {
-  const { signOut } = useSession();
   const searchParams = useSearchParams();
 
   // 1. Get current state DIRECTLY from the URL
   const websiteId = searchParams.get("websiteId") || "";
   const page = Number(searchParams.get("page")) || 1;
+  const status = searchParams.get("status") || "pending";
 
   // 2. The hook now automatically reacts whenever the URL changes
-  const { websites, pagination, isLoading, error, refetch } =
-    usePendingWebsites(websiteId, page);
+  const { websites, pagination, isLoading, error, refetch } = useAdminWebsites(
+    websiteId,
+    page,
+    status,
+  );
 
   if (error) {
     return (
@@ -53,26 +54,6 @@ export default function AdminDashboard() {
               </p>
             </div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refetch()}
-              className="hidden sm:flex"
-            >
-              Refresh Data
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={signOut}
-              className="gap-2"
-            >
-              <LogOut className="size-4" />
-              Logout
-            </Button>
-          </div>
         </header>
 
         <Separator className="mb-8" />
@@ -83,13 +64,12 @@ export default function AdminDashboard() {
               <Skeleton className="h-[400px] w-full rounded-xl bg-slate-200" />
             </div>
           ) : (
-            <PendingWebsitesTable
+            <AdminWebsitesTable
+              status={status}
               websites={websites}
               refresh={refetch}
               currentPage={page}
               totalPages={pagination?.totalPages || 1}
-              // Notice: We no longer pass search handlers!
-              // The table manages its own URL updates.
             />
           )}
         </main>

@@ -1,6 +1,11 @@
 "use client";
 
-import { LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
+import {
+  CheckCircle2,
+  LayoutDashboard,
+  LogOut,
+  ShieldCheck,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -21,11 +26,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useSession } from "@/shared/session";
-import { usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export function AdminSidebar() {
   const { user, signOut } = useSession();
-  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentStatus = searchParams.get("status") || "pending";
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
@@ -49,19 +55,33 @@ export function AdminSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
+              {/* Pending Websites */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === "/admin"}
-                  tooltip="Dashboard"
+                  isActive={currentStatus === "pending"}
+                  tooltip="Pending Approvals"
                 >
-                  <Link href="/admin/dashboard">
-                    <LayoutDashboard />
+                  <Link href="/admin/dashboard?status=pending">
+                    <LayoutDashboard className="size-4" />
                     <span>Pending Websites</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              {/* Add more Admin-specific items here */}
+
+              {/* Approved Websites */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={currentStatus === "approved"}
+                  tooltip="Approved Sites"
+                >
+                  <Link href="/admin/dashboard?status=approved">
+                    <CheckCircle2 className="size-4" />
+                    <span>Approved Websites</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

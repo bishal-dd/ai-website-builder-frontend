@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Website } from "../api/getPendingWebsites";
+import { Website } from "../api/getAdminWebsites";
 import {
   Table,
   TableBody,
@@ -18,19 +18,21 @@ import { Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useApprovePayment } from "@/features/admin/hooks/useApprovePayment";
 import { useDebouncedCallback } from "../hooks/useDebounce";
 
-interface PendingWebsitesTableProps {
+interface AdminWebsitesTableProps {
   websites: Website[];
   refresh: () => void;
   currentPage: number;
   totalPages: number;
+  status: string;
 }
 
-export const PendingWebsitesTable = ({
+export const AdminWebsitesTable = ({
   websites,
   refresh,
   currentPage,
   totalPages,
-}: PendingWebsitesTableProps) => {
+  status,
+}: AdminWebsitesTableProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -61,7 +63,13 @@ export const PendingWebsitesTable = ({
   return (
     <Card className="mt-6">
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4">
-        <CardTitle>Pending Approvals</CardTitle>
+        <CardTitle className="capitalize">
+          {status === "pending"
+            ? "Pending pendings"
+            : status === "approved"
+              ? "Approved Websites"
+              : "Rejected Websites"}
+        </CardTitle>
 
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -83,10 +91,13 @@ export const PendingWebsitesTable = ({
               <TableRow>
                 <TableHead>Website ID</TableHead>
                 <TableHead>Website Title</TableHead>
-                <TableHead>Owner ID</TableHead>
-                <TableHead>Submitted At</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
+                <TableHead>Domain Price</TableHead>
+                <TableHead>Hosting Price</TableHead>
+                <TableHead>Website Generation Price</TableHead>
+                {status === "pending" && <TableHead>Status</TableHead>}
+                {status === "pending" && (
+                  <TableHead className="text-right">Action</TableHead>
+                )}
               </TableRow>
             </TableHeader>
 
@@ -94,12 +105,16 @@ export const PendingWebsitesTable = ({
               {websites.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="h-24 text-center text-muted-foreground"
                   >
                     {currentSearch
                       ? `No results found for "${currentSearch}"`
-                      : "No pending websites found 🎉"}
+                      : status === "pending"
+                        ? "No pending websites found 🎉"
+                        : status === "approved"
+                          ? "No approved websites found 🎉"
+                          : "No rejected websites found 🎉"}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -113,30 +128,32 @@ export const PendingWebsitesTable = ({
                       <TableCell className="font-medium">
                         {site.title}
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {site.userId}
-                      </TableCell>
+                      <TableCell>{site.domainPrice}</TableCell>
+                      <TableCell>{site.hostingPrice}</TableCell>
+                      <TableCell>{site.websitePrice}</TableCell>
+
                       <TableCell>
-                        {new Date(site.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="capitalize">
-                          {site.deploymentStatus}
-                        </Badge>
+                        {status === "pending" && (
+                          <Badge variant="secondary" className="capitalize">
+                            {site.deploymentStatus}
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                          disabled={isApproving}
-                          onClick={() => mutate(site.id)}
-                        >
-                          {isApproving ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            "Approve"
-                          )}
-                        </Button>
+                        {status === "pending" && (
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            disabled={isApproving}
+                            onClick={() => mutate(site.id)}
+                          >
+                            {isApproving ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              "Approve"
+                            )}
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
