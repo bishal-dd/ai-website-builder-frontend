@@ -9,31 +9,7 @@ import { useWizardStore } from "@/features/wizard/store/wizardStore";
 import { useGeo } from "@/features/preview/domain/hooks/useGeoContext";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import {
-  Check,
-  ChevronsUpDown,
-  Globe,
-  Loader2,
-  Mail,
-  MapPin,
-  Palette,
-  Share2,
-} from "lucide-react";
-import { getStates } from "@/lib/geo-api";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { Globe, Mail, Palette, Share2 } from "lucide-react";
 
 type StepThreeProps = {
   stepErrors: Record<string, string[]>;
@@ -49,38 +25,13 @@ export function StepThree({ stepErrors }: StepThreeProps) {
     description,
     socialLinks,
     setWebsiteInfo,
-    states,
-    street,
   } = useWizardStore();
 
-  const [open, setOpen] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
-  const [statesList, setStatesList] = useState<
-    { name: string; iso2: string }[]
-  >([]);
-  const [isLoadingStates, setIsLoadingStates] = useState(false);
 
   useEffect(() => {
     if (country) setWebsiteInfo({ country });
   }, [country, setWebsiteInfo]);
-
-  useEffect(() => {
-    const loadStates = async () => {
-      if (!country) return;
-
-      setIsLoadingStates(true);
-      try {
-        const data = await getStates(country);
-        setStatesList(data);
-      } catch (error) {
-        console.error("Error loading states:", error);
-      } finally {
-        setIsLoadingStates(false);
-      }
-    };
-
-    loadStates();
-  }, [country]);
 
   const handleChange = (field: string, value: string) => {
     setWebsiteInfo({ [field]: value });
@@ -259,7 +210,7 @@ export function StepThree({ stepErrors }: StepThreeProps) {
             </div>
           </section>
 
-          <section className="space-y-6">
+          {/*<section className="space-y-6">
             <div className="flex items-center gap-2 pb-2 border-b">
               <MapPin className="w-5 h-5 text-primary" />
               <h3 className="font-semibold text-lg">Business Location</h3>
@@ -338,7 +289,7 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                 />
               </div>
             </div>
-          </section>
+          </section>*/}
         </div>
       </Card>
     </div>
