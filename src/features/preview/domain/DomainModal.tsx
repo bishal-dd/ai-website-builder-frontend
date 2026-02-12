@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Globe, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDomainModal } from "./hooks/useDomainModal";
@@ -17,6 +17,7 @@ import { useGeo } from "./hooks/useGeoContext";
 import { createPreOrder } from "./api/domainService";
 import { useSession } from "@/shared/session";
 import posthog from "posthog-js";
+import useGetWebsiteDomains from "../hooks/useGetWebsiteDomains";
 
 interface DomainModalProps {
   onClose: () => void;
@@ -48,6 +49,36 @@ export function DomainModal({
     loading: searchLoading,
     searchDomain,
   } = useDomainModal();
+  const { data: existingDomains, isLoading: isLoadingExisting } =
+    useGetWebsiteDomains(websiteId);
+
+  // 2. Auto-redirect to pricing if a domain is found
+  useEffect(() => {
+    if (existingDomains && existingDomains.length > 0) {
+      const dbDomain = existingDomains[0]; // Assuming one domain per site for now
+
+      setSelectedDomain({
+        domain: dbDomain.name,
+        price: dbDomain.domainPrice ?? 0,
+        hostingPrice: dbDomain.hostingPrice ?? 0,
+        websitePrice: dbDomain.websitePrice ?? 0,
+        currency: dbDomain.currency ?? (countryCode === "BT" ? "BTN" : "USD"),
+      });
+
+      setStep("pricing");
+    }
+  }, [existingDomains]);
+
+  if (isLoadingExisting) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+        <div className="bg-background p-6 rounded-lg shadow-xl flex items-center gap-3">
+          <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
+          <span>Checking domain status...</span>
+        </div>
+      </div>
+    );
+  }
 
   // ✅ Handle domain selection
   const handleSelectDomain = async (domain: DomainSuggestion) => {
