@@ -9,7 +9,31 @@ import { useWizardStore } from "@/features/wizard/store/wizardStore";
 import { useGeo } from "@/features/preview/domain/hooks/useGeoContext";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { Globe, Mail, Palette, Share2 } from "lucide-react";
+import {
+  Check,
+  ChevronsUpDown,
+  Globe,
+  Loader2,
+  Mail,
+  MapPin,
+  Palette,
+  Share2,
+} from "lucide-react";
+import { getStates } from "@/lib/geo-api";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 type StepThreeProps = {
   stepErrors: Record<string, string[]>;
@@ -25,13 +49,38 @@ export function StepThree({ stepErrors }: StepThreeProps) {
     description,
     socialLinks,
     setWebsiteInfo,
+    states,
+    street,
   } = useWizardStore();
 
+  const [open, setOpen] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [statesList, setStatesList] = useState<
+    { name: string; iso2: string }[]
+  >([]);
+  const [isLoadingStates, setIsLoadingStates] = useState(false);
 
   useEffect(() => {
     if (country) setWebsiteInfo({ country });
   }, [country, setWebsiteInfo]);
+
+  useEffect(() => {
+    const loadStates = async () => {
+      if (!country) return;
+
+      setIsLoadingStates(true);
+      try {
+        const data = await getStates(country);
+        setStatesList(data);
+      } catch (error) {
+        console.error("Error loading states:", error);
+      } finally {
+        setIsLoadingStates(false);
+      }
+    };
+
+    loadStates();
+  }, [country]);
 
   const handleChange = (field: string, value: string) => {
     setWebsiteInfo({ [field]: value });
@@ -169,12 +218,16 @@ export function StepThree({ stepErrors }: StepThreeProps) {
               <Label htmlFor="socialLinks" className="flex items-center gap-2">
                 <Share2 className="w-4 h-4" /> Social Media Links (Optional)
               </Label>
-              <Input
+              <Textarea
                 id="socialLinks"
                 placeholder="Paste links separated by commas"
                 value={socialLinks}
                 onChange={(e) => handleChange("socialLinks", e.target.value)}
+                className="min-h-[80px] resize-none"
               />
+              <p className="text-xs text-muted-foreground">
+                Separate multiple links with commas.
+              </p>
             </div>
           </section>
 
@@ -201,6 +254,87 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                   onChange={(e) => handleChange("primaryColor", e.target.value)}
                   placeholder="#8b5cf6"
                   className="max-w-[140px] font-mono"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <MapPin className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold text-lg">Business Location</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2 flex flex-col">
+                <Label htmlFor="states">State / Province</Label>
+                <Popover open={open} onOpenChange={setOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={open}
+                      disabled={!country || isLoadingStates}
+                      className={cn(
+                        "w-full justify-between font-normal",
+                        !states && "text-muted-foreground",
+                      )}
+                    >
+                      {isLoadingStates ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Loading states...
+                        </div>
+                      ) : states ? (
+                        statesList.find((s) => s.name === states)?.name
+                      ) : (
+                        "Select state..."
+                      )}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-[--radix-popover-trigger-width] p-0"
+                    align="start"
+                  >
+                    <Command>
+                      <CommandInput placeholder="Search state..." />
+                      <CommandList>
+                        <CommandEmpty>No state found.</CommandEmpty>
+                        <CommandGroup>
+                          {statesList.map((s) => (
+                            <CommandItem
+                              key={s.iso2}
+                              value={s.name}
+                              onSelect={() => {
+                                handleChange("states", s.name);
+                                setOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  states === s.name
+                                    ? "opacity-100"
+                                    : "opacity-0",
+                                )}
+                              />
+                              {s.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="street">Address</Label>
+                <Input
+                  id="street"
+                  placeholder="123 Business Way"
+                  value={street}
+                  onChange={(e) => handleChange("street", e.target.value)}
                 />
               </div>
             </div>

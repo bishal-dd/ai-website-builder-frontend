@@ -40,6 +40,8 @@ const defaultState: Omit<
   description: "",
   socialLinks: "",
   pageContents: [],
+  states: "",
+  street: "",
   websiteId: null,
 };
 
