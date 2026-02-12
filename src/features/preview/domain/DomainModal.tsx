@@ -67,7 +67,7 @@ export function DomainModal({
 
       setStep("pricing");
     }
-  }, [existingDomains]);
+  }, [existingDomains, countryCode]);
 
   if (isLoadingExisting) {
     return (
