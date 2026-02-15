@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, X } from "lucide-react";
 import { SelectedDomain, DomainContact } from "../types/domain";
@@ -11,7 +12,7 @@ interface PaymentSummaryProps {
   contact: DomainContact;
   onClose: () => void;
   onBack: () => void;
-  handleWhatsAppPayment: () => void;
+  handleWhatsAppPayment: (paymentType?: "full" | "installments") => void;
   handleInternationalPayment: () => void;
   countryCode: string;
 }
@@ -27,9 +28,24 @@ export function PaymentSummary({
 }: PaymentSummaryProps) {
   const { setStatus } = useWebsiteDeploymentStatus(websiteId!);
 
+  const [paymentType, setPaymentType] = useState<"full" | "installments">(
+    "full",
+  );
+
   const hostingPrice = selectedDomain.hostingPrice ?? 0;
   const websitePrice = selectedDomain.websitePrice ?? 0;
-  const totalPrice = selectedDomain.price + hostingPrice + websitePrice;
+  const domainPrice = selectedDomain.price ?? 0;
+
+  const totalPrice = domainPrice + hostingPrice + websitePrice;
+
+  // 👉 Installment config (you can change this)
+  const installmentMonths = 4;
+
+  const firstInstallment = domainPrice; // upfront
+  const remainingAmount = Math.max(totalPrice - firstInstallment, 0);
+  const monthlyPayment =
+    installmentMonths > 0 ? Math.ceil(remainingAmount / installmentMonths) : 0;
+
   const formatPrice = (price: number) =>
     countryCode === "BT" ? `Nu. ${price}` : `$${price.toFixed(2)}`;
 
@@ -68,7 +84,7 @@ export function PaymentSummary({
             </div>
             <div className="flex items-center justify-between">
               <span>Domain Registration (per year)</span>
-              <span>{formatPrice(selectedDomain.price)}</span>
+              <span>{formatPrice(domainPrice)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span>Hosting Service (per year)</span>
@@ -78,30 +94,83 @@ export function PaymentSummary({
               <span>Website Generation</span>
               <span>{formatPrice(websitePrice)}</span>
             </div>
-            <div className="flex items-center justify-between font-bold text-shadow-primary-foreground">
+
+            <div className="flex items-center justify-between font-bold">
               <span>Total Amount</span>
               <span>{formatPrice(totalPrice)}</span>
             </div>
-            <div className="flex items-center justify-between  text-shadow-primary-foreground">
-              <div className="text-sm">
-                {countryCode === "BT"
-                  ? `*Once we verify your payment on WhatsApp, we’ll send you an email with your website link within minutes after it goes live. Please check your spam folder if you don’t see it.`
-                  : `*Once you complete your payment, you’ll receive an email with your website link within minutes after your website goes live. Please check your spam folder if you don’t see it.`}
+
+            {/* 🔥 Payment options for BT */}
+            {countryCode === "BT" && (
+              <div className="mt-4 space-y-3 rounded-lg border p-4">
+                <p className="text-sm font-medium">Choose payment option:</p>
+
+                <div className="space-y-2">
+                  {/* FULL */}
+                  <button
+                    onClick={() => setPaymentType("full")}
+                    className={`w-full text-left p-3 rounded-md border ${
+                      paymentType === "full"
+                        ? "border-primary bg-primary/10"
+                        : "hover:bg-muted"
+                    }`}
+                  >
+                    <div className="font-medium">Pay Full Amount</div>
+                    <div className="text-sm text-muted-foreground">
+                      Pay {formatPrice(totalPrice)} now
+                    </div>
+                  </button>
+
+                  {/* INSTALLMENTS */}
+                  <button
+                    onClick={() => setPaymentType("installments")}
+                    className={`w-full text-left p-3 rounded-md border ${
+                      paymentType === "installments"
+                        ? "border-primary bg-primary/10"
+                        : "hover:bg-muted"
+                    }`}
+                  >
+                    <div className="font-medium">Pay in Installments</div>
+                    <div className="text-sm text-muted-foreground">
+                      First payment: {formatPrice(firstInstallment)} (domain)
+                      <br />
+                      Remaining: {formatPrice(remainingAmount)}
+                      <br />
+                      {formatPrice(monthlyPayment)} / month for{" "}
+                      {installmentMonths} months
+                    </div>
+                  </button>
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  *Domain is paid upfront. Monthly payments start after your
+                  website is delivered.
+                </p>
               </div>
+            )}
+
+            <div className="text-sm mt-4">
+              {countryCode === "BT"
+                ? `*Once we verify your first payment on WhatsApp, we’ll deploy your website and you will receive your website link in your email when it goes live.`
+                : `*Once you complete your payment, you’ll receive your website link when it goes live.`}
             </div>
           </div>
         </div>
 
+        {/* ACTION */}
         <div className="p-6 flex flex-col gap-3">
           {countryCode === "BT" ? (
             <Button
               onClick={() => {
-                handleWhatsAppPayment();
+                handleWhatsAppPayment(paymentType);
                 setStatus("pending_approval");
               }}
               className="w-full"
             >
-              Contact via WhatsApp and Pay
+              Continue on WhatsApp{" "}
+              {paymentType === "full"
+                ? `(${formatPrice(totalPrice)})`
+                : `(${formatPrice(firstInstallment)} now)`}
             </Button>
           ) : (
             <Button
@@ -111,7 +180,7 @@ export function PaymentSummary({
               }}
               className="w-full"
             >
-              Pay
+              Pay {formatPrice(totalPrice)}
             </Button>
           )}
         </div>

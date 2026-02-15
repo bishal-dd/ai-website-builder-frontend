@@ -128,37 +128,72 @@ export function DomainModal({
   const handleBackToSelection = () => setStep("selection");
 
   // WhatsApp payment
-  const handleWhatsAppPayment = () => {
+  const handleWhatsAppPayment = (
+    paymentType: "full" | "installments" = "full",
+  ) => {
     if (!selectedDomain) return;
 
-    const total =
-      selectedDomain.price +
-      (selectedDomain.hostingPrice ?? 0) +
-      (selectedDomain.websitePrice ?? 0);
+    const domainPrice = selectedDomain.price;
+    const hostingPrice = selectedDomain.hostingPrice ?? 0;
+    const websitePrice = selectedDomain.websitePrice ?? 0;
+
+    const total = domainPrice + hostingPrice + websitePrice;
+
+    // Installment config (must match UI)
+    const installmentMonths = 3;
+    const firstInstallment = domainPrice; // upfront domain
+    const remainingAmount = total - firstInstallment;
+    const monthlyPayment = Math.ceil(remainingAmount / installmentMonths);
 
     // Capture payment initiated event
     posthog.capture("payment_initiated", {
       payment_method: "whatsapp",
+      payment_type: paymentType,
       domain: selectedDomain.domain,
-      domain_price: selectedDomain.price,
-      hosting_price: selectedDomain.hostingPrice,
-      website_price: selectedDomain.websitePrice,
+      domain_price: domainPrice,
+      hosting_price: hostingPrice,
+      website_price: websitePrice,
       total_amount: total,
+      first_installment:
+        paymentType === "installments" ? firstInstallment : total,
+      remaining_amount: paymentType === "installments" ? remainingAmount : 0,
+      monthly_payment: paymentType === "installments" ? monthlyPayment : 0,
+      installment_months:
+        paymentType === "installments" ? installmentMonths : 0,
       currency: selectedDomain.currency,
       website_id: websiteId,
     });
 
-    const message = encodeURIComponent(
-      `Hi! I'd like to purchase:
+    const message =
+      paymentType === "installments"
+        ? encodeURIComponent(
+            `Hi! I'd like to purchase a website with installments:
 
   Website ID: ${websiteId}
 
   Domain: ${selectedDomain.domain}
-  Domain Price: ${selectedDomain.price}
-  Hosting: ${selectedDomain.hostingPrice}
-  Website Generation: ${selectedDomain.websitePrice}
-  Total: ${total}`,
-    );
+  Domain Price (paid upfront): ${domainPrice}
+  Hosting: ${hostingPrice}
+  Website Generation: ${websitePrice}
+
+  Total: ${total}
+  First Payment (now): ${firstInstallment}
+  Remaining: ${remainingAmount}
+  Monthly Payment: ${monthlyPayment} x ${installmentMonths} months
+  `,
+          )
+        : encodeURIComponent(
+            `Hi! I'd like to purchase a website with full payment:
+
+  Website ID: ${websiteId}
+
+  Domain: ${selectedDomain.domain}
+  Domain Price: ${domainPrice}
+  Hosting: ${hostingPrice}
+  Website Generation: ${websitePrice}
+  Total: ${total}
+  `,
+          );
 
     window.open(`https://wa.me/17959259?text=${message}`);
   };
