@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LogOut,
   ShieldCheck,
+  Users,
 } from "lucide-react";
 import {
   Sidebar,
@@ -12,6 +13,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -26,11 +28,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useSession } from "@/shared/session";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 
 export function AdminSidebar() {
   const { user, signOut } = useSession();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const currentStatus = searchParams.get("status") || "pending";
 
   return (
@@ -79,6 +82,27 @@ export function AdminSidebar() {
                   <Link href="/admin/dashboard?status=approved">
                     <CheckCircle2 className="size-4" />
                     <span>Approved Websites</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* New Contact/User Management Group */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === "/admin/contacts"} // Or whatever your route is
+                  tooltip="User Contacts"
+                >
+                  <Link href="/admin/contacts">
+                    <Users className="size-4" />
+                    <span>User Contacts</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
