@@ -18,6 +18,7 @@ export interface DomainSuggestion {
 }
 
 export interface SelectedDomain {
+  id?: string;
   domain: string;
   price: number;
   currency: string;

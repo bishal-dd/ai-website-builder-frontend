@@ -59,3 +59,24 @@ export async function buyDomainAPI(domain: string, contact: DomainContact) {
 
   return await res.json();
 }
+
+export async function updatePreOrder(data: {
+  id: string;
+  name: string;
+  country: string;
+}) {
+  const res = await fetch(`${BASE_URL}/domains/${data.id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: data.name,
+      country: data.country,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to update domain: ${res.status}`);
+  }
+
+  return res.json();
+}

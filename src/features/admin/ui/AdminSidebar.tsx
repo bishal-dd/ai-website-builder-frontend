@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   LogOut,
   ShieldCheck,
+  Users,
 } from "lucide-react";
 import {
   Sidebar,
@@ -90,25 +91,42 @@ export function AdminSidebar() {
         </SidebarGroup>
 
         {/* New Contact/User Management Group */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === "/admin/analytics"}
-                  tooltip="User Contacts"
-                >
-                  <Link href="/admin/analytics">
-                    <BarChart3 className="size-4" />
-                    <span>Analytics</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+       <SidebarGroup>
+  <SidebarGroupLabel>Management</SidebarGroupLabel>
+  <SidebarGroupContent>
+    <SidebarMenu>
+
+      {/* Analytics */}
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          asChild
+          isActive={pathname === "/admin/analytics"}
+          tooltip="Analytics"
+        >
+          <Link href="/admin/analytics">
+            <BarChart3 className="size-4" />
+            <span>Analytics</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+
+      {/* User Contacts */}
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          asChild
+          isActive={pathname === "/admin/contacts"}
+          tooltip="User Contacts"
+        >
+          <Link href="/admin/contacts">
+            <Users className="size-4" />
+            <span>User Contacts</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+
+    </SidebarMenu>
+  </SidebarGroupContent>
+</SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">
