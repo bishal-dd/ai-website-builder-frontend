@@ -14,7 +14,7 @@ import { DomainCard } from "./ui/DomainCard";
 import { PaymentSummary } from "./ui/PaymentSummary";
 import { ErrorMessage } from "./ui/ErrorMessage";
 import { useGeo } from "./hooks/useGeoContext";
-import { createPreOrder } from "./api/domainService";
+import { createPreOrder, updatePreOrder } from "./api/domainService";
 import { useSession } from "@/shared/session";
 import posthog from "posthog-js";
 import useGetWebsiteDomains from "../hooks/useGetWebsiteDomains";
@@ -52,20 +52,18 @@ export function DomainModal({
   const { data: existingDomains, isLoading: isLoadingExisting } =
     useGetWebsiteDomains(websiteId);
 
-  // 2. Auto-redirect to pricing if a domain is found
   useEffect(() => {
     if (existingDomains && existingDomains.length > 0) {
-      const dbDomain = existingDomains[0]; // Assuming one domain per site for now
+      const dbDomain = existingDomains[0];
 
       setSelectedDomain({
+        id: dbDomain.id,
         domain: dbDomain.name,
         price: dbDomain.domainPrice ?? 0,
         hostingPrice: dbDomain.hostingPrice ?? 0,
         websitePrice: dbDomain.websitePrice ?? 0,
         currency: dbDomain.currency ?? (countryCode === "BT" ? "BTN" : "USD"),
       });
-
-      setStep("pricing");
     }
   }, [existingDomains, countryCode]);
 
@@ -89,21 +87,38 @@ export function DomainModal({
     setSuccessMessage(null);
 
     try {
-      const result = await createPreOrder({
-        name: domain.domain,
-        websiteId,
-        userId,
-        country: countryCode,
-      });
+      let result;
 
-      setSuccessMessage(`✅ Domain ${domain.domain} reserved successfully!`);
+      if (selectedDomain?.id) {
+        result = await updatePreOrder({
+          id: selectedDomain.id,
+          name: domain.domain,
+          country: countryCode,
+        });
+
+        setSuccessMessage(`✅ Domain updated to ${domain.domain}`);
+      } else {
+        // CREATE new domain
+        result = await createPreOrder({
+          name: domain.domain,
+          websiteId,
+          userId,
+          country: countryCode,
+        });
+
+        setSuccessMessage(`✅ Domain ${domain.domain} reserved successfully!`);
+      }
+
+      const domainData = result.domain ?? result;
+      const pricingData = result.pricing ?? result;
 
       setSelectedDomain({
-        domain: result.domain.name,
-        price: result.pricing.domainPrice,
-        hostingPrice: result.pricing.hostingPrice,
-        websitePrice: result.pricing.websitePrice,
-        currency: result.pricing.currency,
+        id: domainData.id,
+        domain: domainData.name,
+        price: pricingData.domainPrice,
+        hostingPrice: pricingData.hostingPrice,
+        websitePrice: pricingData.websitePrice,
+        currency: pricingData.currency,
       });
 
       // Capture domain selected event
@@ -298,6 +313,24 @@ export function DomainModal({
             only international TLDs are available (.com, .travel, .ai, .io, .us,
             .uk)
           </div>
+          {selectedDomain && (
+            <div className="p-3 border rounded-md bg-green-500/10 border-green-500/30 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="font-medium text-green-700">
+                    Current domain: {selectedDomain.domain}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    You can keep this or choose a different one.
+                  </div>
+                </div>
+
+                <Button size="sm" onClick={() => setStep("pricing")}>
+                  Continue
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* RESULTS */}
