@@ -31,6 +31,8 @@ export function ContactsTable({
   const searchParams = useSearchParams();
   const currentSearch = searchParams.get("search");
 
+  const PAGE_SIZE = 10;
+
   const [selectedUser, setSelectedUser] = useState<AdminUserContact | null>(
     null,
   );
@@ -41,6 +43,9 @@ export function ContactsTable({
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50/50">
+              <TableHead className="w-16 py-4 font-semibold text-slate-700 text-center">
+                #
+              </TableHead>
               <TableHead className="py-4 font-semibold text-slate-700">
                 User
               </TableHead>
@@ -65,8 +70,11 @@ export function ContactsTable({
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
+              users.map((user, index) => (
                 <TableRow key={user.id} className="group transition-colors">
+                  <TableCell className="text-center text-sm font-medium text-slate-500">
+                    {(currentPage - 1) * PAGE_SIZE + (index + 1)}
+                  </TableCell>
                   {/* USER IDENTITY */}
                   <TableCell>
                     <div className="flex items-center gap-3">
