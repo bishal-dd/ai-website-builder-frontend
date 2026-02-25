@@ -1,6 +1,6 @@
 export interface RegenerateWebsitePayload {
   websiteId: string;
-  pageId: string;
+  pageId?: string;
   userMessage: string;
 }
 
