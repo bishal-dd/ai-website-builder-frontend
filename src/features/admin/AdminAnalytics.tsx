@@ -8,6 +8,7 @@ import {
   RefreshCw,
   BarChart3,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import useAdminAnalytics from "./hooks/useAdminAnalytics";
 import { StatCard } from "./ui/StatCard";
@@ -112,7 +113,7 @@ const AdminAnalytics = () => {
                   <StatCard
                     title="Total Pending Websites"
                     value={stats?.totalGenerated ?? 0}
-                    icon={Layout}
+                    icon={Clock}
                     colorClass="text-violet-500"
                   />
                   <StatCard
