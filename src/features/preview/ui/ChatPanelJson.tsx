@@ -40,6 +40,7 @@ import { useRegenerateWebsite } from "../hooks/useRegenerateWebsite";
 import { WebsiteRegenerator } from "./WebsiteRegenerator";
 import { WebPages } from "../types";
 
+const ADD_NEW_PAGE = "add_new_page";
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -110,7 +111,10 @@ export function ChatPanelJson({
 
   const selectedPage = pages.find((p) => p.page_id === selectedPageId);
   const selectedPageLabel =
-    selectedPage?.title ?? selectedPage?.page ?? "Select page";
+    selectedPageId === ADD_NEW_PAGE
+      ? "Add Additional Page"
+      : (selectedPage?.title ?? selectedPage?.page ?? "Select page");
+
   const SelectedIcon = getPageIcon(selectedPageLabel);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -131,10 +135,12 @@ export function ChatPanelJson({
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     console.log("Selected page ID:", selectedPageId);
+    const isNewPage = selectedPageId === ADD_NEW_PAGE;
+
     regenerate(
       {
         websiteId,
-        pageId: selectedPageId,
+        pageId: isNewPage ? undefined : selectedPageId,
         userMessage: input,
       },
       {
@@ -334,6 +340,22 @@ export function ChatPanelJson({
                       </CommandItem>
                     );
                   })}
+
+                  {/* Divider */}
+                  <div className="my-1 border-t" />
+
+                  {/* Add New Page Option */}
+                  <CommandItem
+                    value={ADD_NEW_PAGE}
+                    onSelect={() => {
+                      setSelectedPageId(ADD_NEW_PAGE);
+                      setOpen(false);
+                    }}
+                    className="text-primary font-medium"
+                  >
+                    <Layers className="h-4 w-4 mr-2" />
+                    Add Additional Page
+                  </CommandItem>
                 </CommandGroup>
               </CommandList>
             </Command>
@@ -345,7 +367,11 @@ export function ChatPanelJson({
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe what you want to change on this page…"
+            placeholder={
+              selectedPageId === ADD_NEW_PAGE
+                ? "Describe the new page you want to create..."
+                : "Describe what you want to change on this page..."
+            }
             className="min-h-[60px] max-h-[120px] resize-none"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
