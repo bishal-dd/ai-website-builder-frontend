@@ -75,6 +75,12 @@ export default function AdminContactsPage() {
               <p className="text-muted-foreground text-sm">
                 Direct access to owner details and associated projects.
               </p>
+              <div className="text-sm text-muted-foreground">
+                Total users:{" "}
+                <span className="font-semibold text-foreground">
+                  {pagination?.totalCount ?? 0}{" "}
+                </span>
+              </div>
             </div>
           </div>
 
