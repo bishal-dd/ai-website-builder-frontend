@@ -70,6 +70,7 @@ export default function AdminDashboard() {
               refresh={refetch}
               currentPage={page}
               totalPages={pagination?.totalPages || 1}
+              totalCount={pagination?.totalCount || 0}
             />
           )}
         </main>

@@ -24,6 +24,7 @@ interface AdminWebsitesTableProps {
   currentPage: number;
   totalPages: number;
   status: string;
+  totalCount: number;
 }
 
 export const AdminWebsitesTable = ({
@@ -32,6 +33,7 @@ export const AdminWebsitesTable = ({
   currentPage,
   totalPages,
   status,
+  totalCount,
 }: AdminWebsitesTableProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -71,6 +73,10 @@ export const AdminWebsitesTable = ({
               : "Rejected Websites"}
         </CardTitle>
 
+        <div className="text-sm text-muted-foreground">
+          Total {status} websites:{" "}
+          <span className="font-semibold text-foreground">{totalCount}</span>
+        </div>
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -89,6 +95,7 @@ export const AdminWebsitesTable = ({
           <Table>
             <TableHeader>
               <TableRow>
+                <TableCell>#</TableCell>
                 <TableHead>Website ID</TableHead>
                 <TableHead>Website Title</TableHead>
                 <TableHead>Domain Price</TableHead>
@@ -118,10 +125,14 @@ export const AdminWebsitesTable = ({
                   </TableCell>
                 </TableRow>
               ) : (
-                websites.map((site) => {
+                websites.map((site, index) => {
+                  const serialNumber = (currentPage - 1) * 10 + index + 1;
+
                   const isApproving = isPending && variables === site.id;
                   return (
                     <TableRow key={site.id}>
+                      <TableCell>{serialNumber}</TableCell>
+
                       <TableCell className="font-mono text-xs">
                         {site.id}
                       </TableCell>
