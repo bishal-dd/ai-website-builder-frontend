@@ -35,7 +35,7 @@ export function AdminSidebar() {
   const { user, signOut } = useSession();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const currentStatus = searchParams.get("status") || "pending";
+  const currentStatus = searchParams.get("status");
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
@@ -63,7 +63,10 @@ export function AdminSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={currentStatus === "pending"}
+                  isActive={
+                    pathname === "/admin/dashboard" &&
+                    currentStatus === "pending"
+                  }
                   tooltip="Pending Approvals"
                 >
                   <Link href="/admin/dashboard?status=pending">
@@ -77,7 +80,10 @@ export function AdminSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={currentStatus === "approved"}
+                  isActive={
+                    pathname === "/admin/dashboard" &&
+                    currentStatus === "approved"
+                  }
                   tooltip="Approved Sites"
                 >
                   <Link href="/admin/dashboard?status=approved">
@@ -91,42 +97,40 @@ export function AdminSidebar() {
         </SidebarGroup>
 
         {/* New Contact/User Management Group */}
-       <SidebarGroup>
-  <SidebarGroupLabel>Management</SidebarGroupLabel>
-  <SidebarGroupContent>
-    <SidebarMenu>
+        <SidebarGroup>
+          <SidebarGroupLabel>Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {/* Analytics */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === "/admin/analytics"}
+                  tooltip="Analytics"
+                >
+                  <Link href="/admin/analytics">
+                    <BarChart3 className="size-4" />
+                    <span>Analytics</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
 
-      {/* Analytics */}
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          asChild
-          isActive={pathname === "/admin/analytics"}
-          tooltip="Analytics"
-        >
-          <Link href="/admin/analytics">
-            <BarChart3 className="size-4" />
-            <span>Analytics</span>
-          </Link>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-
-      {/* User Contacts */}
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          asChild
-          isActive={pathname === "/admin/contacts"}
-          tooltip="User Contacts"
-        >
-          <Link href="/admin/contacts">
-            <Users className="size-4" />
-            <span>User Contacts</span>
-          </Link>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-
-    </SidebarMenu>
-  </SidebarGroupContent>
-</SidebarGroup>
+              {/* User Contacts */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === "/admin/contacts"}
+                  tooltip="User Contacts"
+                >
+                  <Link href="/admin/contacts">
+                    <Users className="size-4" />
+                    <span>User Contacts</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">
