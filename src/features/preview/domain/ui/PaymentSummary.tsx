@@ -50,8 +50,20 @@ export function PaymentSummary({
     countryCode === "BT" ? `Nu. ${price}` : `$${price.toFixed(2)}`;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4">
-      <div className="bg-background rounded-lg border shadow-lg w-full max-w-md overflow-hidden flex flex-col">
+    <div
+      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm
+      flex items-end sm:items-center justify-center"
+    >
+      {" "}
+      <div
+        className="
+        bg-background w-full sm:max-w-md
+        h-[100dvh] sm:h-auto sm:max-h-[90vh]
+        sm:rounded-lg border shadow-lg
+        flex flex-col overflow-hidden
+      "
+      >
+        {" "}
         {/* HEADER */}
         <div className="flex items-center justify-between p-4 border-b shrink-0">
           <div className="flex items-center gap-2">
@@ -74,9 +86,8 @@ export function PaymentSummary({
             <X className="w-4 h-4" />
           </Button>
         </div>
-
         {/* PRICING */}
-        <div className="p-6 space-y-4">
+        <div className="flex-1 overflow-auto p-6 space-y-4">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span>Selected Domain</span>
@@ -156,7 +167,6 @@ export function PaymentSummary({
             </div>
           </div>
         </div>
-
         {/* ACTION */}
         <div className="p-6 flex flex-col gap-3">
           {countryCode === "BT" ? (
