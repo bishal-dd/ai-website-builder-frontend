@@ -88,6 +88,7 @@ export function ChatPanelJson({
   ]);
 
   const [input, setInput] = useState("");
+  const [showGeneralComponents, setShowGeneralComponents] = useState(false);
   const [regenJobId, setRegenJobId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [isWhatsappEnabled, setIsWhatsappEnabled] = useState(false);
@@ -97,7 +98,25 @@ export function ChatPanelJson({
   /** Page selector state */
   const [selectedPageId, setSelectedPageId] = useState<string>(currentPageId);
   const { data } = useGetGeneratedWebsite(websiteId);
+  const generalComponents = [
+    {
+      id: "floating_whatsapp",
+      label: "Floating WhatsApp",
+      type: "toggle",
+      value: isWhatsappEnabled,
+      onChange: async () => {
+        const newValue = !isWhatsappEnabled;
+        setIsWhatsappEnabled(newValue);
 
+        updateWebsiteMutation({
+          websiteId,
+          body: {
+            floating_whatsapp_enabled: newValue,
+          },
+        });
+      },
+    },
+  ];
   useEffect(() => {
     if (data?.floating_whatsapp_enabled !== undefined) {
       setIsWhatsappEnabled(data.floating_whatsapp_enabled);
@@ -210,85 +229,93 @@ export function ChatPanelJson({
       {/* Messages */}
       <ScrollArea className="flex-1 px-6 py-4">
         <div ref={scrollRef} className="space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={cn(
-                "flex gap-3",
-                message.role === "user" ? "justify-end" : "justify-start",
-              )}
-            >
-              {message.role === "assistant" && (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                </div>
-              )}
-
+          {messages.map((message, index) => (
+            <React.Fragment key={message.id}>
               <div
                 className={cn(
-                  "max-w-[80%] rounded-lg px-4 py-3 text-sm",
-                  message.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card border border-border",
+                  "flex gap-3",
+                  message.role === "user" ? "justify-end" : "justify-start",
                 )}
               >
-                {message.content}
+                {message.role === "assistant" && (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                  </div>
+                )}
+
+                <div
+                  className={cn(
+                    "max-w-[80%] rounded-lg px-4 py-3 text-sm",
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card border border-border",
+                  )}
+                >
+                  {message.content}
+                </div>
+
+                {message.role === "user" && (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+                    <User className="h-4 w-4 text-primary" />
+                  </div>
+                )}
               </div>
 
-              {message.role === "user" && (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
-                  <User className="h-4 w-4 text-primary" />
+              {/* Show General Components Button after FIRST assistant message */}
+              {index === 0 && message.role === "assistant" && (
+                <div className="pl-11">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowGeneralComponents((prev) => !prev)}
+                  >
+                    General Components
+                  </Button>
+
+                  {showGeneralComponents && (
+                    <div className="mt-3 space-y-3 rounded-lg border bg-card p-4">
+                      <h4 className="text-sm font-semibold">
+                        Site-wide Components
+                      </h4>
+
+                      {generalComponents.map((component) => (
+                        <div
+                          key={component.id}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-sm text-muted-foreground">
+                            {component.label}
+                          </span>
+
+                          {component.type === "toggle" && (
+                            <button
+                              type="button"
+                              onClick={component.onChange}
+                              className={cn(
+                                "relative inline-flex h-5 w-9 items-center rounded-full transition-colors",
+                                component.value ? "bg-primary" : "bg-input",
+                              )}
+                            >
+                              <span
+                                className={cn(
+                                  "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
+                                  component.value
+                                    ? "translate-x-4"
+                                    : "translate-x-1",
+                                )}
+                              />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
+            </React.Fragment>
           ))}
         </div>
       </ScrollArea>
-
-      {/* General Components */}
-      <div className="border-b border-border bg-card px-6 py-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold">General Components</h3>
-            <p className="text-xs text-muted-foreground">
-              Control site-wide features
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">
-              Floating WhatsApp
-            </span>
-
-            <button
-              type="button"
-              onClick={async () => {
-                const newValue = !isWhatsappEnabled;
-
-                setIsWhatsappEnabled(newValue);
-
-                updateWebsiteMutation({
-                  websiteId,
-                  body: {
-                    floating_whatsapp_enabled: newValue,
-                  },
-                });
-              }}
-              className={cn(
-                "relative inline-flex h-5 w-9 items-center rounded-full transition-colors",
-                isWhatsappEnabled ? "bg-primary" : "bg-input",
-              )}
-            >
-              <span
-                className={cn(
-                  "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
-                  isWhatsappEnabled ? "translate-x-4" : "translate-x-1",
-                )}
-              />
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Page Selector + Input */}
       <div className="border-t border-border bg-card px-6 py-4 space-y-3">
