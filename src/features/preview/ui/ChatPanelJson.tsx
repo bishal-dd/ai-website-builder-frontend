@@ -92,8 +92,7 @@ export function ChatPanelJson({
   const [regenJobId, setRegenJobId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [isWhatsappEnabled, setIsWhatsappEnabled] = useState(false);
-  const { mutate: updateWebsiteMutation, isPending: isUpdating } =
-    useUpdateWebsite();
+  const { mutate: updateWebsiteMutation } = useUpdateWebsite();
 
   /** Page selector state */
   const [selectedPageId, setSelectedPageId] = useState<string>(currentPageId);
