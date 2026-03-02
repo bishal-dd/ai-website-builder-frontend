@@ -286,6 +286,7 @@ export function PreviewPanelJson({
                   onUpdateElement?.(currentPageId, elementId, updates)
                 }
                 onUpdateSharedElement={onUpdateSharedElement}
+                floatingWhatsappEnabled={freshData?.floating_whatsapp_enabled}
               />
             </Frame>
           </div>
