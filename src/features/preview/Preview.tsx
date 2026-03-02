@@ -21,6 +21,7 @@ export default function Preview() {
 
   const updatePage = useUpdateWebsitePage();
   const updateWebsite = useUpdateWebsite();
+  const [contactPhone, setContactPhone] = useState<string>("");
 
   const [websiteData, setWebsiteData] = useState<WebsiteData>({
     elements: [],
@@ -36,6 +37,7 @@ export default function Preview() {
 
   useEffect(() => {
     if (generatedWebsite) {
+      setContactPhone(generatedWebsite.contact_phone ?? "");
       const websiteDataFormatted = mapApiToWebsiteData(generatedWebsite);
       handleWebsiteGenerated(websiteDataFormatted);
     }
@@ -130,6 +132,7 @@ export default function Preview() {
     <div className="h-screen w-screen overflow-hidden bg-background flex flex-col">
       <main className="flex-1 relative overflow-hidden">
         <PreviewPanelJson
+          contactPhone={contactPhone}
           websiteId={websiteId}
           websiteData={websiteData}
           currentPageId={currentPageId}

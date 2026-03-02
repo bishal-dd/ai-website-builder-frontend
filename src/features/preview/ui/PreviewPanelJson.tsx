@@ -39,6 +39,7 @@ type DeviceType = "desktop" | "tablet" | "mobile";
 interface PreviewPanelJsonProps {
   websiteId: string;
   websiteData: WebsiteData;
+  contactPhone: string;
   onUpdateElement?: (
     pageId: string,
     elementId: number,
@@ -56,6 +57,7 @@ interface PreviewPanelJsonProps {
 export function PreviewPanelJson({
   websiteId,
   websiteData,
+  contactPhone,
   onUpdateElement,
   onUpdateSharedElement,
   onPageChange,
@@ -276,6 +278,7 @@ export function PreviewPanelJson({
               `}
             >
               <JsonRenderer
+                contactPhone={contactPhone}
                 device={device}
                 elements={currentPage.pageContent}
                 sharedComponents={websiteData.sharedComponents}

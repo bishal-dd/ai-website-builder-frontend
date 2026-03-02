@@ -4,12 +4,16 @@ import type React from "react";
 import type { WebElement, SharedComponents } from "@/features/preview/types";
 import { createElement, type ReactElement, useState, useRef } from "react";
 import { useSession } from "@/shared/session";
+import { CarouselRenderer } from "./interactiveComponents/CarouselRenderer";
+import { cn } from "@/lib/utils";
+import { FloatingWhatsApp } from "./interactiveComponents/FloatingWhatsApp";
 
 interface JsonRendererProps {
   elements: WebElement[];
   sharedComponents?: SharedComponents;
   device?: "desktop" | "tablet" | "mobile"; // Prop from PreviewPanel
   onUpdateElement?: (id: number, updates: Partial<WebElement>) => void;
+  contactPhone?: string;
   onUpdateSharedElement?: (
     componentKey: "navbar" | "footer",
     elementId: number,
@@ -85,15 +89,18 @@ export function JsonRenderer({
   sharedComponents,
   device = "desktop",
   onUpdateElement,
+  contactPhone,
   onUpdateSharedElement,
 }: JsonRendererProps) {
   const { user } = useSession();
   const [hoveredImageId, setHoveredImageId] = useState<number | null>(null);
   const [activeImageId, setActiveImageId] = useState<number | null>(null);
   const [uploadingImageId, setUploadingImageId] = useState<number | null>(null);
+  const [isEditingText, setIsEditingText] = useState(false); // New State
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const isPaused =
+    isEditingText || uploadingImageId !== null || activeImageId !== null;
   const handleTextSave = (
     id: number,
     componentKey: "navbar" | "footer" | undefined,
@@ -179,6 +186,36 @@ export function JsonRenderer({
       },
     };
 
+    const componentType = element.attributes?.["data-component"];
+
+    if (componentType === "carousel") {
+      const autoplay = String(element.attributes?.["data-autoplay"]) === "true";
+
+      const intervalAttr = element.attributes?.["data-interval"];
+      const interval = intervalAttr ? Number(intervalAttr) : undefined;
+
+      // 1️⃣ Find the wrapper (relative h-[80vh])
+      const wrapper = children?.find((child) => child.tag === "div");
+
+      // 2️⃣ Extract ONLY slide nodes
+      const slides =
+        wrapper?.children?.filter(
+          (child) => child.attributes?.["data-role"] === "carousel-slide",
+        ) ?? [];
+
+      return (
+        <CarouselRenderer
+          key={id}
+          className={className}
+          slides={slides}
+          autoplay={autoplay}
+          interval={interval}
+          isPaused={isPaused}
+          renderElement={(el) => renderElement(el, componentKey)}
+        />
+      );
+    }
+
     // --- INLINE EDITING LOGIC ---
     const isLink = tag === "a";
     if (isLink) {
@@ -204,10 +241,12 @@ export function JsonRenderer({
       };
 
       props.onFocus = (e) => {
+        setIsEditingText(true);
         e.currentTarget.style.outline = "2px solid #facc15"; // yellow
       };
 
       props.onBlur = (e) => {
+        setIsEditingText(false);
         e.currentTarget.style.outline = "none";
         handleTextSave(id, componentKey, e.currentTarget.innerText);
       };
@@ -229,6 +268,59 @@ export function JsonRenderer({
       };
     }
 
+    const isCarouselSlide =
+      element.attributes?.["data-role"] === "carousel-slide";
+
+    if (isCarouselSlide) {
+      return (
+        <div key={id} className={cn("w-full h-full", className)}>
+          {/* Slide Content */}
+          {children?.map((child) => renderElement(child, componentKey))}
+
+          {/* Small Edit Button - Always Visible */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+
+              const bgImage = children?.find(
+                (c) =>
+                  c.tag === "img" &&
+                  c.attributes?.["data-role"] === "carousel-bg",
+              );
+
+              if (bgImage) {
+                if (activeImageId !== bgImage.id) {
+                  setActiveImageId(bgImage.id);
+                }
+                fileInputRef.current?.click();
+              }
+            }}
+            className="absolute top-4 right-4 z-50 bg-yellow-400 text-black px-4 py-2 rounded-md shadow-lg text-sm font-semibold"
+          >
+            Change Image
+          </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={(e) => {
+              const bgImage = children?.find(
+                (c) =>
+                  c.tag === "img" &&
+                  c.attributes?.["data-role"] === "carousel-bg",
+              );
+
+              if (bgImage) {
+                handleImageChange(e, bgImage.id, componentKey);
+                setActiveImageId(null);
+              }
+            }}
+          />
+        </div>
+      );
+    }
+
     // --- IMAGE LOGIC ---
     // Inside renderElement, replace the img logic:
     const hasSize = hasExplicitSize(className);
@@ -238,9 +330,21 @@ export function JsonRenderer({
       const isLogo = element.attributes?.["data-role"] === "logo";
       const isIcon = element.attributes?.["data-role"] === "social-icon";
       const fixedStyle = cssStringToObject(attributes?.style);
+      const isCarouselBg = element.attributes?.["data-role"] === "carousel-bg";
 
       const isActive =
         device === "desktop" ? hoveredImageId === id : activeImageId === id;
+
+      if (isCarouselBg) {
+        return (
+          <img
+            key={id}
+            src={imageSrc}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ zIndex: 0 }}
+          />
+        );
+      }
 
       return (
         <div
@@ -268,9 +372,17 @@ export function JsonRenderer({
                     ...fixedStyle,
                     maxWidth: "100%",
                     maxHeight: "100%",
-                    width: isLogo || hasSize ? "auto" : "100%",
-                    height: isLogo || hasSize ? "auto" : "auto",
-                    objectFit: "contain",
+                    width: isCarouselBg
+                      ? "100%"
+                      : isLogo || hasSize
+                        ? "auto"
+                        : "100%",
+                    height: isCarouselBg
+                      ? "100%"
+                      : isLogo || hasSize
+                        ? "auto"
+                        : "auto",
+                    objectFit: isCarouselBg ? "cover" : "contain",
                     pointerEvents: "auto",
                   }),
 
@@ -351,6 +463,7 @@ export function JsonRenderer({
       {sharedComponents?.navbar.map((el) => renderElement(el, "navbar"))}
       <div>{elements.map((el) => renderElement(el))}</div>
       {sharedComponents?.footer.map((el) => renderElement(el, "footer"))}
+      {/*<FloatingWhatsApp phone={contactPhone ?? ""} />*/}
     </>
   );
 }
