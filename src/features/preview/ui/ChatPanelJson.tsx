@@ -39,7 +39,8 @@ import { cn } from "@/lib/utils";
 import { useRegenerateWebsite } from "../hooks/useRegenerateWebsite";
 import { WebsiteRegenerator } from "./WebsiteRegenerator";
 import { WebPages } from "../types";
-
+import useUpdateWebsite from "../hooks/useUpdateWebsite";
+import useGetGeneratedWebsite from "../hooks/useGetGeneratedWebsite";
 const ADD_NEW_PAGE = "add_new_page";
 interface Message {
   id: string;
@@ -90,9 +91,18 @@ export function ChatPanelJson({
   const [regenJobId, setRegenJobId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [isWhatsappEnabled, setIsWhatsappEnabled] = useState(false);
+  const { mutate: updateWebsiteMutation, isPending: isUpdating } =
+    useUpdateWebsite();
 
   /** Page selector state */
   const [selectedPageId, setSelectedPageId] = useState<string>(currentPageId);
+  const { data } = useGetGeneratedWebsite(websiteId);
+
+  useEffect(() => {
+    if (data?.floating_whatsapp_enabled !== undefined) {
+      setIsWhatsappEnabled(data.floating_whatsapp_enabled);
+    }
+  }, [data]);
 
   // Sync with preview page
   useEffect(() => {
@@ -251,7 +261,19 @@ export function ChatPanelJson({
             </span>
 
             <button
-              onClick={() => setIsWhatsappEnabled((prev) => !prev)}
+              type="button"
+              onClick={async () => {
+                const newValue = !isWhatsappEnabled;
+
+                setIsWhatsappEnabled(newValue);
+
+                updateWebsiteMutation({
+                  websiteId,
+                  body: {
+                    floating_whatsapp_enabled: newValue,
+                  },
+                });
+              }}
               className={cn(
                 "relative inline-flex h-5 w-9 items-center rounded-full transition-colors",
                 isWhatsappEnabled ? "bg-primary" : "bg-input",
@@ -259,7 +281,7 @@ export function ChatPanelJson({
             >
               <span
                 className={cn(
-                  "h-4 w-4 rounded-full bg-white shadow transform transition-transform",
+                  "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
                   isWhatsappEnabled ? "translate-x-4" : "translate-x-1",
                 )}
               />

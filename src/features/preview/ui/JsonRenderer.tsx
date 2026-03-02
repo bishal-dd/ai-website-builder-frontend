@@ -14,6 +14,7 @@ interface JsonRendererProps {
   device?: "desktop" | "tablet" | "mobile"; // Prop from PreviewPanel
   onUpdateElement?: (id: number, updates: Partial<WebElement>) => void;
   contactPhone?: string;
+  floatingWhatsappEnabled?: boolean;
   onUpdateSharedElement?: (
     componentKey: "navbar" | "footer",
     elementId: number,
@@ -90,6 +91,7 @@ export function JsonRenderer({
   device = "desktop",
   onUpdateElement,
   contactPhone,
+  floatingWhatsappEnabled,
   onUpdateSharedElement,
 }: JsonRendererProps) {
   const { user } = useSession();
@@ -463,7 +465,9 @@ export function JsonRenderer({
       {sharedComponents?.navbar.map((el) => renderElement(el, "navbar"))}
       <div>{elements.map((el) => renderElement(el))}</div>
       {sharedComponents?.footer.map((el) => renderElement(el, "footer"))}
-      <FloatingWhatsApp phone={contactPhone ?? ""} />
+      {floatingWhatsappEnabled && (
+        <FloatingWhatsApp phone={contactPhone ?? ""} />
+      )}
     </>
   );
 }

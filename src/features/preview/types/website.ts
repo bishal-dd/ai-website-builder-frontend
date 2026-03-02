@@ -8,6 +8,7 @@ export type WebsiteInput = {
   shared_components?: SharedComponents;
   color?: string;
   type?: string;
+  floating_whatsapp_enabled?: boolean;
 };
 
 export type WebsiteUpdate = Partial<WebsiteInput>;
