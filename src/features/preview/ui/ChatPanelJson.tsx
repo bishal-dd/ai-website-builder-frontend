@@ -89,6 +89,7 @@ export function ChatPanelJson({
   const [input, setInput] = useState("");
   const [regenJobId, setRegenJobId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [isWhatsappEnabled, setIsWhatsappEnabled] = useState(false);
 
   /** Page selector state */
   const [selectedPageId, setSelectedPageId] = useState<string>(currentPageId);
@@ -233,6 +234,39 @@ export function ChatPanelJson({
           ))}
         </div>
       </ScrollArea>
+
+      {/* General Components */}
+      <div className="border-b border-border bg-card px-6 py-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold">General Components</h3>
+            <p className="text-xs text-muted-foreground">
+              Control site-wide features
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              Floating WhatsApp
+            </span>
+
+            <button
+              onClick={() => setIsWhatsappEnabled((prev) => !prev)}
+              className={cn(
+                "relative inline-flex h-5 w-9 items-center rounded-full transition-colors",
+                isWhatsappEnabled ? "bg-primary" : "bg-input",
+              )}
+            >
+              <span
+                className={cn(
+                  "h-4 w-4 rounded-full bg-white shadow transform transition-transform",
+                  isWhatsappEnabled ? "translate-x-4" : "translate-x-1",
+                )}
+              />
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Page Selector + Input */}
       <div className="border-t border-border bg-card px-6 py-4 space-y-3">

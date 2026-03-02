@@ -463,7 +463,7 @@ export function JsonRenderer({
       {sharedComponents?.navbar.map((el) => renderElement(el, "navbar"))}
       <div>{elements.map((el) => renderElement(el))}</div>
       {sharedComponents?.footer.map((el) => renderElement(el, "footer"))}
-      {/*<FloatingWhatsApp phone={contactPhone ?? ""} />*/}
+      <FloatingWhatsApp phone={contactPhone ?? ""} />
     </>
   );
 }
