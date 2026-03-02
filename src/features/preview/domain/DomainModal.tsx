@@ -284,8 +284,13 @@ export function DomainModal({
   );
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4">
-      <div className="bg-background rounded-lg border shadow-lg w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center">
+      <div
+        className="bg-background w-full sm:max-w-md sm:rounded-lg border shadow-lg
+        h-[100dvh] sm:h-auto sm:max-h-[90vh]
+        flex flex-col overflow-hidden"
+      >
+        {" "}
         {/* HEADER */}
         <div className="flex items-center justify-between p-4 border-b shrink-0">
           <div className="flex items-center gap-2">
@@ -296,7 +301,6 @@ export function DomainModal({
             <X className="w-4 h-4" />
           </Button>
         </div>
-
         {/* SEARCH */}
         <div className="p-4 space-y-3 shrink-0">
           <SearchInput
@@ -332,7 +336,6 @@ export function DomainModal({
             </div>
           )}
         </div>
-
         {/* RESULTS */}
         <div className="flex-1 overflow-hidden flex flex-col min-h-0">
           <div className="p-3 bg-muted/50 shrink-0">
@@ -384,7 +387,6 @@ export function DomainModal({
             )}
           </div>
         </div>
-
         {/* FOOTER */}
         <div className="p-3 border-t bg-muted/30 shrink-0 flex justify-end">
           <Button variant="outline" size="sm" onClick={onClose}>
