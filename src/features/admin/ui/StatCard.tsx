@@ -6,6 +6,7 @@ interface StatCardProps {
   icon: LucideIcon;
   // We'll keep colorClass for the icon color, but refine how it's used
   colorClass?: string;
+  onClick?: () => void;
 }
 
 export const StatCard = ({
@@ -13,8 +14,12 @@ export const StatCard = ({
   value,
   icon: Icon,
   colorClass = "text-primary", // Default to theme primary
+  onClick,
 }: StatCardProps) => (
-  <div className="group relative overflow-hidden rounded-xl border bg-white p-6 shadow-sm transition-all hover:ring-1 hover:ring-slate-200">
+  <div
+    onClick={onClick}
+    className="group relative overflow-hidden rounded-xl border bg-white p-6 shadow-sm transition-all hover:ring-1 hover:ring-slate-200"
+  >
     <div className="flex items-start justify-between">
       <div className="space-y-2">
         <p className="text-sm font-medium text-muted-foreground tracking-tight">
