@@ -10,7 +10,6 @@ import { useGeo } from "@/features/preview/domain/hooks/useGeoContext";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Globe, Mail, Palette, Share2 } from "lucide-react";
-
 type StepThreeProps = {
   stepErrors: Record<string, string[]>;
 };
@@ -153,7 +152,7 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                 <PhoneInput
                   id="contactPhone"
                   placeholder="Enter phone number"
-                  defaultCountry="BT"
+                  defaultCountry={country}
                   international
                   required
                   value={contactPhone}

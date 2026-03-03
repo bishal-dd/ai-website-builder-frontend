@@ -8,16 +8,17 @@ import {
   ReactNode,
 } from "react";
 import { getUserCountry } from "../api/geo";
+import * as RPNInput from "react-phone-number-input";
 
 interface GeoContextType {
-  country: string;
+  country: RPNInput.Country;
   loading: boolean;
 }
 
 const GeoContext = createContext<GeoContextType | undefined>(undefined);
 
 export const GeoProvider = ({ children }: { children: ReactNode }) => {
-  const [country, setCountry] = useState("US");
+  const [country, setCountry] = useState<RPNInput.Country>("US");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
