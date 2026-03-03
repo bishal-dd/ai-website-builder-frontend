@@ -61,20 +61,17 @@ export default function WebsiteWizard() {
           errors.description = ["Website description is required."];
         }
 
-        if (!state.contactEmail?.trim() && !state.contactPhone?.trim()) {
-          errors.contact = [
-            "Please provide at least an email or phone number.",
-          ];
+        // ✅ Phone is REQUIRED
+        if (!state.contactPhone?.trim()) {
+          errors.contactPhone = ["Phone number is required."];
         }
 
+        // ✅ Email is OPTIONAL but must be valid if entered
         if (
-          state.contactEmail &&
+          state.contactEmail?.trim() &&
           !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.contactEmail)
         ) {
-          errors.contact = [
-            ...(errors.contact || []),
-            "Please enter a valid email address.",
-          ];
+          errors.contactEmail = ["Please enter a valid email address."];
         }
         break;
 

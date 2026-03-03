@@ -147,21 +147,29 @@ export function StepThree({ stepErrors }: StepThreeProps) {
 
               {/* Phone Field with Original Validation Logic */}
               <div className="space-y-2">
-                <Label htmlFor="contactPhone">WhatsApp Number</Label>
+                <Label htmlFor="contactPhone">
+                  WhatsApp Number <span className="text-red-500">*</span>
+                </Label>
                 <PhoneInput
                   id="contactPhone"
                   placeholder="Enter phone number"
                   defaultCountry="BT"
                   international
+                  required
                   value={contactPhone}
                   onChange={(value) =>
                     handleChange("contactPhone", value || "")
                   }
                   className={cn(
-                    Boolean(stepErrors.contact?.length) &&
+                    Boolean(stepErrors.contactPhone?.length) &&
                       "border-red-500 focus-visible:ring-red-500",
                   )}
                 />
+                {stepErrors.contactPhone?.map((msg, idx) => (
+                  <p key={idx} className="text-sm text-red-500">
+                    {msg}
+                  </p>
+                ))}
               </div>
             </div>
 
