@@ -1,211 +1,174 @@
 "use client";
 
+import * as React from "react";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { format, parseISO, isValid, eachDayOfInterval, parse } from "date-fns";
+
 import {
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Area,
-  AreaChart,
-} from "recharts";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import useUserGrowth from "../hooks/useUserGrowth";
-import {
-  Activity,
-  RefreshCw,
-  TrendingUp,
-  TrendingDown,
-  Zap,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { format, parseISO, isValid } from "date-fns";
-import { Separator } from "@/components/ui/separator";
-import { Card } from "@/components/ui/card";
+import { TrendingUp } from "lucide-react";
+
+const chartConfig = {
+  count: {
+    label: "Registrations",
+    color: "#FDCA1C",
+  },
+} satisfies ChartConfig;
 
 export function UserGrowthChart() {
-  const { data, isLoading, error, refetch } = useUserGrowth();
+  const { data: realData, isLoading, error } = useUserGrowth();
 
-  if (isLoading) return <Skeleton className="h-[500px] w-full rounded-xl" />;
+  const processedData = React.useMemo(() => {
+    if (!realData?.length) return [];
 
-  if (error || !data?.length)
+    const parseDateString = (dateStr: string) =>
+      parse(dateStr, "yyyy-MM-dd HH:mm:ss", new Date());
+
+    const dataMap = new Map<string, number>();
+
+    realData.forEach((d) => {
+      const parsed = parseDateString(d.date);
+      if (isValid(parsed)) {
+        dataMap.set(format(parsed, "yyyy-MM-dd"), d.count);
+      }
+    });
+
+    const dates = Array.from(dataMap.keys()).map((date) => parseISO(date));
+
+    if (!dates.length) return [];
+
+    const startDate = new Date(Math.min(...dates.map((d) => d.getTime())));
+    const endDate = new Date();
+
+    const allDays = eachDayOfInterval({ start: startDate, end: endDate });
+
+    return allDays.map((day) => {
+      const key = format(day, "yyyy-MM-dd");
+
+      return {
+        date: key,
+        count: dataMap.get(key) || 0,
+      };
+    });
+  }, [realData]);
+
+  const totalRegistrations = React.useMemo(
+    () => processedData.reduce((acc, curr) => acc + curr.count, 0),
+    [processedData],
+  );
+
+  if (isLoading) return <Skeleton className="h-[450px] w-full rounded-xl" />;
+
+  if (error)
     return (
       <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-xl text-muted-foreground">
-        No daily data found.
+        Failed to load growth data.
       </div>
     );
 
-  const dailyData = data;
-  const maxValue = Math.max(...dailyData.map((d) => d.count));
-  const minValue = Math.min(...dailyData.map((d) => d.count));
-  const totalRegistrations = dailyData.reduce((sum, d) => sum + d.count, 0);
+  if (!processedData.length)
+    return (
+      <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-xl text-muted-foreground">
+        No growth data found.
+      </div>
+    );
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
-      <div className="p-8 max-w-7xl mx-auto space-y-8">
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="bg-primary p-2.5 rounded-xl text-primary-foreground shadow-sm">
-              <Activity className="size-6" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
-                User Growth
-              </h1>
-              <p className="text-muted-foreground text-sm font-medium">
-                Daily acquisition velocity and registration trends.
-              </p>
-            </div>
+    <Card className="overflow-hidden border-none shadow-sm bg-white">
+      <CardHeader className="flex flex-col items-stretch border-b p-0 sm:flex-row">
+        <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-[#FDCA1C]" />
+            <CardTitle className="text-xl font-bold">User Growth</CardTitle>
           </div>
 
-          <Button
-            variant="outline"
-            onClick={() => refetch()}
-            className="bg-white shadow-sm hover:bg-slate-50 h-10 px-4 rounded-lg border-slate-200 transition-all active:scale-95"
+          <CardDescription>Daily user registrations over time.</CardDescription>
+        </div>
+        <div className="flex">
+          <div className="flex flex-col justify-center gap-1 border-t px-6 py-4 text-left sm:border-t-0 sm:border-l sm:px-8 sm:py-6 bg-[#FFFAEE]/50 min-w-[160px]">
+            <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">
+              Total Users
+            </span>
+            <span className="text-2xl leading-none font-bold sm:text-3xl text-black">
+              {totalRegistrations.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="px-2 pt-4 sm:p-6">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[350px] w-full"
+        >
+          <LineChart
+            accessibilityLayer
+            data={processedData}
+            margin={{
+              left: 12,
+              right: 12,
+              top: 20,
+            }}
           >
-            <RefreshCw
-              className={`mr-2 size-4 text-slate-500 ${isLoading ? "animate-spin" : ""}`}
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="3 3"
+              stroke="#f1f5f9"
             />
-            <span className="text-sm font-semibold">Sync Data</span>
-          </Button>
-        </header>
-
-        <Separator className="mb-8" />
-
-        <main className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <section className="space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400">
-              Growth Highlights
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Peak Daily
-                  </p>
-                  <TrendingUp className="size-4 text-emerald-500" />
-                </div>
-                <p className="text-2xl font-bold">
-                  {maxValue.toLocaleString()}
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Lowest Daily
-                  </p>
-                  <TrendingDown className="size-4 text-rose-500" />
-                </div>
-                <p className="text-2xl font-bold">
-                  {minValue.toLocaleString()}
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Total Period
-                  </p>
-                  <Zap className="size-4 text-amber-500" />
-                </div>
-                <p className="text-2xl font-bold">
-                  {totalRegistrations.toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400">
-              Visual Trend
-            </h2>
-            <Card className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden p-6">
-              <div className="w-full h-[350px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={dailyData}
-                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                  >
-                    <defs>
-                      <linearGradient
-                        id="chartGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#3b82f6"
-                          stopOpacity={0.1}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#3b82f6"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      vertical={false}
-                      strokeDasharray="4 4"
-                      stroke="#e2e8f0"
-                    />
-                    <XAxis
-                      dataKey="date"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: "#64748b", fontSize: 12 }}
-                      dy={10}
-                      minTickGap={40}
-                      interval="preserveStartEnd"
-                      tickFormatter={(val) => {
-                        const d = parseISO(val);
-                        return isValid(d) ? format(d, "MMM dd") : "";
-                      }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: "#64748b", fontSize: 12 }}
-                    />
-
-                    {/* --- THE FIX IS HERE --- */}
-                    <Tooltip
-                      labelFormatter={(label) => {
-                        const d = parseISO(label);
-                        return isValid(d) ? format(d, "MMM dd, yyyy") : label;
-                      }}
-                      contentStyle={{
-                        borderRadius: "12px",
-                        border: "none",
-                        boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
-                      }}
-                    />
-                    {/* ----------------------- */}
-
-                    <Area
-                      type="monotone"
-                      dataKey="count"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      fill="url(#chartGradient)"
-                      dot={false} // Keeps UI clean as user base grows
-                      activeDot={{
-                        r: 4,
-                        strokeWidth: 2,
-                        fill: "#fff",
-                        stroke: "#3b82f6",
-                      }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-          </section>
-        </main>
-      </div>
-    </div>
+            <XAxis
+              dataKey="date"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              minTickGap={60}
+              tickFormatter={(value) => format(parseISO(value), "MMM d")}
+            />
+            <YAxis hide domain={[0, "auto"]} />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  className="w-[180px] rounded-xl border-slate-200 shadow-2xl"
+                  nameKey="count"
+                  labelFormatter={(value) =>
+                    format(parseISO(value), "EEEE, MMM dd, yyyy")
+                  }
+                />
+              }
+            />
+            <Line
+              dataKey="count"
+              type="monotone"
+              stroke={chartConfig.count.color}
+              strokeWidth={1.5}
+              dot={(props) => {
+                const { cx, cy, payload } = props;
+                if (payload.count > 0 && processedData.length < 100) {
+                  return <circle cx={cx} cy={cy} r={3} fill="#FDCA1C" />;
+                }
+                return null;
+              }}
+              activeDot={{
+                r: 6,
+                fill: "#FDCA1C",
+                stroke: "#fff",
+                strokeWidth: 2,
+              }}
+            />
+          </LineChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
   );
 }
