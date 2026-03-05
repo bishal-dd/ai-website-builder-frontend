@@ -157,7 +157,7 @@ export function UserGrowthChart() {
                 if (payload.count > 0 && processedData.length < 100) {
                   return <circle cx={cx} cy={cy} r={3} fill="#FDCA1C" />;
                 }
-                return null;
+                return <></>;
               }}
               activeDot={{
                 r: 6,
