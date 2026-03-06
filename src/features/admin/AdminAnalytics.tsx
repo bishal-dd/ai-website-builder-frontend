@@ -16,9 +16,11 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { useRouter } from "next/navigation";
 
 const AdminAnalytics = () => {
   const { stats, countries, isLoading, error, refetch } = useAdminAnalytics();
+  const router = useRouter();
 
   if (error) {
     return (
@@ -102,6 +104,7 @@ const AdminAnalytics = () => {
                     value={stats?.totalUsers ?? 0}
                     icon={Users}
                     colorClass="text-blue-500"
+                    onClick={() => router.push("/admin/analytics/users")}
                   />
                   <StatCard
                     title="Total Websites"
