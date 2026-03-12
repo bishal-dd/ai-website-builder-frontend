@@ -1,125 +1,105 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Globe2,
-  ArrowRightLeft,
+  KeyRound,
   CheckCircle2,
-  Clock,
-  XCircle,
+  Timer,
+  ChevronRight,
 } from "lucide-react";
 import { Domain } from "../types/domain";
+import { cn } from "@/lib/utils";
 
 interface DomainListProps {
   domains: Domain[];
-  onRequestTransfer: (domain: Domain) => void;
+  onInitiateTransfer: (domain: Domain) => void;
 }
 
-export function DomainList({ domains, onRequestTransfer }: DomainListProps) {
-  const getStatusConfig = (status: Domain["status"]) => {
-    switch (status) {
-      case "active":
-        return {
-          label: "Active",
-          variant: "default" as const,
-          icon: CheckCircle2,
-        };
-      case "transfer_requested":
-        return {
-          label: "Transfer requested",
-          variant: "secondary" as const,
-          icon: Clock,
-        };
-      case "transferred_out":
-        return {
-          label: "Transferred out",
-          variant: "outline" as const,
-          icon: ArrowRightLeft,
-        };
-      case "transfer_failed":
-        return {
-          label: "Transfer failed",
-          variant: "destructive" as const,
-          icon: XCircle,
-        };
-      default:
-        return {
-          label: status,
-          variant: "secondary" as const,
-          icon: Clock,
-        };
-    }
-  };
-
+export function DomainList({ domains, onInitiateTransfer }: DomainListProps) {
   return (
     <div className="grid gap-4">
       {domains.map((domain) => {
-        const transferDisabled =
-          domain.status === "transfer_requested" ||
-          domain.status === "transferred_out";
-
-        const status = getStatusConfig(domain.status);
-        const StatusIcon = status.icon;
+        const isPending = domain.status === "transfer_requested";
 
         return (
           <Card
             key={domain.id}
-            className="group border transition-all hover:shadow-sm hover:border-primary/40"
+            className={cn(
+              "group relative overflow-hidden border-muted/80 transition-all duration-200 hover:shadow-md",
+              isPending ? "bg-muted/20" : "bg-card",
+            )}
           >
-            <CardHeader className="flex-row items-start justify-between gap-4 pb-4">
-              {/* Left: Domain identity */}
-              <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Globe2 className="size-5" />
+            <div className="flex flex-col md:flex-row md:items-center justify-between p-6 gap-6">
+              <div className="flex items-center gap-5">
+                {/* Icon with Dynamic Glow */}
+                <div
+                  className={cn(
+                    "flex size-12 shrink-0 items-center justify-center rounded-2xl border transition-colors",
+                    isPending
+                      ? "bg-amber-500/10 border-amber-200 text-amber-600"
+                      : "bg-primary/5 border-primary/10 text-primary",
+                  )}
+                >
+                  <Globe2 className="size-6" />
                 </div>
 
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-mono text-lg font-semibold">
-                      {domain.name}
-                    </h3>
+                <div className="space-y-1">
+                  <h3 className="font-mono text-lg font-bold tracking-tight text-foreground/90">
+                    {domain.name}
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant="secondary"
+                      className={cn(
+                        "rounded-md px-1.5 py-0 text-[10px] font-bold uppercase tracking-wider",
+                        isPending
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-700",
+                      )}
+                    >
+                      {isPending ? (
+                        <Timer className="mr-1 size-3" />
+                      ) : (
+                        <CheckCircle2 className="mr-1 size-3" />
+                      )}
+                      {isPending ? "Transfer in Progress" : "Active & Secured"}
+                    </Badge>
+                    <span className="text-[11px] text-muted-foreground">•</span>
+                    <span className="text-[11px] text-muted-foreground font-medium">
+                      {isPending ? "Waiting for EPP" : "Managed by Sencill AI"}
+                    </span>
                   </div>
-
-                  {domain.connectedWebsite && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Connected to{" "}
-                      <span className="font-medium">
-                        {domain.connectedWebsite}
-                      </span>
-                    </p>
-                  )}
                 </div>
               </div>
 
-              {/* Right: Status */}
-              <Badge
-                variant={status.variant}
-                className="flex items-center gap-1.5"
-              >
-                <StatusIcon className="size-3.5" />
-                {status.label}
-              </Badge>
-            </CardHeader>
-
-            <CardContent className="flex items-center justify-between pt-0">
-              {/* Meta strip */}
-              <p className="text-xs text-muted-foreground">
-                Managed by Sencill AI
-              </p>
-
-              {/* Actions */}
-              <Button
-                variant={transferDisabled ? "outline" : "default"}
-                size="sm"
-                disabled={transferDisabled}
-                onClick={() => onRequestTransfer(domain)}
-              >
-                <ArrowRightLeft className="mr-2 size-4" />
-                {transferDisabled ? "Transfer pending" : "Request transfer"}
-              </Button>
-            </CardContent>
+              <div className="flex items-center gap-4">
+                {isPending ? (
+                  <div className="flex items-center gap-3 px-4 py-2 bg-background/50 rounded-lg border border-dashed border-amber-200">
+                    <div className="text-right">
+                      <p className="text-xs font-bold text-amber-700">
+                        Request Received
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Check your email soon
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="h-10 px-5 border-muted-foreground/20 hover:border-amber-500 hover:bg-amber-50 hover:text-amber-700 transition-all"
+                    onClick={() => onInitiateTransfer(domain)}
+                  >
+                    <KeyRound className="mr-2 size-4 opacity-70" />
+                    Initiate Transfer
+                    <ChevronRight className="ml-2 size-3 opacity-50 group-hover:translate-x-0.5 transition-transform" />
+                  </Button>
+                )}
+              </div>
+            </div>
           </Card>
         );
       })}
