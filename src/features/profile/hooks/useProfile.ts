@@ -146,8 +146,6 @@ export function useProfileLogic() {
         newPassword: "",
         confirmPassword: "",
       });
-
-      toast.success("Password updated successfully!");
     } catch (err) {
       console.error(err);
       posthog.captureException(err);
