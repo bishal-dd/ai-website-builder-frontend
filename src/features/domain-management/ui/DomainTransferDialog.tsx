@@ -30,35 +30,36 @@ export function DomainTransferDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden border-none shadow-2xl">
-        <div className="bg-amber-600 p-8 flex flex-col items-center text-center text-white">
-          <div className="size-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4">
-            <ShieldAlert className="size-8 text-white" />
+      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl">
+        {/* Header */}
+        <div className="bg-primary p-8 flex flex-col items-center text-center text-black">
+          <div className="w-16 h-16 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center mb-4 shadow-md">
+            <ShieldAlert className="w-8 h-8 text-black" />
           </div>
           <DialogTitle className="text-2xl font-bold">
             Transfer Authorization
           </DialogTitle>
-          <p className="text-amber-100 text-sm mt-2 font-medium">
+          <p className="text-black/80 text-sm mt-2 font-medium">
             {domain.name}
           </p>
         </div>
 
+        {/* Body */}
         <div className="p-6 space-y-6">
-          <DialogDescription className="text-center text-base text-foreground/80">
-            Are you sure you want to request an EPP code? This is the first step
-            in moving your domain to a different registrar.
+          <DialogDescription className="text-center text-base text-black/70">
+            Are you sure you want to request a domain transfer?
           </DialogDescription>
 
-          <div className="rounded-xl bg-muted/40 border border-muted p-4 space-y-3">
-            <div className="flex gap-3">
-              <div className="size-8 rounded-lg bg-white border flex items-center justify-center shrink-0 shadow-sm">
-                <MailCheck className="size-4 text-primary" />
+          <div className="rounded-xl p-6 bg-yellow-50 border border-yellow-200 shadow-sm">
+            <div className="flex gap-4 items-start">
+              <div className="w-14 h-14 rounded-lg bg-primary/20 flex items-center justify-center shadow-inner">
+                <MailCheck className="w-6 h-6 text-black" />
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-semibold">
+                <p className="text-base font-semibold text-black">
                   The &quot;Next Step&quot; Email
                 </p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-sm text-black/70 leading-relaxed">
                   We&apos;ll unlock your domain and email the authorization code
                   to your account address within 48 hours.
                 </p>
@@ -67,17 +68,18 @@ export function DomainTransferDialog({
           </div>
         </div>
 
-        <DialogFooter className="p-6 pt-0 sm:justify-between items-center gap-3">
+        {/* Footer */}
+        <DialogFooter className="p-6 pt-0 flex flex-col sm:flex-row sm:justify-between gap-3">
           <Button
             variant="ghost"
             onClick={onClose}
             disabled={isLoading}
-            className="text-muted-foreground underline-offset-4 hover:underline"
+            className="text-black/60 underline-offset-4 hover:text-black hover:underline"
           >
             Go back
           </Button>
           <Button
-            className="bg-amber-600 hover:bg-amber-700 text-white min-w-[160px] shadow-lg shadow-amber-600/20"
+            className="bg-primary hover:bg-yellow-400 text-black min-w-[160px] shadow-lg shadow-yellow-300/40 transition-colors duration-200"
             onClick={() => onConfirm(domain)}
             disabled={isLoading}
           >
