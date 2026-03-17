@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { getUserGrowths } from "../api/getUserGrowth";
 
-const useUserGrowth = () => {
+const useUserGrowth = (start?: string, end?: string) => {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["admin-user-analytics"],
-    queryFn: getUserGrowths,
-    staleTime: 1000 * 60 * 5,
+    queryKey: ["admin-user-analytics", { start, end }],
+    queryFn: () => getUserGrowths(start, end),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   return {
