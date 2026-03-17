@@ -106,11 +106,10 @@ importers:
         version: 19.2.4
       react-circle-flags:
         specifier: ^0.0.27
-        version: 0.0.27(react@19.1.0)
+        version: 0.0.27(react@19.2.4)
       react-day-picker:
         specifier: ^9.14.0
-        version: 9.14.0(react@19.1.0)
-        version: 0.0.27(react@19.2.4)
+        version: 9.14.0(react@19.2.4)
       react-dom:
         specifier: 19.2.4
         version: 19.2.4(react@19.2.4)
@@ -6352,13 +6351,13 @@ snapshots:
     dependencies:
       react: 19.2.4
 
-  react-day-picker@9.14.0(react@19.1.0):
+  react-day-picker@9.14.0(react@19.2.4):
     dependencies:
       '@date-fns/tz': 1.4.1
       '@tabby_ai/hijri-converter': 1.0.5
       date-fns: 4.1.0
       date-fns-jalali: 4.1.0-0
-      react: 19.1.0
+      react: 19.2.4
 
   react-dom@19.2.4(react@19.2.4):
     dependencies:
