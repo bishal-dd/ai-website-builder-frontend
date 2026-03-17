@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
@@ -36,7 +36,7 @@ export default function WebsiteWizard() {
 
   const resetWizard = useWizardStore((state) => state.resetWizard);
 
-  const validateStep = useCallback((): boolean => {
+  const validateStep = (): boolean => {
     const errors: Record<string, string[]> = {};
 
     switch (currentStep) {
@@ -83,7 +83,7 @@ export default function WebsiteWizard() {
 
     setStepErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [currentStep, state]);
+  };
 
   // Cleaned up effect: only validate if relevant.
   // Step 4 content validation is removed, so this effect is mostly defensive now.

@@ -1,129 +1,95 @@
 "use client";
 
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+import { ShieldAlert, MailCheck } from "lucide-react";
 import { Domain } from "../types/domain";
 
-interface DomainTransferDialogProps {
+interface TransferDialogProps {
   open: boolean;
   domain: Domain | null;
+  isLoading: boolean;
   onClose: () => void;
-  onSubmit: (
-    domain: Domain,
-    payload: {
-      newRegistrar?: string;
-      reason?: string;
-    },
-  ) => void;
+  onConfirm: (domain: Domain) => void;
 }
 
 export function DomainTransferDialog({
   open,
   domain,
+  isLoading,
   onClose,
-  onSubmit,
-}: DomainTransferDialogProps) {
-  const [newRegistrar, setNewRegistrar] = useState<string | undefined>();
-  const [reason, setReason] = useState("");
-  const [acknowledged, setAcknowledged] = useState(false);
-
-  const handleSubmit = () => {
-    if (!domain || !acknowledged) return;
-
-    onSubmit(domain, {
-      newRegistrar,
-      reason,
-    });
-
-    setNewRegistrar(undefined);
-    setReason("");
-    setAcknowledged(false);
-  };
+  onConfirm,
+}: TransferDialogProps) {
+  if (!domain) return null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[520px]">
-        <DialogHeader>
-          <DialogTitle>Request Domain Transfer</DialogTitle>
-          <DialogDescription>
-            This will start a manual transfer process. Our team will unlock the
-            domain and provide you with an authorization (EPP) code.
+      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl">
+        {/* Header */}
+        <div className="bg-primary p-8 flex flex-col items-center text-center text-black">
+          <div className="w-16 h-16 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center mb-4 shadow-md">
+            <ShieldAlert className="w-8 h-8 text-black" />
+          </div>
+          <DialogTitle className="text-2xl font-bold">
+            Transfer Authorization
+          </DialogTitle>
+          <p className="text-black/80 text-sm mt-2 font-medium">
+            {domain.name}
+          </p>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-6">
+          <DialogDescription className="text-center text-base text-black/70">
+            Are you sure you want to request a domain transfer?
           </DialogDescription>
-        </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label>Domain</Label>
-            <Input value={domain?.name || ""} disabled />
-          </div>
-
-          <div className="grid gap-2">
-            <Label>New Registrar (optional)</Label>
-            <Select onValueChange={setNewRegistrar}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select registrar" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="namecheap">Namecheap</SelectItem>
-                <SelectItem value="godaddy">GoDaddy</SelectItem>
-                <SelectItem value="google">Google Domains</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid gap-2">
-            <Label>Reason</Label>
-            <Textarea
-              placeholder="Let us know why you are transferring this domain"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
-          </div>
-
-          <div className="flex items-start gap-2">
-            <Checkbox
-              id="ack"
-              checked={acknowledged}
-              onCheckedChange={(v: boolean) => setAcknowledged(!!v)}
-            />
-            <Label htmlFor="ack" className="text-sm leading-relaxed">
-              I understand this domain will no longer be managed by Sencill AI
-              and I will be responsible for completing the transfer at my new
-              registrar.
-            </Label>
+          <div className="rounded-xl p-6 bg-yellow-50 border border-yellow-200 shadow-sm">
+            <div className="flex gap-4 items-start">
+              <div className="w-14 h-14 rounded-lg bg-primary/20 flex items-center justify-center shadow-inner">
+                <MailCheck className="w-6 h-6 text-black" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-base font-semibold text-black">
+                  The &quot;Next Step&quot; Email
+                </p>
+                <p className="text-sm text-black/70 leading-relaxed">
+                  We&apos;ll unlock your domain and email the authorization code
+                  to your account address within 48 hours.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
+        {/* Footer */}
+        <DialogFooter className="p-6 pt-0 flex flex-col sm:flex-row sm:justify-between gap-3">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            disabled={isLoading}
+            className="text-black/60 underline-offset-4 hover:text-black hover:underline"
+          >
+            Go back
           </Button>
           <Button
-            variant="destructive"
-            disabled={!acknowledged}
-            onClick={handleSubmit}
+            className="bg-primary hover:bg-yellow-400 text-black min-w-[160px] shadow-lg shadow-yellow-300/40 transition-colors duration-200"
+            onClick={() => onConfirm(domain)}
+            disabled={isLoading}
           >
-            Request Transfer
+            {isLoading ? (
+              <span className="flex items-center gap-2 italic">
+                Processing...
+              </span>
+            ) : (
+              "Confirm Request"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
