@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import {
   format,
@@ -11,7 +12,7 @@ import {
   subMonths,
   endOfMonth,
 } from "date-fns";
-import { TrendingUp, Calendar as CalendarIcon } from "lucide-react";
+import { TrendingUp, Calendar as CalendarIcon, X, Check } from "lucide-react";
 import { DateRange } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
@@ -52,18 +53,48 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+interface DotProps {
+  cx?: number;
+  cy?: number;
+  payload?: {
+    date: string;
+    count: number;
+  };
+}
+
 export function UserGrowthChart() {
-  const [timeRange, setTimeRange] = React.useState("this-month");
-  const [date, setDate] = React.useState<DateRange | undefined>();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // --- URL State Management ---
+  const timeRange = searchParams.get("range") || "this-month";
+  const fromParam = searchParams.get("from");
+  const toParam = searchParams.get("to");
+
+  // Local UI states (Not stored in URL)
   const [calendarOpen, setCalendarOpen] = React.useState(false);
+  const [tempDate, setTempDate] = React.useState<DateRange | undefined>(() => {
+    if (fromParam && toParam) {
+      return { from: parseISO(fromParam), to: parseISO(toParam) };
+    }
+    return undefined;
+  });
+
+  // Helper to sync state to URL
+  const updateUrl = (params: Record<string, string | null>) => {
+    const newParams = new URLSearchParams(searchParams.toString());
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) newParams.set(key, value);
+      else newParams.delete(key);
+    });
+    router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
+  };
 
   const range = React.useMemo(() => {
     const now = new Date();
-    if (timeRange === "custom" && date?.from && date?.to) {
-      return {
-        start: format(date.from, "yyyy-MM-dd"),
-        end: format(date.to, "yyyy-MM-dd"),
-      };
+    if (timeRange === "custom" && fromParam && toParam) {
+      return { start: fromParam, end: toParam };
     }
     if (timeRange === "this-month") {
       return {
@@ -79,7 +110,7 @@ export function UserGrowthChart() {
       };
     }
     return { start: undefined, end: undefined };
-  }, [timeRange, date]);
+  }, [timeRange, fromParam, toParam]);
 
   const { data: realData, isLoading } = useUserGrowth(range.start, range.end);
 
@@ -118,14 +149,26 @@ export function UserGrowthChart() {
     [processedData],
   );
 
-  const handleRangeChange = (value: string) => {
-    setTimeRange(value);
-    if (value === "custom") {
-      setTimeout(() => setCalendarOpen(true), 100);
-    } else {
+  // --- Handlers ---
+  const handleApply = () => {
+    if (tempDate?.from && tempDate?.to) {
+      updateUrl({
+        range: "custom",
+        from: format(tempDate.from, "yyyy-MM-dd"),
+        to: format(tempDate.to, "yyyy-MM-dd"),
+      });
       setCalendarOpen(false);
-      setDate(undefined);
     }
+  };
+
+  const handleClear = () => {
+    setTempDate(undefined);
+  };
+
+  const handleRangeChange = (value: string) => {
+    updateUrl({ range: value, from: null, to: null });
+    setTempDate(undefined);
+    setCalendarOpen(false);
   };
 
   return (
@@ -139,15 +182,17 @@ export function UserGrowthChart() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Select value={timeRange} onValueChange={handleRangeChange}>
-                <SelectTrigger className="w-[140px] h-8 text-xs border-none bg-slate-50">
-                  <SelectValue placeholder="Select range" />
+              <Select
+                value={timeRange === "custom" ? "" : timeRange}
+                onValueChange={handleRangeChange}
+              >
+                <SelectTrigger className="w-40 h-8 text-xs border-none bg-slate-50">
+                  <SelectValue placeholder="Custom range" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Time</SelectItem>
                   <SelectItem value="this-month">This Month</SelectItem>
                   <SelectItem value="last-month">Last Month</SelectItem>
-                  <SelectItem value="custom">Custom Range</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -158,29 +203,41 @@ export function UserGrowthChart() {
                     size="icon"
                     className={cn(
                       "h-8 w-8 border-none bg-slate-50",
-                      timeRange === "custom" &&
-                        date?.from &&
-                        date?.to &&
-                        "text-[#FDCA1C]",
+                      timeRange === "custom" && fromParam && "text-[#FDCA1C]",
                     )}
-                    onClick={() => {
-                      if (timeRange !== "custom") setTimeRange("custom");
-                      setCalendarOpen(true);
-                    }}
                   >
                     <CalendarIcon className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="end">
+                  <div className="p-3 border-b flex items-center justify-between bg-slate-50/50">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Select Date Range
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleClear}
+                        className="h-7 px-2 text-xs"
+                      >
+                        <X className="mr-1 h-3 w-3" /> Clear
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleApply}
+                        disabled={!tempDate?.from || !tempDate?.to}
+                        className="h-7 px-2 text-xs bg-[#FDCA1C] text-black hover:bg-[#e5b619]"
+                      >
+                        <Check className="mr-1 h-3 w-3" /> Apply
+                      </Button>
+                    </div>
+                  </div>
                   <Calendar
                     initialFocus
                     mode="range"
-                    defaultMonth={date?.from}
-                    selected={date}
-                    onSelect={(newDate) => {
-                      setDate(newDate);
-                      if (newDate?.from && newDate?.to) setCalendarOpen(false);
-                    }}
+                    selected={tempDate}
+                    onSelect={setTempDate}
                     numberOfMonths={2}
                   />
                 </PopoverContent>
@@ -189,14 +246,14 @@ export function UserGrowthChart() {
           </div>
 
           <CardDescription>
-            {timeRange === "custom" && date?.from && date?.to
-              ? `Range: ${format(date.from, "LLL dd")} - ${format(date.to, "LLL dd, y")}`
+            {timeRange === "custom" && fromParam && toParam
+              ? `Range: ${format(parseISO(fromParam), "LLL dd")} - ${format(parseISO(toParam), "LLL dd, y")}`
               : "Daily user registrations over time."}
           </CardDescription>
         </div>
 
         <div className="flex">
-          <div className="flex flex-col justify-center gap-1 border-t px-6 py-4 text-left sm:border-t-0 sm:border-l sm:px-8 sm:py-6 bg-slate-50/50 min-w-[160px]">
+          <div className="flex flex-col justify-center gap-1 border-t px-6 py-4 text-left sm:border-t-0 sm:border-l sm:px-8 sm:py-6 bg-slate-50/50 min-w-40">
             <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">
               Total Users
             </span>
@@ -211,10 +268,10 @@ export function UserGrowthChart() {
         </div>
       </CardHeader>
 
-      <CardContent className="px-2 pt-4 sm:p-6 bg-white min-h-[400px]">
+      <CardContent className="px-2 pt-4 sm:p-6 bg-white min-h-100">
         <ChartContainer
           config={chartConfig}
-          className="aspect-auto h-[350px] w-full animate-in fade-in duration-300"
+          className="aspect-auto h-87.5 w-full animate-in fade-in duration-300"
         >
           <LineChart
             data={processedData}
@@ -237,7 +294,7 @@ export function UserGrowthChart() {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  className="w-[180px] rounded-xl border-slate-200 shadow-2xl bg-white"
+                  className="w-45 rounded-xl border-slate-200 shadow-2xl bg-white"
                   nameKey="count"
                   labelFormatter={(value) =>
                     format(parseISO(value), "EEEE, MMM dd, yyyy")
@@ -250,18 +307,29 @@ export function UserGrowthChart() {
               type="monotone"
               stroke={chartConfig.count.color}
               strokeWidth={2}
-              dot={(props) => {
+              dot={(props: DotProps) => {
                 const { cx, cy, payload } = props;
-                if (payload.count > 0 && processedData.length < 100) {
-                  return <circle cx={cx} cy={cy} r={3} fill="#FDCA1C" />;
+                if (
+                  payload &&
+                  payload.count > 0 &&
+                  processedData.length < 100
+                ) {
+                  return (
+                    <circle
+                      key={`dot-${payload.date}`}
+                      cx={cx}
+                      cy={cy}
+                      r={3}
+                      fill="#FDCA1C"
+                    />
+                  );
                 }
-                return <></>;
-              }}
-              activeDot={{
-                r: 6,
-                fill: "#FDCA1C",
-                stroke: "#fff",
-                strokeWidth: 2,
+                return (
+                  <circle
+                    key={`dot-hidden-${payload?.date || Math.random()}`}
+                    r={0}
+                  />
+                );
               }}
             />
           </LineChart>
