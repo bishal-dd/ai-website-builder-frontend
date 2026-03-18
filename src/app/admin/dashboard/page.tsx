@@ -1,15 +1,12 @@
 import AdminDashboard from "@/features/admin/AdminDashboard";
-import { ProtectedRoute } from "@/shared/routes";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminDashboardPage() {
   return (
-    <ProtectedRoute>
-      <Suspense fallback={<DashboardLoadingSkeleton />}>
-        <AdminDashboard />
-      </Suspense>
-    </ProtectedRoute>
+    <Suspense fallback={<DashboardLoadingSkeleton />}>
+      <AdminDashboard />
+    </Suspense>
   );
 }
 

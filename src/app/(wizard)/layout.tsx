@@ -1,3 +1,4 @@
+import { ProtectedRoute } from "@/shared/routes";
 import Navbar from "@/shared/ui/Navbar";
 
 export default function WizardLayout({
@@ -6,9 +7,11 @@ export default function WizardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-1">{children}</main>
-    </div>
+    <ProtectedRoute allowedRole="user">
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1">{children}</main>
+      </div>
+    </ProtectedRoute>
   );
 }

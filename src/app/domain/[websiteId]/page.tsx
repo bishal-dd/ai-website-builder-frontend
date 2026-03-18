@@ -9,7 +9,7 @@ export default function DomainPage() {
   const { websiteId } = useParams<{ websiteId: string }>();
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute allowedRole="user">
       <DomainModalWrapper websiteId={websiteId} onClose={() => router.back()} />
     </ProtectedRoute>
   );
