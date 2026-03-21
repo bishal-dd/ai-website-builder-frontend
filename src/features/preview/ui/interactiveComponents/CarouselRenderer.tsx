@@ -24,6 +24,7 @@ export function CarouselRenderer({
 }: CarouselRendererProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const timerRef = useRef<number | null>(null);
+  const isPausedRef = useRef(isPaused);
   const total = slides.length;
 
   const showSlide = (index: number) => {
@@ -49,6 +50,10 @@ export function CarouselRenderer({
   };
 
   useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
+  useEffect(() => {
     // 1. Clear any existing timer
     if (timerRef.current) {
       window.clearInterval(timerRef.current);
@@ -57,7 +62,11 @@ export function CarouselRenderer({
 
     // 2. Only start timer if autoplay is ON and we are NOT paused
     if (autoplay && total > 1 && !isPaused) {
-      timerRef.current = window.setInterval(nextSlide, interval);
+      timerRef.current = window.setInterval(() => {
+        if (!isPausedRef.current) {
+          nextSlide();
+        }
+      }, interval);
     }
 
     // 3. Cleanup on unmount or when dependencies change

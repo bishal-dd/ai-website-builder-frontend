@@ -100,7 +100,7 @@ export function JsonRenderer({
   const [uploadingImageId, setUploadingImageId] = useState<number | null>(null);
   const [isEditingText, setIsEditingText] = useState(false); // New State
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const isPaused =
     isEditingText || uploadingImageId !== null || activeImageId !== null;
   const handleTextSave = (
@@ -294,7 +294,7 @@ export function JsonRenderer({
                 if (activeImageId !== bgImage.id) {
                   setActiveImageId(bgImage.id);
                 }
-                fileInputRef.current?.click();
+                fileInputRefs.current[String(id)]?.click();
               }
             }}
             className="absolute top-4 right-4 z-50 bg-yellow-400 text-black px-4 py-2 rounded-md shadow-lg text-sm font-semibold"
@@ -303,7 +303,9 @@ export function JsonRenderer({
           </button>
 
           <input
-            ref={fileInputRef}
+            ref={(el) => {
+              fileInputRefs.current[String(id)] = el;
+            }}
             type="file"
             className="hidden"
             onChange={(e) => {
@@ -401,7 +403,8 @@ export function JsonRenderer({
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                if (!uploadingImageId) fileInputRef.current?.click();
+                if (!uploadingImageId)
+                  fileInputRefs.current[String(id)]?.click();
               }}
             >
               {uploadingImageId === id ? (
@@ -413,7 +416,7 @@ export function JsonRenderer({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    fileInputRef.current?.click();
+                    fileInputRefs.current[String(id)]?.click();
                   }}
                   className="rounded-md bg-yellow-400 px-4 py-2 text-sm font-medium text-black shadow-lg"
                 >
@@ -422,7 +425,9 @@ export function JsonRenderer({
               )}
 
               <input
-                ref={fileInputRef}
+                ref={(el) => {
+                  fileInputRefs.current[String(id)] = el;
+                }}
                 type="file"
                 className="hidden"
                 disabled={uploadingImageId === id}
