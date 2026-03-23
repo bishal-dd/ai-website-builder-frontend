@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ExternalLink, Globe, Sparkles, Plus } from "lucide-react"; // added Plus icon
-import { Button } from "@/components/ui/button"; // optional if you have a Button component
 import Link from "next/link";
 
 const exampleSites = [
