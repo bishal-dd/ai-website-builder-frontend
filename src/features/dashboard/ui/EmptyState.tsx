@@ -19,16 +19,16 @@ const exampleSites = [
     description:
       "Beautifully designed website for hotels and resorts featuring rooms, amenities, booking info, and stunning visuals to attract guests.",
     category: "Hospitality",
-    image: "/images/sample2.png",
+    image: "/images/hotelwebiste.webp",
     link: "https://www.lightwebx.link/",
   },
   {
-    title: "Small Business Landing Page",
+    title: "Restaurant",
     description:
       "Clean and professional landing page for small or medium businesses to showcase services, products, and contact info effectively.",
     category: "Business",
-    image: "/images/sample3.png",
-    link: "https://allseasontravelbhutan.com/",
+    image: "/images/resturantwebsite.webp",
+    link: "https://lightwebx.store",
   },
 ];
 
@@ -40,15 +40,15 @@ export function EmptyState() {
         <div className="flex items-center gap-2 mb-2">
           <Sparkles size={16} className="text-[#FDCA1C]" />
           <span className="text-[10px] font-black text-zinc-500/60 uppercase tracking-[0.3em]">
-            Community Showcase
+            Default Website Showcase
           </span>
         </div>
         <h2 className="text-3xl font-black text-zinc-900 tracking-tight mb-3">
-          Inspired by our users.
+          Get Inspired.
         </h2>
         <p className="max-w-2xl text-zinc-600/80 leading-relaxed font-medium">
-          Real websites created by users using our AI. Get inspired, explore
-          live examples, and launch your own in minutes.
+          Real websites created by Sencill AI. Get inspired, explore live
+          examples, and launch your own in minutes.
         </p>
 
         {/* New Project Button */}
