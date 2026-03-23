@@ -2,24 +2,29 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { ExternalLink, Globe, Sparkles } from "lucide-react";
 
 const exampleSites = [
   {
     title: "Portfolio Template",
+    description:
+      "A sleek, minimalist design optimized for creative professionals and freelancers.",
     category: "Personal",
     image: "/images/sample1.png",
     link: "https://newgentravel.online/",
   },
   {
     title: "E-commerce Store",
+    description:
+      "Conversion-focused layout with integrated product grids and seamless navigation.",
     category: "Business",
     image: "/images/sample2.png",
     link: "https://www.lightwebx.link/",
   },
   {
     title: "SaaS Landing Page",
+    description:
+      "Modern tech aesthetic featuring feature blocks and clear call-to-action sections.",
     category: "Tech",
     image: "/images/sample1.png",
     link: "https://www.lightwebx.store/",
@@ -28,58 +33,80 @@ const exampleSites = [
 
 export function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center text-center px-4 py-12">
-      {/* Heading */}
-      <h2 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">
-        No Projects Yet
-      </h2>
+    /* Removed bg-white so it inherits your #FFFAEE theme */
+    <div className="flex flex-col items-center justify-center px-4 py-12">
+      {/* Header section with theme-matching text colors */}
+      <div className="w-full max-w-7xl mb-12 border-l-4 border-[#FDCA1C] pl-6">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles size={16} className="text-[#FDCA1C]" />
+          <span className="text-[10px] font-black text-zinc-500/60 uppercase tracking-[0.3em]">
+            Community Showcase
+          </span>
+        </div>
+        <h2 className="text-3xl font-black text-zinc-900 tracking-tight mb-3">
+          Inspired by our users.
+        </h2>
+        <p className="max-w-2xl text-zinc-600/80 leading-relaxed font-medium">
+          Real websites created by users using our AI. Get inspired, explore
+          live examples, and launch your own in minutes.
+        </p>
+      </div>
 
-      {/* Subtext */}
-      <p className="mb-8 max-w-lg text-lg text-gray-600 leading-relaxed">
-        Bring your ideas to life and build stunning websites instantly. Start
-        your first project now and see your vision in action!
-      </p>
-
-      {/* Primary CTA */}
-      <Button
-        size="lg"
-        className="shadow-lg shadow-primary/25 px-6 py-3 mb-12"
-        asChild
-      >
-        <Link href="/wizard">Create Your First Project</Link>
-      </Button>
-
-      {/* Examples Section */}
-      <div className="w-full max-w-7xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+      {/* Grid Section */}
+      <div className="w-full max-w-7xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {exampleSites.map((site, i) => (
           <motion.a
             key={i}
             href={site.link}
             target="_blank"
             rel="noopener noreferrer"
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.1 }}
-            className="group block rounded-xl overflow-hidden bg-gray-50 shadow hover:shadow-md transition-shadow duration-300 cursor-pointer"
+            /* Changed bg-white to bg-white/40 for a 'glass' effect 
+               or use bg-transparent to fully reveal your theme color.
+            */
+            className="group relative flex flex-col rounded-2xl bg-white/30 backdrop-blur-sm border border-zinc-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)] transition-all duration-500 overflow-hidden"
           >
-            {/* Website Image */}
-            <div className="relative w-full aspect-[16/10]">
+            {/* Browser Header - Darkened slightly to stand out against cream */}
+            <div className="flex items-center gap-1.5 px-4 py-3 border-b border-zinc-200/50 bg-zinc-900/[0.03]">
+              <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />
+              <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />
+              <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />
+            </div>
+
+            {/* Website Image Container */}
+            <div className="relative w-full aspect-[16/10] overflow-hidden">
               <Image
                 src={site.image}
                 alt={site.title}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                className="object-cover group-hover:scale-105 transition-transform duration-700"
               />
+              <div className="absolute inset-0 bg-zinc-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <div className="bg-white text-zinc-900 px-5 py-2 rounded-full text-[10px] font-black tracking-widest flex items-center gap-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                  VISIT SITE <ExternalLink size={12} />
+                </div>
+              </div>
             </div>
 
-            {/* Title and category */}
-            <div className="p-4 bg-white border-t border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
+            {/* Content Details - Balanced for cream background */}
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-[9px] font-black text-[#FDCA1C] uppercase tracking-[0.2em] bg-[#FDCA1C]/10 px-2 py-1 rounded">
+                  {site.category}
+                </span>
+                <Globe
+                  size={16}
+                  className="text-zinc-400 group-hover:text-[#FDCA1C] transition-colors"
+                />
+              </div>
+              <h3 className="text-lg font-bold text-zinc-800 mb-2 transition-colors group-hover:text-zinc-900">
                 {site.title}
               </h3>
-              <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">
-                {site.category}
+              <p className="text-sm text-zinc-500/90 leading-snug line-clamp-2">
+                {site.description}
               </p>
             </div>
           </motion.a>
