@@ -7,28 +7,28 @@ import Link from "next/link";
 
 const exampleSites = [
   {
-    title: "Portfolio Template",
+    title: "Travel Agency Website",
     description:
-      "A sleek, minimalist design optimized for creative professionals and freelancers.",
-    category: "Personal",
+      "Showcase your travel agency’s services, destinations, and expert guides with a modern, professional layout.",
+    category: "Travel",
     image: "/images/sample1.png",
     link: "https://newgentravel.online/",
   },
   {
-    title: "E-commerce Store",
+    title: "Hotel Website",
     description:
-      "Conversion-focused layout with integrated product grids and seamless navigation.",
-    category: "Business",
+      "Beautifully designed website for hotels and resorts featuring rooms, amenities, booking info, and stunning visuals to attract guests.",
+    category: "Hospitality",
     image: "/images/sample2.png",
     link: "https://www.lightwebx.link/",
   },
   {
-    title: "SaaS Landing Page",
+    title: "Small Business Landing Page",
     description:
-      "Modern tech aesthetic featuring feature blocks and clear call-to-action sections.",
-    category: "Tech",
-    image: "/images/sample1.png",
-    link: "https://www.lightwebx.store/",
+      "Clean and professional landing page for small or medium businesses to showcase services, products, and contact info effectively.",
+    category: "Business",
+    image: "/images/sample3.png",
+    link: "https://allseasontravelbhutan.com/",
   },
 ];
 
@@ -76,13 +76,13 @@ export function EmptyState() {
             transition={{ delay: i * 0.1 }}
             className="group relative flex flex-col rounded-2xl bg-white/30 backdrop-blur-sm border border-zinc-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)] transition-all duration-500 overflow-hidden"
           >
-            <div className="flex items-center gap-1.5 px-4 py-3 border-b border-zinc-200/50 bg-zinc-900/[0.03]">
+            <div className="flex items-center gap-1.5 px-4 py-3 border-b border-zinc-200/50 bg-zinc-900/3">
               <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />
               <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />
               <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />
             </div>
 
-            <div className="relative w-full aspect-[16/10] overflow-hidden">
+            <div className="relative w-full aspect-16/10 overflow-hidden">
               <Image
                 src={site.image}
                 alt={site.title}
