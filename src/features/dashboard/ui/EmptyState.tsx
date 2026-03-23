@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ExternalLink, Globe, Sparkles } from "lucide-react";
+import { ExternalLink, Globe, Sparkles, Plus } from "lucide-react"; // added Plus icon
+import { Button } from "@/components/ui/button"; // optional if you have a Button component
+import Link from "next/link";
 
 const exampleSites = [
   {
@@ -33,10 +35,9 @@ const exampleSites = [
 
 export function EmptyState() {
   return (
-    /* Removed bg-white so it inherits your #FFFAEE theme */
     <div className="flex flex-col items-center justify-center px-4 py-12">
-      {/* Header section with theme-matching text colors */}
-      <div className="w-full max-w-7xl mb-12 border-l-4 border-[#FDCA1C] pl-6">
+      {/* Header section */}
+      <div className="w-full max-w-7xl mb-6 border-l-4 border-[#FDCA1C] pl-6">
         <div className="flex items-center gap-2 mb-2">
           <Sparkles size={16} className="text-[#FDCA1C]" />
           <span className="text-[10px] font-black text-zinc-500/60 uppercase tracking-[0.3em]">
@@ -50,6 +51,16 @@ export function EmptyState() {
           Real websites created by users using our AI. Get inspired, explore
           live examples, and launch your own in minutes.
         </p>
+
+        {/* New Project Button */}
+        <div className="mt-6">
+          <Link
+            href="/wizard"
+            className="inline-flex items-center gap-2 bg-[#FDCA1C] hover:bg-[#e6b800] text-zinc-900 font-bold px-5 py-3 rounded-xl shadow-md transition-all duration-300"
+          >
+            <Plus size={16} /> Create New Project
+          </Link>
+        </div>
       </div>
 
       {/* Grid Section */}
@@ -64,19 +75,14 @@ export function EmptyState() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.1 }}
-            /* Changed bg-white to bg-white/40 for a 'glass' effect 
-               or use bg-transparent to fully reveal your theme color.
-            */
             className="group relative flex flex-col rounded-2xl bg-white/30 backdrop-blur-sm border border-zinc-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)] transition-all duration-500 overflow-hidden"
           >
-            {/* Browser Header - Darkened slightly to stand out against cream */}
             <div className="flex items-center gap-1.5 px-4 py-3 border-b border-zinc-200/50 bg-zinc-900/[0.03]">
               <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />
               <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />
               <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />
             </div>
 
-            {/* Website Image Container */}
             <div className="relative w-full aspect-[16/10] overflow-hidden">
               <Image
                 src={site.image}
@@ -91,7 +97,6 @@ export function EmptyState() {
               </div>
             </div>
 
-            {/* Content Details - Balanced for cream background */}
             <div className="p-6">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-[9px] font-black text-[#FDCA1C] uppercase tracking-[0.2em] bg-[#FDCA1C]/10 px-2 py-1 rounded">
