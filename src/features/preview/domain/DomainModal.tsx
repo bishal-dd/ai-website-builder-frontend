@@ -314,13 +314,14 @@ export function DomainModal({
             <div className="text-green-600 text-sm">{successMessage}</div>
           )}
           <div className="text-gray-500 text-sm">
-            only international TLDs are available (.com, .travel, .ai, .io, .us,
-            .uk)
+            Search the domain in this format (e.g., <strong>example.com</strong>
+            )
           </div>
           <div className="text-gray-500 text-sm">
-            Please search the domain without the <strong>www.</strong> prefix
-            (e.g., <strong>example.com</strong>)
+            Only international TLDs are available (.com, .travel, .ai, .io, .us,
+            .uk)
           </div>
+
           {selectedDomain && (
             <div className="p-3 border rounded-md bg-green-500/10 border-green-500/30 text-sm">
               <div className="flex items-center justify-between gap-3">
