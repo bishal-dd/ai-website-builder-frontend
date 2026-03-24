@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
@@ -36,7 +36,7 @@ export default function WebsiteWizard() {
 
   const resetWizard = useWizardStore((state) => state.resetWizard);
 
-  const validateStep = (): boolean => {
+  const validateStep = useCallback((): boolean => {
     const errors: Record<string, string[]> = {};
 
     switch (currentStep) {
@@ -45,28 +45,21 @@ export default function WebsiteWizard() {
           errors.websiteType = ["Please select a website type."];
         }
         break;
-
       case 2:
         if (state.selectedPages.length === 0) {
           errors.selectedPages = ["Please select at least one page."];
         }
         break;
-
       case 3:
         if (!state.websiteName.trim()) {
           errors.websiteName = ["Website name is required."];
         }
-
         if (!state.description.trim()) {
           errors.description = ["Website description is required."];
         }
-
-        // ✅ Phone is REQUIRED
         if (!state.contactPhone?.trim()) {
           errors.contactPhone = ["Phone number is required."];
         }
-
-        // ✅ Email is OPTIONAL but must be valid if entered
         if (
           state.contactEmail?.trim() &&
           !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.contactEmail)
@@ -74,16 +67,19 @@ export default function WebsiteWizard() {
           errors.contactEmail = ["Please enter a valid email address."];
         }
         break;
-
       case 4:
-        // Removed content/item validation since AI generates all content.
-        // Step 4 is now effectively always valid as long as the state exists.
         break;
     }
 
     setStepErrors(errors);
     return Object.keys(errors).length === 0;
-  };
+  }, [currentStep, state]); // Add dependencies that affect validation logic
+
+  // 3. The effect is now safe because validateStep's identity is stable
+  useEffect(() => {
+    if (!hasAttemptedComplete) return;
+    validateStep();
+  }, [hasAttemptedComplete, currentStep, validateStep]);
 
   // Cleaned up effect: only validate if relevant.
   // Step 4 content validation is removed, so this effect is mostly defensive now.
