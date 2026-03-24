@@ -348,7 +348,7 @@ export function DomainModal({
           <div className="flex-1 overflow-auto p-3 space-y-2">
             {exactMatch && !exactMatch.available && (
               <div className="p-3 border border-red-500/30 bg-red-500/10 rounded-md text-sm text-red-600">
-                ❌ <strong>{exactMatch.domain}</strong> is already taken.
+                <strong>{exactMatch.domain}</strong> is already taken.
                 <br /> Try one of the available alternatives below
               </div>
             )}
