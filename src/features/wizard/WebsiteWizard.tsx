@@ -83,10 +83,6 @@ export default function WebsiteWizard() {
 
   // Cleaned up effect: only validate if relevant.
   // Step 4 content validation is removed, so this effect is mostly defensive now.
-  useEffect(() => {
-    if (!hasAttemptedComplete) return;
-    validateStep();
-  }, [hasAttemptedComplete, currentStep, validateStep]);
 
   const handleNextStep = () => {
     const isValid = validateStep();
