@@ -21,18 +21,29 @@ export function useDomainModal() {
 
   const { country, loading: geoLoading } = useGeo();
 
+  const normalizeDomain = (input: string) => {
+    return input
+      .toLowerCase()
+      .trim()
+      .replace(/^https?:\/\//, "")
+      .replace(/^www\./, "")
+      .split("/")[0];
+  };
+
   // SEARCH DOMAINS
   const searchDomain = async () => {
-    if (!keyword.trim() || geoLoading) return; // wait for geo fetch
+    const cleanedKeyword = normalizeDomain(keyword);
+
+    if (!cleanedKeyword || geoLoading) return;
     setLoading(true);
     setError(null);
 
     try {
-      const results = await searchDomainAPI(keyword.trim(), country);
+      const results = await searchDomainAPI(cleanedKeyword, country);
 
       // Capture domain searched event
       posthog.capture("domain_searched", {
-        search_keyword: keyword.trim(),
+        search_keyword: cleanedKeyword,
         results_count: results?.length || 0,
         country_code: country,
       });
@@ -43,10 +54,11 @@ export function useDomainModal() {
       }
 
       const exactMatch = results.find(
-        (r) => r.domain.toLowerCase() === keyword.trim().toLowerCase(),
+        (r) => r.domain.toLowerCase() === cleanedKeyword,
       );
+
       const alternatives = results.filter(
-        (r) => r.domain.toLowerCase() !== keyword.trim().toLowerCase(),
+        (r) => r.domain.toLowerCase() !== cleanedKeyword,
       );
 
       setSuggestions([...(exactMatch ? [exactMatch] : []), ...alternatives]);
