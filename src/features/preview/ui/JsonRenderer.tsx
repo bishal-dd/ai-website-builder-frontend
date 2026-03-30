@@ -423,18 +423,17 @@ export function JsonRenderer({
                   Change
                 </button>
               )}
-
-              <input
-                ref={(el) => {
-                  fileInputRefs.current[String(id)] = el;
-                }}
-                type="file"
-                className="hidden"
-                disabled={uploadingImageId === id}
-                onChange={(e) => handleImageChange(e, id, componentKey)}
-              />
             </div>
           )}
+          <input
+            ref={(el) => {
+              fileInputRefs.current[String(id)] = el;
+            }}
+            type="file"
+            className="hidden"
+            disabled={uploadingImageId === id}
+            onChange={(e) => handleImageChange(e, id, componentKey)}
+          />
         </div>
       );
     }
