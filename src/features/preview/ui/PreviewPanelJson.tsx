@@ -12,6 +12,7 @@ import {
   FileText,
   Sparkles,
   LayoutDashboard,
+  ChevronDown,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -33,6 +34,13 @@ import useGetGeneratedWebsite from "../hooks/useGetGeneratedWebsite";
 import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
@@ -91,6 +99,26 @@ export function PreviewPanelJson({
 
   const sortedPages = [...websiteData.elements].sort(
     (a, b) => (a.sequence ?? 0) - (b.sequence ?? 0),
+  );
+
+  const mainPages = sortedPages.filter(
+    (p) => !p.page.includes("/") || p.page === "index",
+  );
+
+  // 2. Identify "Nested" pages (has a slash like tours/bhutan)
+  const nestedPages = sortedPages.filter(
+    (p) => p.page.includes("/") && p.page !== "index",
+  );
+
+  // 3. Group nested pages by their parent (e.g., "tours", "services")
+  const groupedSubPages = nestedPages.reduce(
+    (acc, page) => {
+      const parent = page.page.split("/")[0];
+      if (!acc[parent]) acc[parent] = [];
+      acc[parent].push(page);
+      return acc;
+    },
+    {} as Record<string, typeof sortedPages>,
   );
 
   useEffect(() => {
@@ -237,18 +265,68 @@ export function PreviewPanelJson({
       <div className="border-b bg-card px-4 py-2">
         <ScrollArea>
           <div className="flex gap-2">
-            {sortedPages.map((page) => (
-              <Button
-                key={page.id}
-                size="sm"
-                variant={currentPageId === page.page_id ? "default" : "outline"}
-                onClick={() => onPageChange(page.page_id)}
-              >
-                <FileText className="h-3 w-3 mr-1" />
-                {page.title}
-              </Button>
-            ))}
+            {mainPages.map((mainPage) => {
+              const subPages = groupedSubPages[mainPage.page] || [];
+              const hasSubPages = subPages.length > 0;
+              const isActive =
+                currentPageId === mainPage.page_id ||
+                subPages.some((sp) => sp.page_id === currentPageId);
+
+              if (hasSubPages) {
+                // RENDER DROPDOWN (For Tours, Services, etc.)
+                return (
+                  <DropdownMenu key={mainPage.page_id}>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant={isActive ? "default" : "outline"}
+                        className="gap-2"
+                      >
+                        {/* Icon is now always present for dropdown triggers */}
+                        <FileText className="h-3 w-3" />
+                        {subPages.find((sp) => sp.page_id === currentPageId)
+                          ?.title || mainPage.title}
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-60">
+                      <DropdownMenuItem
+                        onClick={() => onPageChange(mainPage.page_id)}
+                      >
+                        {mainPage.title} (Overview)
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {subPages.map((sub) => (
+                        <DropdownMenuItem
+                          key={sub.page_id} // Use page_id for keys
+                          onClick={() => onPageChange(sub.page_id)}
+                        >
+                          {sub.title}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              }
+
+              // RENDER SIMPLE BUTTON (For Home, About, Contact, etc.)
+              return (
+                <Button
+                  key={mainPage.page_id}
+                  size="sm"
+                  variant={
+                    currentPageId === mainPage.page_id ? "default" : "outline"
+                  }
+                  onClick={() => onPageChange(mainPage.page_id)}
+                >
+                  {/* Icon is now rendered for every simple button */}
+                  <FileText className="h-3 w-3 mr-1" />
+                  {mainPage.title}
+                </Button>
+              );
+            })}
           </div>
+
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </div>
