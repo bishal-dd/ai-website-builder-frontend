@@ -13,6 +13,7 @@ import {
   Sparkles,
   LayoutDashboard,
   ChevronDown,
+  Share,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -41,6 +42,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useGeneratePreviewWebsite } from "../hooks/useGeneratePreviewWebsite";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
@@ -79,6 +81,8 @@ export function PreviewPanelJson({
     useGetGeneratedWebsite(websiteId);
   const deploymentCount = freshData?.deployment_count ?? 0;
   const isDeployed = deploymentCount > 0;
+  const { mutate: generatePreview, isPending: isGeneratingPreview } =
+    useGeneratePreviewWebsite();
 
   useEffect(() => {
     const width = window.innerWidth;
@@ -140,6 +144,27 @@ export function PreviewPanelJson({
       error: (err) => err.message || "Failed to redeploy website",
     });
   };
+
+  const handleSharePreview = async () => {
+    await toast.promise(
+      new Promise<void>((resolve, reject) => {
+        generatePreview(websiteId, {
+          onSuccess: (data) => {
+            const previewUrl = `${data.previewUrl}?v=${data.version}`;
+            window.open(previewUrl, "_blank", "noopener,noreferrer");
+            resolve();
+          },
+          onError: reject,
+        });
+      }),
+      {
+        loading: "Generating preview link...",
+        success: "Preview ready!",
+        error: "Failed to generate preview",
+      },
+    );
+  };
+
   return (
     <div className="flex h-screen flex-col bg-muted">
       {/* Header */}
@@ -207,6 +232,19 @@ export function PreviewPanelJson({
             onClick={() => router.refresh()}
           >
             <RefreshCw className="h-4 w-4" />
+          </Button>
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleSharePreview}
+            disabled={isGeneratingPreview}
+          >
+            {isGeneratingPreview ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Share className="h-4 w-4" />
+            )}
           </Button>
 
           {/* Publish / Republish */}
