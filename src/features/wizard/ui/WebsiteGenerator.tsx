@@ -5,16 +5,10 @@ import { useRouter } from "next/navigation";
 import { LoadingState } from "../loading/ui/LoadingState";
 import { useWizardStore } from "../store/wizardStore";
 import posthog from "posthog-js";
-import ShareCongratsModal from "./ShareCongratsModal";
 
 export function WebsiteGenerator({ jobId }: { jobId: string }) {
   const [isOpen, setIsOpen] = useState(true);
   const [progress, setProgress] = useState(0);
-  const hasCompletedRef = useRef(false);
-  const [showCongratsModal, setShowCongratsModal] = useState(false);
-  const [generatedWebsiteId, setGeneratedWebsiteId] = useState<string | null>(
-    null,
-  );
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement>(null);
   const setWebsiteId = useWizardStore((state) => state.setWebsiteId);
@@ -31,9 +25,7 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
 
         setProgress(data.progress || 0);
 
-        if (data.status === "completed" && !hasCompletedRef.current) {
-          hasCompletedRef.current = true;
-
+        if (data.status === "completed") {
           setWebsiteId(data.websiteId);
 
           posthog.capture("website_generation_completed", {
@@ -48,10 +40,10 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
             audioRef.current.play().catch((err) => console.error(err));
           }
 
-          setGeneratedWebsiteId(data.websiteId);
-          setShowCongratsModal(true);
+          setTimeout(() => {
+            router.push(`/preview/${data.websiteId}?firstLoad=true`);
+          }, 1000);
         } else if (data.status === "failed") {
-          // Capture website generation failed event
           posthog.capture("website_generation_failed", {
             job_id: jobId,
             error: data.error || "Unknown error",
@@ -72,18 +64,6 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
   return (
     <>
       <LoadingState isOpen={isOpen} backendProgress={progress} />
-
-      {generatedWebsiteId && (
-        <ShareCongratsModal
-          open={showCongratsModal}
-          websiteId={generatedWebsiteId}
-          onContinue={() => {
-            setShowCongratsModal(false);
-            router.push(`/preview/${generatedWebsiteId}`);
-          }}
-        />
-      )}
-
       <audio ref={audioRef} src="/sounds/success.wav" />
     </>
   );

@@ -7,16 +7,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Share2, Facebook, MessageCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { SiFacebook } from "@icons-pack/react-simple-icons";
 import { generatePreviewWebsite } from "@/features/preview/api/generatePreviewWebsite";
 type Props = {
   open: boolean;
   websiteId: string;
   onContinue: () => void;
+  onClose: () => void;
 };
 
 type PreviewResponse = {
@@ -28,7 +29,7 @@ type PreviewResponse = {
 export default function ShareCongratsModal({
   open,
   websiteId,
-  onContinue,
+  onClose,
 }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [previewData, setPreviewData] = useState<PreviewResponse | null>(null);
@@ -70,43 +71,40 @@ export default function ShareCongratsModal({
     return `${previewData.previewUrl}?v=${previewData.version}`;
   }, [previewData]);
 
-  const handleWhatsappShare = () => {
+  // Facebook timeline share
+  const handleFacebookShare = () => {
     if (!finalPreviewUrl) return;
 
-    const url = `https://wa.me/?text=${encodeURIComponent(
-      `🎉 Check out the website I just created! ${finalPreviewUrl}`,
+    const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      finalPreviewUrl,
     )}`;
 
-    window.open(url, "_blank", "noopener,noreferrer");
+    window.open(
+      fbShareUrl,
+      "_blank",
+      "width=600,height=400,noopener,noreferrer",
+    );
 
-    toast.success("Discount unlocked for WhatsApp sharing 🎁");
-  };
-
-  const FB_APP_ID = process.env.NEXT_PUBLIC_FB_APP_ID;
-
-  const handleMessengerShare = () => {
-    if (!finalPreviewUrl) return;
-
-    const redirectUri = encodeURIComponent(window.location.origin);
-    const link = encodeURIComponent(finalPreviewUrl);
-
-    const url = `https://www.facebook.com/dialog/send?app_id=${FB_APP_ID}&link=${link}&redirect_uri=${redirectUri}`;
-
-    window.open(url, "_blank", "width=600,height=400,noopener,noreferrer");
-
-    toast.success("Discount unlocked for sharing with friends! 🎁");
+    toast.success("Thanks for sharing on Facebook!");
   };
 
   return (
-    <Dialog open={open}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
+    >
+      {" "}
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-2xl">🎉 Congratulations!</DialogTitle>
 
           <DialogDescription className="pt-2 text-base">
-            Your website has been successfully generated.
+            Great work! Your website has been successfully generated.
             <br />
-            Share it on WhatsApp or Facebook and get a discount on deployment.
+            Share your creation with friends or on Instagram and Facebook to
+            show off your hard work!
           </DialogDescription>
         </DialogHeader>
 
@@ -123,36 +121,15 @@ export default function ShareCongratsModal({
               <Button
                 className="w-full"
                 variant="outline"
-                onClick={handleWhatsappShare}
+                onClick={handleFacebookShare}
                 disabled={!finalPreviewUrl}
               >
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Share on WhatsApp
+                <SiFacebook size={18} />
+                <span className="font-semibold">Share on Facebook</span>
               </Button>
-
-              <Button
-                className="w-full"
-                variant="outline"
-                onClick={handleMessengerShare}
-                disabled={!finalPreviewUrl}
-              >
-                <Facebook className="mr-2 h-4 w-4" />
-                Share on Facebook
-              </Button>
-
-              <div className="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
-                🎁 Share now and receive a deployment discount automatically.
-              </div>
             </div>
           )}
         </div>
-
-        <DialogFooter>
-          <Button onClick={onContinue} disabled={isLoading}>
-            <Share2 className="mr-2 h-4 w-4" />
-            Continue to Preview
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
