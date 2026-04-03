@@ -9,6 +9,7 @@ export type WebsiteInput = {
   color?: string;
   type?: string;
   floating_whatsapp_enabled?: boolean;
+  is_congrats_modal_shown?: boolean;
 };
 
 export type WebsiteUpdate = Partial<WebsiteInput>;

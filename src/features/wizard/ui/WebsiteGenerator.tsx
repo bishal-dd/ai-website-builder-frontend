@@ -26,9 +26,8 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
         setProgress(data.progress || 0);
 
         if (data.status === "completed") {
-          setWebsiteId(data.websiteId); // store the websiteId
+          setWebsiteId(data.websiteId);
 
-          // Capture website generation completed event
           posthog.capture("website_generation_completed", {
             job_id: jobId,
             website_id: data.websiteId,
@@ -37,15 +36,14 @@ export function WebsiteGenerator({ jobId }: { jobId: string }) {
           setIsOpen(false);
           clearInterval(interval);
 
-          // Play success audio
           if (audioRef.current) {
             audioRef.current.play().catch((err) => console.error(err));
           }
 
-          // Optional: redirect after short delay
-          setTimeout(() => router.push(`/preview/${data.websiteId}`), 500);
+          setTimeout(() => {
+            router.push(`/preview/${data.websiteId}?firstLoad=true`);
+          }, 1000);
         } else if (data.status === "failed") {
-          // Capture website generation failed event
           posthog.capture("website_generation_failed", {
             job_id: jobId,
             error: data.error || "Unknown error",
