@@ -13,7 +13,7 @@ import {
   Sparkles,
   LayoutDashboard,
   ChevronDown,
-  Share,
+  MoveUpRight,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -243,7 +243,7 @@ export function PreviewPanelJson({
             {isGeneratingPreview ? (
               <RefreshCw className="h-4 w-4 animate-spin" />
             ) : (
-              <Share className="h-4 w-4" />
+              <MoveUpRight className="h-4 w-4" />
             )}
           </Button>
 
