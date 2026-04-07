@@ -2,6 +2,9 @@ export interface Website {
   id: string;
   title: string;
   userId: string;
+  userName?: string;
+  userEmail?: string;
+  userPhone?: string;
   createdAt: string;
   deploymentStatus: string;
   domainPrice?: number | null;
