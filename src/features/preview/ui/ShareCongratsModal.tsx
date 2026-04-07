@@ -71,19 +71,28 @@ export default function ShareCongratsModal({
     return `${previewData.previewUrl}?v=${previewData.version}`;
   }, [previewData]);
 
-  // Facebook timeline share
   const handleFacebookShare = () => {
     if (!finalPreviewUrl) return;
 
-    const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-      finalPreviewUrl,
-    )}`;
+    const encodedUrl = encodeURIComponent(finalPreviewUrl);
 
-    window.open(
-      fbShareUrl,
-      "_blank",
-      "width=600,height=400,noopener,noreferrer",
-    );
+    const webUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+    const appUrl = `fb://facewebmodal/f?href=${webUrl}`;
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      // Try opening Facebook app
+      window.location.href = appUrl;
+
+      // Fallback to web if app not installed
+      setTimeout(() => {
+        window.location.href = webUrl;
+      }, 500);
+    } else {
+      // Desktop → open in new tab
+      window.open(webUrl, "_blank", "noopener,noreferrer");
+    }
 
     toast.success("Thanks for sharing on Facebook!");
   };
@@ -103,8 +112,8 @@ export default function ShareCongratsModal({
           <DialogDescription className="pt-2 text-base">
             Great work! Your website has been successfully generated.
             <br />
-            Share your creation with friends or on Instagram and Facebook to
-            show off your hard work!
+            Share your creation with friends pn Facebook to show off your hard
+            work!
           </DialogDescription>
         </DialogHeader>
 

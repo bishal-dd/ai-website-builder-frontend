@@ -102,7 +102,7 @@ export function PaymentSummary({
               <span>{formatPrice(hostingPrice)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>Website Generation</span>
+              <span>Website Generation(one time)</span>
               <span>{formatPrice(websitePrice)}</span>
             </div>
 
@@ -177,7 +177,7 @@ export function PaymentSummary({
               }}
               className="w-full"
             >
-              Continue on WhatsApp{" "}
+              Pay{" "}
               {paymentType === "full"
                 ? `(${formatPrice(totalPrice)})`
                 : `(${formatPrice(firstInstallment)} now)`}

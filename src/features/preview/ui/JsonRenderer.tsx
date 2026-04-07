@@ -79,7 +79,30 @@ const normalizeAttributes = (
     // 4️⃣ Convert kebab-case → camelCase (SVG & HTML attrs)
     const camelKey = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 
-    result[camelKey] = value;
+    const allowedAttributes = new Set([
+      "src",
+      "alt",
+      "href",
+      "target",
+      "rel",
+      "className",
+      "id",
+      "title",
+      "width",
+      "height",
+      "viewBox",
+      "fill",
+      "stroke",
+      "xmlns",
+    ]);
+
+    if (
+      camelKey.startsWith("data-") ||
+      camelKey.startsWith("aria-") ||
+      allowedAttributes.has(camelKey)
+    ) {
+      result[camelKey] = value;
+    }
   }
 
   return result;
@@ -299,7 +322,7 @@ export function JsonRenderer({
             }}
             className="absolute top-4 right-4 z-50 bg-yellow-400 text-black px-4 py-2 rounded-md shadow-lg text-sm font-semibold"
           >
-            Change Image
+            Change
           </button>
 
           <input
@@ -393,8 +416,23 @@ export function JsonRenderer({
               display: "block",
             },
           })}
+          {/* ✅ Normal images → always visible */}
+          {!isLogo && !isIcon && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!uploadingImageId) {
+                  fileInputRefs.current[String(id)]?.click();
+                }
+              }}
+              className="absolute top-2 right-2 z-50 bg-yellow-400 text-black px-3 py-1.5 rounded-md shadow-md text-xs font-semibold"
+            >
+              {uploadingImageId === id ? "Uploading..." : "Change"}
+            </button>
+          )}
 
-          {isActive && (
+          {/* ✅ Logo & Icons → hover behavior */}
+          {(isLogo || isIcon) && isActive && (
             <div
               className="absolute inset-0 flex items-center justify-center"
               style={{
@@ -403,8 +441,9 @@ export function JsonRenderer({
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                if (!uploadingImageId)
+                if (!uploadingImageId) {
                   fileInputRefs.current[String(id)]?.click();
+                }
               }}
             >
               {uploadingImageId === id ? (
@@ -413,13 +452,7 @@ export function JsonRenderer({
                   <span className="text-sm">Uploading...</span>
                 </div>
               ) : (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fileInputRefs.current[String(id)]?.click();
-                  }}
-                  className="rounded-md bg-yellow-400 px-4 py-2 text-sm font-medium text-black shadow-lg"
-                >
+                <button className="rounded-md bg-yellow-400 px-4 py-2 text-sm font-medium text-black shadow-lg">
                   Change
                 </button>
               )}
