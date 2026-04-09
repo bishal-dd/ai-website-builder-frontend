@@ -43,6 +43,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useGeneratePreviewWebsite } from "../hooks/useGeneratePreviewWebsite";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
@@ -225,27 +231,27 @@ export function PreviewPanelJson({
             </Link>
           </Button>
 
-          {/* Refresh */}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => router.refresh()}
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleSharePreview}
-            disabled={isGeneratingPreview}
-          >
-            {isGeneratingPreview ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            ) : (
-              <MoveUpRight className="h-4 w-4" />
-            )}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleSharePreview}
+                  disabled={isGeneratingPreview}
+                >
+                  {isGeneratingPreview ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <MoveUpRight className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {isGeneratingPreview ? "Generating preview..." : "Open preview"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Publish / Republish */}
           {isFetchingData ? (
