@@ -183,6 +183,28 @@ export default function SignUpPage() {
                   "Create Account"
                 )}
               </Button>
+
+              {/* Legal Agreement Text */}
+
+              <p className="text-[11px] text-center text-gray-500 mt-4 leading-normal">
+                By signing up, you agree to our{" "}
+                <Link
+                  href="https://sencillai.com/privacy-policy"
+                  className="underline hover:text-primary transition-colors"
+                  target="_blank"
+                >
+                  Privacy Policy
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="https://sencillai.com/terms-and-conditions"
+                  className="underline hover:text-primary transition-colors"
+                  target="_blank"
+                >
+                  Terms and Conditions
+                </Link>
+                .
+              </p>
             </form>
 
             <div className="mt-6 text-center">
