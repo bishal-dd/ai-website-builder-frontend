@@ -18,6 +18,7 @@ export default function AdminContactsPage() {
   // 1. Extract values directly from URL
   const page = Number(searchParams.get("page")) || 1;
   const searchQuery = searchParams.get("search") || "";
+  const date = searchParams.get("date") || "";
 
   // 2. Stateless URL Updater (The logic hub)
   const updateQuery = useDebouncedCallback((key: string, value: string) => {
@@ -30,7 +31,7 @@ export default function AdminContactsPage() {
     }
 
     // Always reset to page 1 when searching
-    if (key === "search") {
+    if (key === "search" || key === "date") {
       params.set("page", "1");
     }
 
@@ -42,6 +43,7 @@ export default function AdminContactsPage() {
     page,
     10,
     searchQuery,
+    date,
   );
 
   if (error) {
@@ -96,9 +98,21 @@ export default function AdminContactsPage() {
             />
           </div>
         </header>
+        {date && (
+          <div className="text-xs text-muted-foreground flex items-center gap-2">
+            <span>Filtered date:</span>
+            <span className="font-semibold text-slate-900">{date}</span>
+
+            <button
+              onClick={() => updateQuery("date", "")}
+              className="text-blue-600 hover:underline ml-2"
+            >
+              Clear
+            </button>
+          </div>
+        )}
 
         <Separator className="mb-8" />
-
         <main className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           {isLoading ? (
             <div className="space-y-4">

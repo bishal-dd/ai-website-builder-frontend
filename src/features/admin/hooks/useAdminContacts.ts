@@ -4,18 +4,19 @@ import { getAdminContacts, ContactsResponse } from "../api/getAdminContacts";
 const useAdminContacts = (
   page: number = 1,
   pageSize: number = 10,
-  search: string = "", // 1️⃣ Add search parameter
+  search: string = "",
+  date: string = "",
 ) => {
   const { data, isLoading, isPlaceholderData, error, refetch } =
     useQuery<ContactsResponse>({
-      // 2️⃣ Add search to queryKey so cache resets on new searches
-      queryKey: ["admin-contacts", page, pageSize, search],
+      queryKey: ["admin-contacts", page, pageSize, search, date],
 
       queryFn: () =>
         getAdminContacts({
           page,
           pageSize,
-          search, // 3️⃣ Pass search to the API function
+          search,
+          date,
         }),
 
       staleTime: 1000 * 60,
