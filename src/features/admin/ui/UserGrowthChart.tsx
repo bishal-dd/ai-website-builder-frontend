@@ -276,6 +276,12 @@ export function UserGrowthChart() {
           <LineChart
             data={processedData}
             margin={{ left: 12, right: 12, top: 20 }}
+            onClick={(state) => {
+              if (state?.activePayload?.[0]?.payload?.date) {
+                const clickedDate = state.activePayload[0].payload.date;
+                router.push(`/admin/contacts?date=${clickedDate}`);
+              }
+            }}
           >
             <CartesianGrid
               vertical={false}
