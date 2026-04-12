@@ -23,7 +23,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Loader2,
   Search,
   ChevronLeft,
   ChevronRight,
@@ -34,6 +33,9 @@ import {
 } from "lucide-react";
 import { useApprovePayment } from "@/features/admin/hooks/useApprovePayment";
 import { useDebouncedCallback } from "../hooks/useDebounce";
+import { PaymentInput } from "../api/approvePayment";
+import { toast } from "sonner";
+import { usePayInstallment } from "../hooks/usePayInstallment";
 
 interface AdminWebsitesTableProps {
   websites: Website[];
@@ -56,15 +58,31 @@ export const AdminWebsitesTable = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Modal States
   const [selectedUser, setSelectedUser] = useState<Website | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<Website | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<Website | null>(null);
 
-  const { mutate, isPending, variables } = useApprovePayment(refresh);
+  const { mutate: approvePaymentMutate } = useApprovePayment(refresh);
   const currentSearch = searchParams.get("websiteId") || "";
 
-  // Safe formatting helper
-  // Safe formatting helper
+  const { mutate: payInstallmentMutate, isPending: isPayingInstallment } =
+    usePayInstallment(() => {
+      refresh();
+      toast.success("Installment paid successfully");
+    });
+
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentData, setPaymentData] = useState<Partial<PaymentInput>>({});
+  const [currentSite, setCurrentSite] = useState<Website | null>(null);
+
+  const totalAmount = Number(selectedPayment?.totalAmount || 0);
+  const paidAmount = Number(selectedPayment?.paidAmount || 0);
+  const remainingAmount = Math.max(0, totalAmount - paidAmount);
+
+  const isInstallment = selectedPayment?.paymentType === "installments";
+
+  const isFullyPaid = paidAmount >= totalAmount || remainingAmount === 0;
+
   const formatPrice = (val: string | number | null | undefined) => {
     const num = Number(val) || 0;
     return num.toFixed(2);
@@ -77,6 +95,30 @@ export const AdminWebsitesTable = ({
     if (key === "websiteId") params.set("page", "1");
     router.push(`${pathname}?${params.toString()}`);
   }, 400);
+
+  const buildPaymentPayload = (): PaymentInput | null => {
+    if (!currentSite || !paymentData) return null;
+
+    const total = Math.round(paymentData.totalAmount || 0);
+    let paid = Math.round(paymentData.paidAmount || 0);
+    let remaining = total - paid;
+
+    if (paymentData.paymentType === "full") {
+      paid = total;
+      remaining = 0;
+    }
+
+    return {
+      websiteId: currentSite.id,
+      totalAmount: total,
+      paidAmount: paid,
+      totalRemainingAmount: remaining,
+      paymentType: paymentData.paymentType || "full",
+      installmentNumber: 4,
+      paymentDate:
+        paymentData.paymentDate || new Date().toISOString().split("T")[0],
+    };
+  };
 
   return (
     <Card className="mt-6">
@@ -110,6 +152,7 @@ export const AdminWebsitesTable = ({
                 <TableHead>Contact</TableHead>
                 <TableHead>Website Title</TableHead>
                 <TableHead>Total Price</TableHead>
+                {status === "approved" && <TableHead>Payment</TableHead>}
                 {status === "pending" && <TableHead>Status</TableHead>}
                 {status === "pending" && (
                   <TableHead className="text-right">Action</TableHead>
@@ -130,8 +173,6 @@ export const AdminWebsitesTable = ({
               ) : (
                 websites.map((site, index) => {
                   const serialNumber = (currentPage - 1) * 10 + index + 1;
-                  const isApproving = isPending && variables === site.id;
-
                   const total =
                     Number(site.domainPrice || 0) +
                     Number(site.hostingPrice || 0) +
@@ -139,16 +180,17 @@ export const AdminWebsitesTable = ({
 
                   return (
                     <TableRow key={site.id}>
+                      {/* Serial */}
                       <TableCell>{serialNumber}</TableCell>
 
-                      {/* USER COLUMN - Plain Text */}
+                      {/* User Name */}
                       <TableCell>
                         <span className="text-sm font-medium">
                           {site.userName || "User"}
                         </span>
                       </TableCell>
 
-                      {/* CONTACT COLUMN - New Button */}
+                      {/* Contact */}
                       <TableCell>
                         <Button
                           variant="ghost"
@@ -161,10 +203,12 @@ export const AdminWebsitesTable = ({
                         </Button>
                       </TableCell>
 
+                      {/* Website Title */}
                       <TableCell className="font-medium">
                         {site.title}
                       </TableCell>
 
+                      {/* Total Price */}
                       <TableCell>
                         <button
                           onClick={() => setSelectedPrice(site)}
@@ -175,26 +219,48 @@ export const AdminWebsitesTable = ({
                         </button>
                       </TableCell>
 
+                      {/* Payment / Status */}
                       <TableCell>
+                        {status === "approved" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedPayment(site)}
+                            className="h-8 gap-2 hover:bg-blue-50 hover:text-blue-700"
+                          >
+                            View Payment
+                          </Button>
+                        )}
                         {status === "pending" && (
                           <Badge variant="secondary" className="capitalize">
                             {site.deploymentStatus}
                           </Badge>
                         )}
                       </TableCell>
+
                       <TableCell className="text-right">
                         {status === "pending" && (
                           <Button
                             size="sm"
                             className="bg-green-600 hover:bg-green-700 text-white"
-                            disabled={isApproving}
-                            onClick={() => mutate(site.id)}
+                            onClick={() => {
+                              setCurrentSite(site);
+                              setPaymentData({
+                                websiteId: site.id,
+                                totalAmount:
+                                  Number(site.websitePrice) +
+                                  Number(site.hostingPrice) +
+                                  Number(site.domainPrice),
+                                paymentType: "full",
+                                paidAmount: Number(site.domainPrice || 0),
+                                paymentDate: new Date()
+                                  .toISOString()
+                                  .split("T")[0],
+                              });
+                              setPaymentModalOpen(true);
+                            }}
                           >
-                            {isApproving ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              "Approve"
-                            )}
+                            Approve
                           </Button>
                         )}
                       </TableCell>
@@ -316,6 +382,326 @@ export const AdminWebsitesTable = ({
           </div>
           <div className="flex justify-end">
             <Button variant="secondary" onClick={() => setSelectedUser(null)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={paymentModalOpen}
+        onOpenChange={() => setPaymentModalOpen(false)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Approve Payment for {currentSite?.title}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3 py-4">
+            <div>
+              <label className="text-xs font-semibold">Payment Type</label>
+              <select
+                className="w-full border rounded px-2 py-1"
+                value={paymentData.paymentType}
+                onChange={(e) =>
+                  setPaymentData({
+                    ...paymentData,
+                    paymentType: e.target.value as "full" | "installments",
+                  })
+                }
+              >
+                <option value="full">Full</option>
+                <option value="installments">Installments</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold">Payment Date</label>
+              <input
+                type="date"
+                className="w-full border rounded px-2 py-1"
+                value={paymentData.paymentDate}
+                onChange={(e) =>
+                  setPaymentData({
+                    ...paymentData,
+                    paymentDate: e.target.value,
+                  })
+                }
+              />
+            </div>
+            {paymentData.paymentType === "installments" && (
+              <>
+                <div>
+                  <label className="text-xs font-semibold">Paid Amount</label>
+                  <input
+                    type="number"
+                    className="w-full border rounded px-2 py-1"
+                    value={
+                      paymentData.paidAmount === 0 ? "" : paymentData.paidAmount
+                    }
+                    onChange={(e) =>
+                      setPaymentData({
+                        ...paymentData,
+                        paidAmount:
+                          e.target.value === "" ? 0 : Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+              </>
+            )}
+
+            {paymentData.paymentType === "installments" && (
+              <div>
+                <label className="text-xs font-semibold">
+                  Total Remaining Amount
+                </label>
+                <input
+                  type="number"
+                  className="w-full border rounded px-2 py-1 bg-gray-100"
+                  value={
+                    (paymentData.totalAmount || 0) -
+                    (paymentData.paidAmount || 0)
+                  }
+                  disabled
+                />
+              </div>
+            )}
+            <div>
+              <label className="text-xs font-semibold">Total Amount</label>
+              <input
+                type="number"
+                className="w-full border rounded px-2 py-1"
+                value={
+                  paymentData.totalAmount === 0 ? "" : paymentData.totalAmount
+                }
+                onChange={(e) =>
+                  setPaymentData({
+                    ...paymentData,
+                    totalAmount:
+                      e.target.value === "" ? 0 : Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => setPaymentModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-green-600 hover:bg-green-700 text-white"
+              onClick={() => {
+                const payload = buildPaymentPayload();
+                if (!payload || !currentSite) {
+                  toast.error("Invalid payment data!");
+                  return;
+                }
+
+                approvePaymentMutate(payload, {
+                  onSuccess: () => {
+                    setPaymentModalOpen(false);
+                    toast.success(`Payment approved for ${currentSite.title}`);
+                  },
+                  onError: (err: unknown) => {
+                    console.error(err);
+
+                    const message =
+                      err instanceof Error
+                        ? err.message
+                        : "Something went wrong while approving payment";
+
+                    toast.error(message);
+                  },
+                });
+              }}
+            >
+              Approve Payment
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* --- VIEW PAYMENT DETAILS MODAL --- */}
+      <Dialog
+        open={!!selectedPayment}
+        onOpenChange={() => setSelectedPayment(null)}
+      >
+        <DialogContent className="sm:max-w-lg rounded-2xl p-0 overflow-hidden border shadow-xl">
+          {/* Header */}
+          <div className="border-b px-6 py-5">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold tracking-tight">
+                Payment Details
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground mt-1">
+                Transaction records for{" "}
+                <span className="font-medium text-foreground">
+                  {selectedPayment?.title}
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="px-6 py-5 space-y-6">
+            {/* Payment Type + Status */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Payment Type
+                </p>
+                <p className="text-sm font-medium mt-1">
+                  {isInstallment ? "Installments" : "Full Payment"}
+                </p>
+              </div>
+
+              <Badge
+                variant="outline"
+                className="rounded-full px-3 py-1 text-xs font-medium"
+              >
+                {isFullyPaid ? "Paid" : "Active"}
+              </Badge>
+            </div>
+
+            {/* Amount Summary */}
+            <div className="rounded-xl border bg-muted/30 p-4">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Paid Amount
+                  </p>
+                  <p className="text-xl font-semibold mt-1">
+                    Nu. {formatPrice(paidAmount)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Total Amount
+                  </p>
+                  <p className="text-xl font-semibold mt-1">
+                    Nu. {formatPrice(totalAmount)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Remaining Balance */}
+              {isInstallment && remainingAmount > 0 && (
+                <div className="mt-4 pt-4 border-t flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    Remaining Balance
+                  </span>
+                  <span className="text-sm font-semibold">
+                    Nu. {formatPrice(remainingAmount)}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Next Installment */}
+            {isInstallment && !isFullyPaid && (
+              <div className="rounded-xl border p-4 space-y-4">
+                <p className="text-sm font-medium">Next Installment</p>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Amount
+                    </p>
+                    <p className="text-sm font-medium mt-1">
+                      Nu. {formatPrice(selectedPayment?.installmentAmount || 0)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Due Date
+                    </p>
+                    <p className="text-sm font-medium mt-1">
+                      {selectedPayment?.nextInstallmentDate
+                        ? new Date(
+                            selectedPayment.nextInstallmentDate,
+                          ).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Completed Payment Message */}
+            {isFullyPaid && isInstallment && (
+              <div className="rounded-xl border p-4 text-sm font-medium text-center">
+                All installments have been paid
+              </div>
+            )}
+
+            {/* Footer */}
+            <div className="pt-2 border-t">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Last Payment Date
+              </p>
+              <p className="text-sm mt-1">
+                {selectedPayment?.paymentDate
+                  ? new Date(selectedPayment.paymentDate).toLocaleDateString(
+                      "en-GB",
+                      {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      },
+                    )
+                  : "N/A"}
+              </p>
+            </div>
+          </div>
+
+          <div className="border-t px-6 py-4 flex justify-end gap-2 bg-muted/20">
+            {isInstallment && !isFullyPaid && (
+              <Button
+                className="bg-green-600 hover:bg-green-700 text-white"
+                disabled={isPayingInstallment}
+                onClick={() => {
+                  if (!selectedPayment) return;
+
+                  payInstallmentMutate(
+                    {
+                      websiteId: selectedPayment.id,
+                      paymentDate: new Date().toISOString().split("T")[0],
+                    },
+                    {
+                      onSuccess: () => {
+                        setSelectedPayment(null);
+                        refresh();
+                      },
+                      onError: (err: unknown) => {
+                        const message =
+                          err instanceof Error
+                            ? err.message
+                            : "Failed to pay installment";
+
+                        toast.error(message);
+                      },
+                    },
+                  );
+                }}
+              >
+                {isPayingInstallment ? "Processing..." : "Pay Installment"}
+              </Button>
+            )}
+
+            <Button
+              variant="outline"
+              className="rounded-lg"
+              onClick={() => setSelectedPayment(null)}
+            >
               Close
             </Button>
           </div>
