@@ -29,13 +29,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useSession } from "@/shared/session";
-import { useSearchParams, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 export function AdminSidebar() {
   const { user, signOut } = useSession();
-  const searchParams = useSearchParams();
   const pathname = usePathname();
-  const currentStatus = searchParams.get("status");
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
@@ -63,13 +61,10 @@ export function AdminSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={
-                    pathname === "/admin/dashboard" &&
-                    currentStatus === "pending"
-                  }
+                  isActive={pathname === "/admin/dashboard/pending"}
                   tooltip="Pending Approvals"
                 >
-                  <Link href="/admin/dashboard?status=pending">
+                  <Link href="/admin/dashboard/pending">
                     <LayoutDashboard className="size-4" />
                     <span>Pending Websites</span>
                   </Link>
@@ -80,13 +75,10 @@ export function AdminSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={
-                    pathname === "/admin/dashboard" &&
-                    currentStatus === "approved"
-                  }
+                  isActive={pathname === "/admin/dashboard/approved"}
                   tooltip="Approved Sites"
                 >
-                  <Link href="/admin/dashboard?status=approved">
+                  <Link href="/admin/dashboard/approved">
                     <CheckCircle2 className="size-4" />
                     <span>Approved Websites</span>
                   </Link>
