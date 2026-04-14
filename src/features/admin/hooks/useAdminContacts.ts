@@ -6,10 +6,20 @@ const useAdminContacts = (
   pageSize: number = 10,
   search: string = "",
   date: string = "",
+  startDate: string = "",
+  endDate: string = "",
 ) => {
   const { data, isLoading, isPlaceholderData, error, refetch } =
     useQuery<ContactsResponse>({
-      queryKey: ["admin-contacts", page, pageSize, search, date],
+      queryKey: [
+        "admin-contacts",
+        page,
+        pageSize,
+        search,
+        date,
+        startDate,
+        endDate,
+      ],
 
       queryFn: () =>
         getAdminContacts({
@@ -17,6 +27,8 @@ const useAdminContacts = (
           pageSize,
           search,
           date,
+          startDate,
+          endDate,
         }),
 
       staleTime: 1000 * 60,

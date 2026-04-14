@@ -1,11 +1,30 @@
 "use client";
 
+import * as React from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { Users, AlertCircle, Search } from "lucide-react";
+import {
+  Users,
+  AlertCircle,
+  Search,
+  Calendar as CalendarIcon,
+  X,
+  Check,
+} from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { DateRange } from "react-day-picker";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
 import useAdminContacts from "@/features/admin/hooks/useAdminContacts";
 import { ContactsTable } from "./ui/ContactsTable";
 import { useDebouncedCallback } from "./hooks/useDebounce";
@@ -15,12 +34,27 @@ export default function AdminContactsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // 1. Extract values directly from URL
+  // --- URL State ---
   const page = Number(searchParams.get("page")) || 1;
   const searchQuery = searchParams.get("search") || "";
   const date = searchParams.get("date") || "";
+  const startDate = searchParams.get("startDate") || "";
+  const endDate = searchParams.get("endDate") || "";
 
-  // 2. Stateless URL Updater (The logic hub)
+  // --- Calendar UI State ---
+  const [calendarOpen, setCalendarOpen] = React.useState(false);
+
+  const [tempDate, setTempDate] = React.useState<DateRange | undefined>(() => {
+    if (startDate && endDate) {
+      return {
+        from: parseISO(startDate),
+        to: parseISO(endDate),
+      };
+    }
+    return undefined;
+  });
+
+  // --- Shared URL updater ---
   const updateQuery = useDebouncedCallback((key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -30,20 +64,56 @@ export default function AdminContactsPage() {
       params.delete(key);
     }
 
-    // Always reset to page 1 when searching
-    if (key === "search" || key === "date") {
+    if (
+      key === "search" ||
+      key === "date" ||
+      key === "startDate" ||
+      key === "endDate"
+    ) {
       params.set("page", "1");
     }
 
     router.push(`${pathname}?${params.toString()}`);
   }, 400);
 
-  // 3. Fetch data based on URL state
+  // --- Apply range filter ---
+  const applyDateRange = () => {
+    if (!tempDate?.from || !tempDate?.to) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.delete("date");
+    params.set("startDate", format(tempDate.from, "yyyy-MM-dd"));
+    params.set("endDate", format(tempDate.to, "yyyy-MM-dd"));
+    params.set("page", "1");
+
+    router.push(`${pathname}?${params.toString()}`);
+    setCalendarOpen(false);
+  };
+
+  // --- Clear date filters ---
+  const clearDateFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.delete("date");
+    params.delete("startDate");
+    params.delete("endDate");
+    params.set("page", "1");
+
+    router.push(`${pathname}?${params.toString()}`);
+
+    setTempDate(undefined);
+    setCalendarOpen(false);
+  };
+
+  // --- Fetch data ---
   const { users, pagination, isLoading, error } = useAdminContacts(
     page,
     10,
     searchQuery,
     date,
+    startDate,
+    endDate,
   );
 
   if (error) {
@@ -79,32 +149,82 @@ export default function AdminContactsPage() {
               </p>
             </div>
           </div>
+
           <div className="text-sm text-muted-foreground">
             Total users:{" "}
             <span className="font-semibold text-foreground">
-              {pagination?.totalCount ?? 0}{" "}
+              {pagination?.totalCount ?? 0}
             </span>
           </div>
 
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              key={searchQuery}
-              placeholder="Search by name or email..."
-              className="pl-10 bg-white"
-              // Use defaultValue for stateless behavior
-              defaultValue={searchQuery}
-              onChange={(e) => updateQuery("search", e.target.value)}
-            />
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                key={searchQuery}
+                placeholder="Search by name or email..."
+                className="pl-10 bg-white"
+                defaultValue={searchQuery}
+                onChange={(e) => updateQuery("search", e.target.value)}
+              />
+            </div>
+
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <CalendarIcon className="size-4" />
+                </Button>
+              </PopoverTrigger>
+
+              <PopoverContent className="w-auto p-0" align="end">
+                <div className="p-3 border-b flex items-center justify-between">
+                  <span className="text-xs font-medium">Select Date Range</span>
+
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearDateFilters}
+                      className="h-7 px-2 text-xs"
+                    >
+                      <X className="size-3 mr-1" />
+                      Clear
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      onClick={applyDateRange}
+                      disabled={!tempDate?.from || !tempDate?.to}
+                      className="h-7 px-2 text-xs"
+                    >
+                      <Check className="size-3 mr-1" />
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  selected={tempDate}
+                  onSelect={setTempDate}
+                  numberOfMonths={2}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </header>
-        {date && (
+
+        {(date || (startDate && endDate)) && (
           <div className="text-xs text-muted-foreground flex items-center gap-2">
             <span>Filtered date:</span>
-            <span className="font-semibold text-slate-900">{date}</span>
+
+            <span className="font-semibold text-slate-900">
+              {date || `${startDate} → ${endDate}`}
+            </span>
 
             <button
-              onClick={() => updateQuery("date", "")}
+              onClick={clearDateFilters}
               className="text-blue-600 hover:underline ml-2"
             >
               Clear
@@ -113,11 +233,12 @@ export default function AdminContactsPage() {
         )}
 
         <Separator className="mb-8" />
+
         <main className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           {isLoading ? (
             <div className="space-y-4">
-              <Skeleton className="h-[100px] w-full rounded-xl" />
-              <Skeleton className="h-[400px] w-full rounded-xl" />
+              <Skeleton className="h-25 w-full rounded-xl" />
+              <Skeleton className="h-100 w-full rounded-xl" />
             </div>
           ) : (
             <ContactsTable
