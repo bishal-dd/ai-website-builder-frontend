@@ -1,9 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
-import { approvePayment } from "../api/approvePayment";
+import { approvePayment, PaymentInput } from "../api/approvePayment";
 
 export function useApprovePayment(onSuccess?: () => void) {
   return useMutation({
-    mutationFn: (websiteId: string) => approvePayment(websiteId),
+    mutationFn: (paymentData: PaymentInput) => approvePayment(paymentData),
     onSuccess,
   });
 }

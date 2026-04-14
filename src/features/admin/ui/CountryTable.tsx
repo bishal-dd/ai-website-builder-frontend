@@ -81,7 +81,7 @@ export const CountryTable = ({ countries }: CountryTableProps) => {
                         className="h-1.5"
                       />
                     </div>
-                    <span className="min-w-[40px] text-right font-mono text-xs font-semibold text-slate-600">
+                    <span className="min-w-10 text-right font-mono text-xs font-semibold text-slate-600">
                       {Number(c.percentage).toFixed(1)}%
                     </span>
                   </div>

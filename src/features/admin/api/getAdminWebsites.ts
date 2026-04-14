@@ -10,6 +10,14 @@ export interface Website {
   domainPrice?: number | null;
   hostingPrice?: number | null;
   websitePrice?: number | null;
+  paymentType?: "full" | "installments";
+  paidAmount?: number;
+  totalAmount?: number;
+  installmentNumber?: number;
+  totalRemainingAmount?: number;
+  paymentDate?: string;
+  installmentAmount?: number;
+  nextInstallmentDate?: string;
 }
 
 // New interface to match the backend response

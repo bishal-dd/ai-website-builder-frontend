@@ -39,7 +39,6 @@ import {
 import {
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -276,6 +275,12 @@ export function UserGrowthChart() {
           <LineChart
             data={processedData}
             margin={{ left: 12, right: 12, top: 20 }}
+            onClick={(state) => {
+              if (state?.activePayload?.[0]?.payload?.date) {
+                const clickedDate = state.activePayload[0].payload.date;
+                router.push(`/admin/contacts?date=${clickedDate}`);
+              }
+            }}
           >
             <CartesianGrid
               vertical={false}
@@ -292,15 +297,25 @@ export function UserGrowthChart() {
             />
             <YAxis hide domain={[0, "auto"]} />
             <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  className="w-45 rounded-xl border-slate-200 shadow-2xl bg-white"
-                  nameKey="count"
-                  labelFormatter={(value) =>
-                    format(parseISO(value), "EEEE, MMM dd, yyyy")
-                  }
-                />
-              }
+              content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null;
+
+                return (
+                  <div className="rounded-xl border border-slate-200 bg-white shadow-2xl p-3 space-y-2">
+                    <p className="text-xs text-muted-foreground">
+                      {format(parseISO(label), "EEEE, MMM dd, yyyy")}
+                    </p>
+
+                    <p className="text-sm font-semibold">
+                      {payload[0].value} registrations
+                    </p>
+
+                    <p className="text-xs text-muted-foreground font-medium">
+                      Click chart to view contacts
+                    </p>
+                  </div>
+                );
+              }}
             />
             <Line
               dataKey="count"

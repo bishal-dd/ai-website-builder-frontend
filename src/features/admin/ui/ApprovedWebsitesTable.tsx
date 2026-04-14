@@ -31,29 +31,25 @@ import {
   Phone,
   User,
 } from "lucide-react";
-import { useApprovePayment } from "@/features/admin/hooks/useApprovePayment";
 import { useDebouncedCallback } from "../hooks/useDebounce";
-import { PaymentInput } from "../api/approvePayment";
 import { toast } from "sonner";
 import { usePayInstallment } from "../hooks/usePayInstallment";
 
-interface AdminWebsitesTableProps {
+interface ApprovedWebsitesTableProps {
   websites: Website[];
   refresh: () => void;
   currentPage: number;
   totalPages: number;
-  status: string;
   totalCount: number;
 }
 
-export const AdminWebsitesTable = ({
+export const ApprovedWebsitesTable = ({
   websites,
   refresh,
   currentPage,
   totalPages,
-  status,
   totalCount,
-}: AdminWebsitesTableProps) => {
+}: ApprovedWebsitesTableProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -62,7 +58,6 @@ export const AdminWebsitesTable = ({
   const [selectedPrice, setSelectedPrice] = useState<Website | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<Website | null>(null);
 
-  const { mutate: approvePaymentMutate } = useApprovePayment(refresh);
   const currentSearch = searchParams.get("websiteId") || "";
 
   const { mutate: payInstallmentMutate, isPending: isPayingInstallment } =
@@ -71,66 +66,34 @@ export const AdminWebsitesTable = ({
       toast.success("Installment paid successfully");
     });
 
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [paymentData, setPaymentData] = useState<Partial<PaymentInput>>({});
-  const [currentSite, setCurrentSite] = useState<Website | null>(null);
-
   const totalAmount = Number(selectedPayment?.totalAmount || 0);
   const paidAmount = Number(selectedPayment?.paidAmount || 0);
   const remainingAmount = Math.max(0, totalAmount - paidAmount);
-
   const isInstallment = selectedPayment?.paymentType === "installments";
-
   const isFullyPaid = paidAmount >= totalAmount || remainingAmount === 0;
 
-  const formatPrice = (val: string | number | null | undefined) => {
-    const num = Number(val) || 0;
-    return num.toFixed(2);
-  };
+  const roundDown = (val: unknown) => Math.floor(Number(val) || 0);
 
   const updateQuery = useDebouncedCallback((key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value) params.set(key, value);
     else params.delete(key);
+
     if (key === "websiteId") params.set("page", "1");
+
     router.push(`${pathname}?${params.toString()}`);
   }, 400);
-
-  const buildPaymentPayload = (): PaymentInput | null => {
-    if (!currentSite || !paymentData) return null;
-
-    const total = Math.round(paymentData.totalAmount || 0);
-    let paid = Math.round(paymentData.paidAmount || 0);
-    let remaining = total - paid;
-
-    if (paymentData.paymentType === "full") {
-      paid = total;
-      remaining = 0;
-    }
-
-    return {
-      websiteId: currentSite.id,
-      totalAmount: total,
-      paidAmount: paid,
-      totalRemainingAmount: remaining,
-      paymentType: paymentData.paymentType || "full",
-      installmentNumber: 4,
-      paymentDate:
-        paymentData.paymentDate || new Date().toISOString().split("T")[0],
-    };
-  };
 
   return (
     <Card className="mt-6">
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4">
-        <CardTitle className="capitalize">
-          {status === "pending" ? "Pending pendings" : `${status} Websites`}
-        </CardTitle>
+        <CardTitle>Approved Websites</CardTitle>
 
         <div className="text-sm text-muted-foreground">
-          Total {status} websites:{" "}
+          Total approved:{" "}
           <span className="font-semibold text-foreground">{totalCount}</span>
         </div>
+
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -147,16 +110,12 @@ export const AdminWebsitesTable = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableCell>#</TableCell>
+                <TableHead className="w-15">#</TableHead>
                 <TableHead>User</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Website Title</TableHead>
                 <TableHead>Total Price</TableHead>
-                {status === "approved" && <TableHead>Payment</TableHead>}
-                {status === "pending" && <TableHead>Status</TableHead>}
-                {status === "pending" && (
-                  <TableHead className="text-right">Action</TableHead>
-                )}
+                <TableHead className="text-right">Payment</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -164,10 +123,10 @@ export const AdminWebsitesTable = ({
               {websites.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={6}
                     className="h-24 text-center text-muted-foreground"
                   >
-                    No results found.
+                    No approved websites found.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -180,17 +139,14 @@ export const AdminWebsitesTable = ({
 
                   return (
                     <TableRow key={site.id}>
-                      {/* Serial */}
                       <TableCell>{serialNumber}</TableCell>
 
-                      {/* User Name */}
                       <TableCell>
                         <span className="text-sm font-medium">
                           {site.userName || "User"}
                         </span>
                       </TableCell>
 
-                      {/* Contact */}
                       <TableCell>
                         <Button
                           variant="ghost"
@@ -203,66 +159,29 @@ export const AdminWebsitesTable = ({
                         </Button>
                       </TableCell>
 
-                      {/* Website Title */}
                       <TableCell className="font-medium">
                         {site.title}
                       </TableCell>
 
-                      {/* Total Price */}
                       <TableCell>
                         <button
                           onClick={() => setSelectedPrice(site)}
                           className="flex items-center gap-1 font-semibold text-blue-600 hover:underline"
                         >
-                          {formatPrice(total)}
+                          Nu. {roundDown(total)}
                           <Info className="h-3 w-3" />
                         </button>
                       </TableCell>
 
-                      {/* Payment / Status */}
-                      <TableCell>
-                        {status === "approved" && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedPayment(site)}
-                            className="h-8 gap-2 hover:bg-blue-50 hover:text-blue-700"
-                          >
-                            View Payment
-                          </Button>
-                        )}
-                        {status === "pending" && (
-                          <Badge variant="secondary" className="capitalize">
-                            {site.deploymentStatus}
-                          </Badge>
-                        )}
-                      </TableCell>
-
                       <TableCell className="text-right">
-                        {status === "pending" && (
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            onClick={() => {
-                              setCurrentSite(site);
-                              setPaymentData({
-                                websiteId: site.id,
-                                totalAmount:
-                                  Number(site.websitePrice) +
-                                  Number(site.hostingPrice) +
-                                  Number(site.domainPrice),
-                                paymentType: "full",
-                                paidAmount: Number(site.domainPrice || 0),
-                                paymentDate: new Date()
-                                  .toISOString()
-                                  .split("T")[0],
-                              });
-                              setPaymentModalOpen(true);
-                            }}
-                          >
-                            Approve
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedPayment(site)}
+                          className="h-8 gap-2 hover:bg-blue-50 hover:text-blue-700"
+                        >
+                          View Payment
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
@@ -314,26 +233,27 @@ export const AdminWebsitesTable = ({
           <div className="space-y-3 py-4">
             <div className="flex justify-between border-b pb-2 text-sm">
               <span className="text-muted-foreground">Domain Registration</span>
-              <span className="font-mono">
-                {formatPrice(selectedPrice?.domainPrice)}
+              <span className="tabular-nums font-medium">
+                {roundDown(selectedPrice?.domainPrice)}
               </span>
             </div>
             <div className="flex justify-between border-b pb-2 text-sm">
               <span className="text-muted-foreground">Hosting Plan</span>
-              <span className="font-mono">
-                {formatPrice(selectedPrice?.hostingPrice)}
+              <span className="tabular-nums font-medium">
+                {roundDown(selectedPrice?.hostingPrice)}
               </span>
             </div>
             <div className="flex justify-between border-b pb-2 text-sm">
               <span className="text-muted-foreground">AI Generation Fee</span>
-              <span className="font-mono">
-                {formatPrice(selectedPrice?.websitePrice)}
+              <span className="tabular-nums font-medium">
+                {roundDown(selectedPrice?.websitePrice)}
               </span>
             </div>
             <div className="flex justify-between pt-2 text-lg font-bold">
               <span>Total Amount</span>
               <span className="text-green-600">
-                {formatPrice(
+                Nu.{" "}
+                {roundDown(
                   Number(selectedPrice?.domainPrice || 0) +
                     Number(selectedPrice?.hostingPrice || 0) +
                     Number(selectedPrice?.websitePrice || 0),
@@ -363,7 +283,7 @@ export const AdminWebsitesTable = ({
                 <span className="text-xs font-semibold text-muted-foreground uppercase">
                   Email
                 </span>
-                <span className="text-sm font-mono">
+                <span className="text-sm tabular-nums font-medium">
                   {selectedUser?.userEmail || "N/A"}
                 </span>
               </div>
@@ -388,150 +308,12 @@ export const AdminWebsitesTable = ({
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={paymentModalOpen}
-        onOpenChange={() => setPaymentModalOpen(false)}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Approve Payment for {currentSite?.title}</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-3 py-4">
-            <div>
-              <label className="text-xs font-semibold">Payment Type</label>
-              <select
-                className="w-full border rounded px-2 py-1"
-                value={paymentData.paymentType}
-                onChange={(e) =>
-                  setPaymentData({
-                    ...paymentData,
-                    paymentType: e.target.value as "full" | "installments",
-                  })
-                }
-              >
-                <option value="full">Full</option>
-                <option value="installments">Installments</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold">Payment Date</label>
-              <input
-                type="date"
-                className="w-full border rounded px-2 py-1"
-                value={paymentData.paymentDate}
-                onChange={(e) =>
-                  setPaymentData({
-                    ...paymentData,
-                    paymentDate: e.target.value,
-                  })
-                }
-              />
-            </div>
-            {paymentData.paymentType === "installments" && (
-              <>
-                <div>
-                  <label className="text-xs font-semibold">Paid Amount</label>
-                  <input
-                    type="number"
-                    className="w-full border rounded px-2 py-1"
-                    value={
-                      paymentData.paidAmount === 0 ? "" : paymentData.paidAmount
-                    }
-                    onChange={(e) =>
-                      setPaymentData({
-                        ...paymentData,
-                        paidAmount:
-                          e.target.value === "" ? 0 : Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-              </>
-            )}
-
-            {paymentData.paymentType === "installments" && (
-              <div>
-                <label className="text-xs font-semibold">
-                  Total Remaining Amount
-                </label>
-                <input
-                  type="number"
-                  className="w-full border rounded px-2 py-1 bg-gray-100"
-                  value={
-                    (paymentData.totalAmount || 0) -
-                    (paymentData.paidAmount || 0)
-                  }
-                  disabled
-                />
-              </div>
-            )}
-            <div>
-              <label className="text-xs font-semibold">Total Amount</label>
-              <input
-                type="number"
-                className="w-full border rounded px-2 py-1"
-                value={
-                  paymentData.totalAmount === 0 ? "" : paymentData.totalAmount
-                }
-                onChange={(e) =>
-                  setPaymentData({
-                    ...paymentData,
-                    totalAmount:
-                      e.target.value === "" ? 0 : Number(e.target.value),
-                  })
-                }
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="secondary"
-              onClick={() => setPaymentModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-green-600 hover:bg-green-700 text-white"
-              onClick={() => {
-                const payload = buildPaymentPayload();
-                if (!payload || !currentSite) {
-                  toast.error("Invalid payment data!");
-                  return;
-                }
-
-                approvePaymentMutate(payload, {
-                  onSuccess: () => {
-                    setPaymentModalOpen(false);
-                    toast.success(`Payment approved for ${currentSite.title}`);
-                  },
-                  onError: (err: unknown) => {
-                    console.error(err);
-
-                    const message =
-                      err instanceof Error
-                        ? err.message
-                        : "Something went wrong while approving payment";
-
-                    toast.error(message);
-                  },
-                });
-              }}
-            >
-              Approve Payment
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
       {/* --- VIEW PAYMENT DETAILS MODAL --- */}
       <Dialog
         open={!!selectedPayment}
         onOpenChange={() => setSelectedPayment(null)}
       >
         <DialogContent className="sm:max-w-lg rounded-2xl p-0 overflow-hidden border shadow-xl">
-          {/* Header */}
           <div className="border-b px-6 py-5">
             <DialogHeader>
               <DialogTitle className="text-lg font-semibold tracking-tight">
@@ -547,7 +329,6 @@ export const AdminWebsitesTable = ({
           </div>
 
           <div className="px-6 py-5 space-y-6">
-            {/* Payment Type + Status */}
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -566,7 +347,6 @@ export const AdminWebsitesTable = ({
               </Badge>
             </div>
 
-            {/* Amount Summary */}
             <div className="rounded-xl border bg-muted/30 p-4">
               <div className="grid grid-cols-2 gap-6">
                 <div>
@@ -574,7 +354,7 @@ export const AdminWebsitesTable = ({
                     Paid Amount
                   </p>
                   <p className="text-xl font-semibold mt-1">
-                    Nu. {formatPrice(paidAmount)}
+                    Nu. {roundDown(paidAmount)}
                   </p>
                 </div>
 
@@ -583,25 +363,23 @@ export const AdminWebsitesTable = ({
                     Total Amount
                   </p>
                   <p className="text-xl font-semibold mt-1">
-                    Nu. {formatPrice(totalAmount)}
+                    Nu. {roundDown(totalAmount)}
                   </p>
                 </div>
               </div>
 
-              {/* Remaining Balance */}
               {isInstallment && remainingAmount > 0 && (
                 <div className="mt-4 pt-4 border-t flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Remaining Balance
                   </span>
                   <span className="text-sm font-semibold">
-                    Nu. {formatPrice(remainingAmount)}
+                    Nu. {roundDown(remainingAmount)}
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Next Installment */}
             {isInstallment && !isFullyPaid && (
               <div className="rounded-xl border p-4 space-y-4">
                 <p className="text-sm font-medium">Next Installment</p>
@@ -612,7 +390,7 @@ export const AdminWebsitesTable = ({
                       Amount
                     </p>
                     <p className="text-sm font-medium mt-1">
-                      Nu. {formatPrice(selectedPayment?.installmentAmount || 0)}
+                      Nu. {roundDown(selectedPayment?.installmentAmount || 0)}
                     </p>
                   </div>
 
@@ -636,14 +414,12 @@ export const AdminWebsitesTable = ({
               </div>
             )}
 
-            {/* Completed Payment Message */}
             {isFullyPaid && isInstallment && (
               <div className="rounded-xl border p-4 text-sm font-medium text-center">
                 All installments have been paid
               </div>
             )}
 
-            {/* Footer */}
             <div className="pt-2 border-t">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">
                 Last Payment Date
@@ -686,7 +462,6 @@ export const AdminWebsitesTable = ({
                           err instanceof Error
                             ? err.message
                             : "Failed to pay installment";
-
                         toast.error(message);
                       },
                     },
