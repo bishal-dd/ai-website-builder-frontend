@@ -28,7 +28,7 @@ const exampleSites = [
       "Clean and professional landing page for small or medium businesses to showcase services, products, and contact info effectively.",
     category: "Business",
     image: "/images/resturantwebsite.webp",
-    link: "https://lightwebx.store",
+    link: "https://waibaapp.com",
   },
 ];
 
