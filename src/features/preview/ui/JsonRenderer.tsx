@@ -94,6 +94,13 @@ const normalizeAttributes = (
       "fill",
       "stroke",
       "xmlns",
+      "strokeWidth",
+      "strokeLinecap",
+      "strokeLinejoin",
+      "d",
+      "r",
+      "cx",
+      "cy",
     ]);
 
     if (
@@ -354,10 +361,29 @@ export function JsonRenderer({
 
     if (tag === "img") {
       const imageSrc = content?.startsWith("http") ? content : attributes?.src;
-      const isLogo = element.attributes?.["data-role"] === "logo";
-      const isIcon = element.attributes?.["data-role"] === "social-icon";
       const fixedStyle = cssStringToObject(attributes?.style);
       const isCarouselBg = element.attributes?.["data-role"] === "carousel-bg";
+      // ✅ STEP 1: Resolve role (explicit OR fallback)
+      let role = element.attributes?.["data-role"];
+
+      if (!role) {
+        if (
+          className?.includes("h-[") ||
+          className?.includes("h-full") ||
+          className?.includes("object-cover") ||
+          className?.includes("absolute")
+        ) {
+          role = "cover";
+        } else {
+          role = "contain";
+        }
+      }
+
+      // ✅ STEP 2: Derive flags from role
+      const isLogo = role === "logo";
+      const isIcon = role === "social-icon";
+      const isCover = role === "cover";
+      const isContain = role === "contain";
 
       const isActive =
         device === "desktop" ? hoveredImageId === id : activeImageId === id;
@@ -376,13 +402,14 @@ export function JsonRenderer({
       return (
         <div
           key={id}
-          className="relative inline-flex"
+          className={cn(
+            "relative  leading-none",
+            isIcon ? "inline-block" : "block",
+            isIcon ? null : "w-full",
+            isLogo ? "h-full" : "h-auto",
+          )}
           style={{
-            zIndex: isActive ? 50 : "auto",
-            height: isLogo ? "100%" : "auto",
-            pointerEvents: "auto",
-            display: isIcon ? "inline-block" : "inline-flex",
-            lineHeight: 0,
+            zIndex: isActive ? 50 : undefined,
           }}
           onMouseEnter={() => device === "desktop" && setHoveredImageId(id)}
           onMouseLeave={() => device === "desktop" && setHoveredImageId(null)}
@@ -399,17 +426,19 @@ export function JsonRenderer({
                     ...fixedStyle,
                     maxWidth: "100%",
                     maxHeight: "100%",
-                    width: isCarouselBg
-                      ? "100%"
-                      : isLogo || hasSize
-                        ? "auto"
-                        : "100%",
-                    height: isCarouselBg
-                      ? "100%"
-                      : isLogo || hasSize
-                        ? "auto"
-                        : "auto",
-                    objectFit: isCarouselBg ? "cover" : "contain",
+                    width:
+                      isCarouselBg || isCover
+                        ? "100%"
+                        : isLogo || hasSize
+                          ? "auto"
+                          : "100%",
+                    height:
+                      isCarouselBg || isCover
+                        ? "100%"
+                        : isLogo || hasSize
+                          ? "auto"
+                          : "auto",
+                    objectFit: isCarouselBg || isCover ? "cover" : "contain",
                     pointerEvents: "auto",
                   }),
 
