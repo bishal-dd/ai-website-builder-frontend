@@ -1,4 +1,14 @@
-export async function approvePayment(websiteId: string) {
+export type PaymentInput = {
+  websiteId: string;
+  paymentType: "full" | "installments";
+  totalAmount: number;
+  paidAmount: number;
+  installmentNumber?: number;
+  totalRemainingAmount?: number;
+  paymentDate?: string;
+};
+
+export async function approvePayment(paymentData: PaymentInput) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/approve-payment`,
     {
@@ -7,7 +17,7 @@ export async function approvePayment(websiteId: string) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ websiteId }),
+      body: JSON.stringify(paymentData),
     },
   );
 

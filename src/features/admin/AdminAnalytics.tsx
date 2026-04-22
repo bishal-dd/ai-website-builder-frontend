@@ -111,6 +111,7 @@ const AdminAnalytics = () => {
                     value={stats?.totalWebsites ?? 0}
                     icon={Globe}
                     colorClass="text-indigo-500"
+                    onClick={() => router.push("/admin/analytics/websites")}
                   />
                   <StatCard
                     title="Total Pending Websites"

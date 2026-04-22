@@ -231,27 +231,19 @@ export function PreviewPanelJson({
             </Link>
           </Button>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleSharePreview}
-                  disabled={isGeneratingPreview}
-                >
-                  {isGeneratingPreview ? (
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <MoveUpRight className="h-4 w-4" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {isGeneratingPreview ? "Generating preview..." : "Open preview"}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Button
+            variant="outline"
+            onClick={handleSharePreview}
+            disabled={isGeneratingPreview}
+            className="flex items-center gap-2"
+          >
+            {isGeneratingPreview ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <MoveUpRight className="h-4 w-4" />
+            )}
+            {isGeneratingPreview ? "Generating preview..." : "Preview"}
+          </Button>
 
           {/* Publish / Republish */}
           {isFetchingData ? (
