@@ -355,6 +355,69 @@ export function JsonRenderer({
       );
     }
 
+    const isHeroSection =
+      element.attributes?.["data-component"] === "hero-section";
+
+    if (isHeroSection) {
+      const bgImage = children?.find(
+        (c) => c.tag === "img" && c.attributes?.["data-role"] === "carousel-bg",
+      );
+
+      const isUploading = bgImage && uploadingImageId === bgImage.id;
+
+      return (
+        <section key={id} className={className}>
+          {/* Background */}
+          {bgImage && renderElement(bgImage, componentKey)}
+
+          {/* Upload overlay (ONLY when uploading) */}
+          {isUploading && (
+            <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 text-white">
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <span className="text-sm">Uploading...</span>
+              </div>
+            </div>
+          )}
+
+          {/* Overlay content */}
+          <div className="relative z-10 h-full flex items-center justify-center text-center">
+            {children
+              ?.filter((c) => c !== bgImage)
+              .map((child) => renderElement(child, componentKey))}
+          </div>
+
+          {/* Edit button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!isUploading) {
+                fileInputRefs.current[`hero-${id}`]?.click();
+              }
+            }}
+            className="absolute top-2 right-2 z-50 bg-yellow-400 text-black px-3 py-1.5 rounded-md shadow-md text-xs font-semibold"
+          >
+            {isUploading ? "Uploading..." : "Change Background"}
+          </button>
+
+          {/* Hidden input */}
+          <input
+            ref={(el) => {
+              fileInputRefs.current[`hero-${id}`] = el;
+            }}
+            type="file"
+            className="hidden"
+            disabled={isUploading}
+            onChange={(e) => {
+              if (bgImage) {
+                handleImageChange(e, bgImage.id, componentKey);
+              }
+            }}
+          />
+        </section>
+      );
+    }
+
     // --- IMAGE LOGIC ---
     // Inside renderElement, replace the img logic:
     const hasSize = hasExplicitSize(className);
