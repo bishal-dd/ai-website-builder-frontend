@@ -43,12 +43,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useGeneratePreviewWebsite } from "../hooks/useGeneratePreviewWebsite";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
