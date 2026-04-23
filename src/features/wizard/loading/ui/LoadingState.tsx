@@ -335,7 +335,14 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
               ref={descRef}
               className="text-sm text-muted-foreground text-center mb-8 text-balance"
             >
-              It takes 2 - 3 minutes.
+              It takes 2 - 3 minutes. You will get an email when your website is
+              ready.
+            </p>
+            <p
+              ref={descRef}
+              className="text-sm text-muted-foreground text-center mb-8 text-balance"
+            >
+              You will get an email when your website is ready.
             </p>
 
             <div ref={stepsContainerRef} className="space-y-3">
