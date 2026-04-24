@@ -335,7 +335,7 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
               ref={descRef}
               className="text-sm text-muted-foreground text-center mb-8 text-balance"
             >
-              It takes 2 - 3 minutes.
+              It just takes 1-2 minutes.
             </p>
             <p
               ref={descRef}
