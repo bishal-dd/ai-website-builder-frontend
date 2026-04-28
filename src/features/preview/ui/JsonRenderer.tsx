@@ -490,15 +490,15 @@ export function JsonRenderer({
                     maxWidth: "100%",
                     maxHeight: "100%",
                     width:
-                      isCarouselBg || isCover
+                      isCarouselBg || isCover || isLogo
                         ? "100%"
-                        : isLogo || hasSize
+                        : hasSize
                           ? "auto"
                           : "100%",
                     height:
-                      isCarouselBg || isCover
+                      isCarouselBg || isCover || isLogo
                         ? "100%"
-                        : isLogo || hasSize
+                        : hasSize
                           ? "auto"
                           : "auto",
                     objectFit: isCarouselBg || isCover ? "cover" : "contain",
