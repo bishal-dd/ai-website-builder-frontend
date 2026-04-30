@@ -109,7 +109,7 @@ export function ContactsTable({
                       <div className="flex items-center gap-2 text-sm text-slate-600">
                         <Phone className="size-3.5 text-slate-400" />
                         <span>
-                          {user.websites[0]?.contact_phone || "No phone added"}
+                          {user.websites[0]?.phone || "No phone added"}
                         </span>
                       </div>
                     </div>
