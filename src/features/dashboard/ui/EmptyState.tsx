@@ -11,7 +11,7 @@ const exampleSites = [
     description:
       "Showcase your travel agency’s services, destinations, and expert guides with a modern, professional layout.",
     category: "Travel",
-    image: "/images/sample1.png",
+    image: "/images/travelagency.png",
     link: "https://newgentravel.online/",
   },
   {

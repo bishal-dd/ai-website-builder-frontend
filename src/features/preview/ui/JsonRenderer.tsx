@@ -337,6 +337,7 @@ export function JsonRenderer({
               fileInputRefs.current[String(id)] = el;
             }}
             type="file"
+            accept="image/*"
             className="hidden"
             onChange={(e) => {
               const bgImage = children?.find(
@@ -406,6 +407,7 @@ export function JsonRenderer({
               fileInputRefs.current[`hero-${id}`] = el;
             }}
             type="file"
+            accept="image/*"
             className="hidden"
             disabled={isUploading}
             onChange={(e) => {
@@ -555,6 +557,7 @@ export function JsonRenderer({
               fileInputRefs.current[String(id)] = el;
             }}
             type="file"
+            accept="image/*"
             className="hidden"
             disabled={uploadingImageId === id}
             onChange={(e) => handleImageChange(e, id, componentKey)}
