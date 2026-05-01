@@ -3,6 +3,7 @@
 import {
   BarChart3,
   CheckCircle2,
+  FileEdit,
   LayoutDashboard,
   LogOut,
   ShieldCheck,
@@ -81,6 +82,20 @@ export function AdminSidebar() {
                   <Link href="/admin/dashboard/approved">
                     <CheckCircle2 className="size-4" />
                     <span>Approved Websites</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* Draft Websites */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === "/admin/dashboard/draft"}
+                  tooltip="Draft Sites"
+                >
+                  <Link href="/admin/dashboard/draft">
+                    <FileEdit className="size-4" />
+                    <span>Draft Websites</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
