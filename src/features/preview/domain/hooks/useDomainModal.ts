@@ -5,6 +5,7 @@ import {
   searchDomainAPI,
   buyDomainAPI,
   createPreOrder,
+  createCustomPreOrder,
 } from "../api/domainService";
 import { DomainContact, DomainSuggestion } from "../types/domain";
 import { useGeo } from "./useGeoContext";
@@ -122,6 +123,37 @@ export function useDomainModal() {
     }
   };
 
+  const preOrderCustomDomain = async (websiteId: string, userId: string) => {
+    setBuying("custom-domain");
+    setError(null);
+
+    try {
+      const result = await createCustomPreOrder({
+        websiteId,
+        userId,
+        country: wizardCountry || country || "",
+      });
+
+      return result;
+    } catch (err) {
+      console.error("Failed to create custom pre-order:", err);
+
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to create custom pre-order";
+
+      setError(errorMessage);
+
+      return {
+        success: false,
+        error: { message: errorMessage },
+      };
+    } finally {
+      setBuying(null);
+    }
+  };
+
   const clearError = () => setError(null);
 
   return {
@@ -135,6 +167,7 @@ export function useDomainModal() {
     searchDomain,
     buyDomain,
     preOrderDomain,
+    preOrderCustomDomain,
     country, // comes from GeoContext
     geoLoading, // optional if you want to block actions until ready
   };

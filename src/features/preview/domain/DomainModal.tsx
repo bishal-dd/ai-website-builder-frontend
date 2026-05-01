@@ -14,7 +14,11 @@ import { DomainCard } from "./ui/DomainCard";
 import { PaymentSummary } from "./ui/PaymentSummary";
 import { ErrorMessage } from "./ui/ErrorMessage";
 import { useGeo } from "./hooks/useGeoContext";
-import { createPreOrder, updatePreOrder } from "./api/domainService";
+import {
+  createCustomPreOrder,
+  createPreOrder,
+  updatePreOrder,
+} from "./api/domainService";
 import { useSession } from "@/shared/session";
 import posthog from "posthog-js";
 import useGetWebsiteDomains from "../hooks/useGetWebsiteDomains";
@@ -40,7 +44,7 @@ export function DomainModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
+  const [hasOwnDomain, setHasOwnDomain] = useState(false);
   const { country: countryCode, loading: geoLoading } = useGeo();
   const {
     keyword,
@@ -66,6 +70,55 @@ export function DomainModal({
       });
     }
   }, [existingDomains, countryCode]);
+
+  useEffect(() => {
+    if (!hasOwnDomain || geoLoading) return;
+
+    const createCustomDomain = async () => {
+      setLoading(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      try {
+        const result = await createCustomPreOrder({
+          websiteId,
+          userId,
+          country: countryCode,
+        });
+
+        const domainData = result.domain;
+        const pricingData = result.pricing;
+
+        setSelectedDomain({
+          id: domainData.id,
+          domain: domainData.name,
+          price: pricingData.domainPrice,
+          hostingPrice: pricingData.hostingPrice,
+          websitePrice: pricingData.websitePrice,
+          currency: pricingData.currency,
+        });
+
+        setSuccessMessage("✅ Custom domain selected");
+        setStep("pricing");
+
+        posthog.capture("custom_domain_selected", {
+          website_id: websiteId,
+          country_code: countryCode,
+          currency: pricingData.currency,
+          hosting_price: pricingData.hostingPrice,
+          website_price: pricingData.websitePrice,
+        });
+      } catch (err) {
+        console.error(err);
+        setError("❌ Failed to setup custom domain");
+        posthog.captureException(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    createCustomDomain();
+  }, [hasOwnDomain, geoLoading, countryCode, websiteId, userId]);
 
   if (isLoadingExisting) {
     return (
@@ -288,6 +341,14 @@ export function DomainModal({
             .uk)
           </div>
 
+          <div className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={hasOwnDomain}
+              onChange={(e) => setHasOwnDomain(e.target.checked)}
+            />
+            <span>I already have a domain</span>
+          </div>
           {selectedDomain && (
             <div className="p-3 border rounded-md bg-green-500/10 border-green-500/30 text-sm">
               <div className="flex items-center justify-between gap-3">

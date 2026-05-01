@@ -80,3 +80,23 @@ export async function updatePreOrder(data: {
 
   return res.json();
 }
+
+export async function createCustomPreOrder(data: {
+  websiteId: string;
+  userId: string;
+  country: string;
+}) {
+  const res = await fetch(`${BASE_URL}/domains/custom`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to create custom pre-order: ${res.status}`);
+  }
+
+  return res.json();
+}
