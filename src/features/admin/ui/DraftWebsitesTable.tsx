@@ -12,7 +12,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,17 +19,14 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Search,
   ChevronLeft,
   ChevronRight,
-  Info,
   Mail,
   Phone,
   User,
-  ExternalLink,
 } from "lucide-react";
 import { useDebouncedCallback } from "../hooks/useDebounce";
 
@@ -44,7 +40,6 @@ interface DraftWebsitesTableProps {
 
 export const DraftWebsitesTable = ({
   websites,
-  refresh,
   currentPage,
   totalPages,
   totalCount,
@@ -54,11 +49,8 @@ export const DraftWebsitesTable = ({
   const searchParams = useSearchParams();
 
   const [selectedUser, setSelectedUser] = useState<Website | null>(null);
-  const [selectedPrice, setSelectedPrice] = useState<Website | null>(null);
 
   const currentSearch = searchParams.get("websiteId") || "";
-
-  const roundDown = (val: unknown) => Math.floor(Number(val) || 0);
 
   const updateQuery = useDebouncedCallback((key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -115,10 +107,6 @@ export const DraftWebsitesTable = ({
               ) : (
                 websites.map((site, index) => {
                   const serialNumber = (currentPage - 1) * 10 + index + 1;
-                  const total =
-                    roundDown(site.domainPrice) +
-                    roundDown(site.hostingPrice) +
-                    roundDown(site.websitePrice);
                   return (
                     <TableRow key={site.id}>
                       <TableCell>{serialNumber}</TableCell>
