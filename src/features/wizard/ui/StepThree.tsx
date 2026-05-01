@@ -142,13 +142,14 @@ export function StepThree({ stepErrors }: StepThreeProps) {
                     )}
                   </div>
                 )}
+                <p className="text-xs text-muted-foreground">
+                  Please provide your preferred contact method — email or phone.
+                </p>
               </div>
 
               {/* Phone Field with Original Validation Logic */}
               <div className="space-y-2">
-                <Label htmlFor="contactPhone">
-                  WhatsApp Number <span className="text-red-500">*</span>
-                </Label>
+                <Label htmlFor="contactPhone">WhatsApp Number</Label>
                 <PhoneInput
                   id="contactPhone"
                   placeholder="Enter phone number"

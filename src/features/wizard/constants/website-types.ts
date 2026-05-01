@@ -3,10 +3,10 @@ import { Briefcase, Home, Globe, Coffee, Building } from "lucide-react";
 
 export const websiteTypes = [
   {
-    type: "portfolio" as WebsiteType,
-    label: "Portfolio",
-    description: "Showcase your work and skills",
-    icon: Briefcase,
+    type: "hotel" as WebsiteType,
+    label: "Hotel",
+    description: "Showcase hotel listings and bookings",
+    icon: Home,
   },
   {
     type: "restaurant" as WebsiteType,
@@ -15,10 +15,10 @@ export const websiteTypes = [
     icon: Coffee,
   },
   {
-    type: "hotel" as WebsiteType,
-    label: "Hotel",
-    description: "Showcase hotel listings and bookings",
-    icon: Home,
+    type: "portfolio" as WebsiteType,
+    label: "Portfolio",
+    description: "Showcase your work and skills",
+    icon: Briefcase,
   },
   {
     type: "travel agency" as WebsiteType,

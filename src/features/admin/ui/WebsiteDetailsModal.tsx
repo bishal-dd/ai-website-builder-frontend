@@ -49,7 +49,7 @@ export function WebsiteDetailsModal({
                 <p className="text-xs font-medium text-slate-600">
                   {site.contact_email}
                 </p>
-                <p className="text-xs text-slate-500">{site.contact_phone}</p>
+                <p className="text-xs text-slate-500">{site.phone}</p>
               </div>
             </div>
           ))}

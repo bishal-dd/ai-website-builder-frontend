@@ -3,7 +3,7 @@ export interface UserWebsite {
   id: string;
   title: string;
   contact_email: string | null;
-  contact_phone: string | null;
+  phone: string | null;
   deployment_status: string;
 }
 
