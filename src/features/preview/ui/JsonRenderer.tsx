@@ -256,16 +256,23 @@ export function JsonRenderer({
     }
 
     // A text element is either a tag with direct content OR a span/p/label etc.
+    const hasNoChildren = !children || children.length === 0;
+
     const isTextElement =
-      typeof content === "string" && !children && tag !== "img";
+      typeof content === "string" && hasNoChildren && tag !== "img";
 
     const isEditable =
-      isTextElement && (onUpdateElement || onUpdateSharedElement);
+      isTextElement && (!!onUpdateElement || !!onUpdateSharedElement);
 
     if (isEditable) {
       props.contentEditable = true;
       props.suppressContentEditableWarning = true;
-
+      if (["h1", "h2", "p"].includes(tag)) {
+        (
+          props as unknown as React.HTMLAttributes<HTMLElement> &
+            Record<string, unknown>
+        )["data-tour"] = "editable-text";
+      }
       props.style = {
         ...(props.style || {}),
         cursor: "text",
@@ -367,10 +374,10 @@ export function JsonRenderer({
       const isUploading = bgImage && uploadingImageId === bgImage.id;
 
       return (
-        <section key={id} className={className}>
+        <section key={id} className={cn("relative", className)}>
+          {" "}
           {/* Background */}
           {bgImage && renderElement(bgImage, componentKey)}
-
           {/* Upload overlay (ONLY when uploading) */}
           {isUploading && (
             <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 text-white">
@@ -380,16 +387,15 @@ export function JsonRenderer({
               </div>
             </div>
           )}
-
           {/* Overlay content */}
           <div className="relative z-10 h-full flex items-center justify-center text-center">
             {children
               ?.filter((c) => c !== bgImage)
               .map((child) => renderElement(child, componentKey))}
           </div>
-
           {/* Edit button */}
           <button
+            data-tour="hero-background"
             onClick={(e) => {
               e.stopPropagation();
               if (!isUploading) {
@@ -400,7 +406,6 @@ export function JsonRenderer({
           >
             {isUploading ? "Uploading..." : "Change Background"}
           </button>
-
           {/* Hidden input */}
           <input
             ref={(el) => {
@@ -467,6 +472,7 @@ export function JsonRenderer({
       return (
         <div
           key={id}
+          data-tour={isLogo ? "site-logo" : undefined}
           className={cn(
             "relative  leading-none",
             isIcon ? "inline-block" : "block",
