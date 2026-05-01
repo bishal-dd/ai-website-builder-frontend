@@ -83,7 +83,7 @@ export function PreviewPanelJson({
   const isDeployed = deploymentCount > 0;
   const { mutate: generatePreview, isPending: isGeneratingPreview } =
     useGeneratePreviewWebsite();
-
+  const frameRef = useRef<HTMLIFrameElement | null>(null);
   useEffect(() => {
     const width = window.innerWidth;
     if (width < 640) setDevice("mobile");
@@ -369,21 +369,25 @@ export function PreviewPanelJson({
             style={{ width: iframeWidth, height: "100%" }}
           >
             <Frame
+              ref={frameRef}
               key={`${currentPageId}-${device}`}
               style={{ width: "100%", height: "100%", border: "none" }}
               initialContent={`
-                <!DOCTYPE html>
-                <html lang="en">
-                  <head>
-                    <meta charset="UTF-8" />
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                    <script src="https://cdn.tailwindcss.com"></script>
-                  </head>
-                  <body>
-                    <div id="root"></div>
-                  </body>
-                </html>
-              `}
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <script src="https://cdn.tailwindcss.com"></script>
+
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.css" />
+      <script src="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.js.iife.js"></script>
+    </head>
+    <body>
+      <div id="root"></div>
+    </body>
+  </html>
+`}
             >
               <JsonRenderer
                 contactPhone={contactPhone}
