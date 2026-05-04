@@ -52,9 +52,7 @@ export default function Preview() {
 
       const hasTourTargets =
         iframeDoc.querySelector('[data-tour="editable-text"]') ||
-        iframeDoc.querySelector('[data-tour="site-logo"]') ||
-        iframeDoc.querySelector('[data-tour="hero-background"]') ||
-        iframeDoc.querySelector('[data-tour="carousel-background"]');
+        iframeDoc.querySelector('[data-tour="site-logo"]');
 
       if (!hasTourTargets) return;
 

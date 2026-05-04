@@ -59,19 +59,9 @@ export function startEditorOnboardingTourInFrame(
       {
         element: '[data-tour="site-logo"]',
         popover: {
-          title: "Change your logo",
-          description: "Hover over the logo and click Change.",
+          title: "Change your logos or icons",
+          description: "Hover over logos or icons and click Change.",
           side: "bottom",
-          align: "center",
-        },
-      },
-      {
-        element:
-          '[data-tour="hero-background"], [data-tour="carousel-background"]',
-        popover: {
-          title: "Change background image",
-          description: "Click this button to replace the background image.",
-          side: "left",
           align: "center",
         },
       },
