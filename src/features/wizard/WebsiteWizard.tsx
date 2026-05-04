@@ -57,8 +57,8 @@ export default function WebsiteWizard() {
         if (!state.description.trim()) {
           errors.description = ["Website description is required."];
         }
-        if (!state.contactPhone?.trim()) {
-          errors.contactPhone = ["Phone number is required."];
+        if (!state.contactEmail?.trim() && !state.contactPhone?.trim()) {
+          errors.contact = ["Either email or phone is required."];
         }
         if (
           state.contactEmail?.trim() &&

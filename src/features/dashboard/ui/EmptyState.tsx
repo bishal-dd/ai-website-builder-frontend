@@ -11,7 +11,7 @@ const exampleSites = [
     description:
       "Showcase your travel agency’s services, destinations, and expert guides with a modern, professional layout.",
     category: "Travel",
-    image: "/images/travelagency.png",
+    image: "/images/travelwebsite.webp",
     link: "https://newgentravel.online/",
   },
   {
@@ -19,7 +19,7 @@ const exampleSites = [
     description:
       "Beautifully designed website for hotels and resorts featuring rooms, amenities, booking info, and stunning visuals to attract guests.",
     category: "Hospitality",
-    image: "/images/hotelwebiste.webp",
+    image: "/images/hotelwebsite.webp",
     link: "https://www.lightwebx.link/",
   },
   {
@@ -27,8 +27,8 @@ const exampleSites = [
     description:
       "Clean and professional landing page for small or medium businesses to showcase services, products, and contact info effectively.",
     category: "Business",
-    image: "/images/resturantwebsite.webp",
-    link: "https://waibaapp.com",
+    image: "/images/restaurantwebsite.webp",
+    link: "https://lightwebx.store",
   },
 ];
 

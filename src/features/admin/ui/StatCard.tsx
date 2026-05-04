@@ -18,7 +18,13 @@ export const StatCard = ({
 }: StatCardProps) => (
   <div
     onClick={onClick}
-    className="group relative overflow-hidden rounded-xl border bg-white p-6 shadow-sm transition-all hover:ring-1 hover:ring-slate-200"
+    className={`group relative overflow-hidden rounded-xl border bg-white p-6 shadow-sm transition-all
+    ${
+      onClick
+        ? "cursor-pointer hover:ring-1 hover:ring-slate-200 active:scale-[0.98]"
+        : ""
+    }
+  `}
   >
     <div className="flex items-start justify-between">
       <div className="space-y-2">

@@ -13,9 +13,9 @@ import useGetGeneratedWebsite from "@/features/preview/hooks/useGetGeneratedWebs
 import { mapApiToWebsiteData } from "@/features/preview/utils/mapApiToWebsiteData";
 import useUpdateWebsitePage from "./hooks/useUpdateWebsitePage";
 import useUpdateWebsite from "@/features/preview/hooks/useUpdateWebsite";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import posthog from "posthog-js";
-import ShareCongratsModal from "./ui/ShareCongratsModal";
+import { startEditorOnboardingTourInFrame } from "./hooks/useEditorOnboardingTour";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -23,7 +23,6 @@ export default function Preview() {
   const updatePage = useUpdateWebsitePage();
   const updateWebsite = useUpdateWebsite();
   const [contactPhone, setContactPhone] = useState<string>("");
-  const [showCongratsModal, setShowCongratsModal] = useState(false);
 
   const [websiteData, setWebsiteData] = useState<WebsiteData>({
     elements: [],
@@ -32,41 +31,41 @@ export default function Preview() {
   });
   const [currentPageId, setCurrentPageId] = useState<string>("");
 
-  const searchParams = useSearchParams();
   const params = useParams();
   const websiteId = params.websiteId as string;
 
   const { data: generatedWebsite } = useGetGeneratedWebsite(websiteId);
 
-  const isFirstLoad = searchParams.get("firstLoad") === "true";
-
   useEffect(() => {
-    if (!generatedWebsite || showCongratsModal) return;
+    if (!generatedWebsite) return;
+    if (!websiteData.elements.length) return;
 
-    const { is_congrats_modal_shown } = generatedWebsite;
-    const shouldShow = !is_congrats_modal_shown || isFirstLoad;
+    const hasSeenTour = generatedWebsite.is_congrats_modal_shown;
+    if (hasSeenTour) return;
 
-    if (shouldShow) {
-      setShowCongratsModal(true);
+    const timeout = setTimeout(() => {
+      const iframe = document.querySelector("iframe");
+      const iframeWindow = iframe?.contentWindow;
+      const iframeDoc = iframe?.contentDocument;
 
-      if (!is_congrats_modal_shown) {
+      if (!iframeWindow || !iframeDoc) return;
+
+      const hasTourTargets =
+        iframeDoc.querySelector('[data-tour="editable-text"]') ||
+        iframeDoc.querySelector('[data-tour="site-logo"]');
+
+      if (!hasTourTargets) return;
+
+      startEditorOnboardingTourInFrame(iframeWindow, () => {
         updateWebsite.mutate({
           websiteId,
           body: { is_congrats_modal_shown: true },
         });
-      }
+      });
+    }, 1000);
 
-      if (isFirstLoad) {
-        window.history.replaceState({}, "", window.location.pathname);
-      }
-    }
-  }, [
-    generatedWebsite,
-    showCongratsModal,
-    isFirstLoad,
-    websiteId,
-    updateWebsite,
-  ]);
+    return () => clearTimeout(timeout);
+  }, [generatedWebsite, websiteData.elements.length, updateWebsite, websiteId]);
   useEffect(() => {
     if (generatedWebsite) {
       setContactPhone(generatedWebsite.contact_phone ?? "");
@@ -173,15 +172,6 @@ export default function Preview() {
           onPageChange={setCurrentPageId}
         />
 
-        {/* Congrats modal */}
-        {showCongratsModal && generatedWebsite && (
-          <ShareCongratsModal
-            open={showCongratsModal}
-            websiteId={websiteId}
-            onContinue={() => setShowCongratsModal(false)}
-            onClose={() => setShowCongratsModal(false)}
-          />
-        )}
         {!isChatOpen && (
           <Button
             onClick={() => {
