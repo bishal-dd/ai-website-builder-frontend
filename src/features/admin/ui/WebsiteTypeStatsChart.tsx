@@ -20,6 +20,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 import useWebsiteTypeStats from "../hooks/useWebsiteTypeStats";
+import { useRouter } from "next/navigation";
 
 const chartConfig = {
   count: {
@@ -36,8 +37,22 @@ const formatTypeLabel = (type: string | null) => {
     .trim();
 };
 
+type WebsiteTypeStat = {
+  type: string | null;
+  count: number;
+  label: string;
+};
+
 export function WebsiteTypeStatsChart() {
   const { websiteTypes, isLoading } = useWebsiteTypeStats();
+  const router = useRouter();
+
+  const handleBarClick = (data?: { payload?: WebsiteTypeStat }) => {
+    const type = data?.payload?.type;
+    if (!type) return;
+
+    router.push(`/admin/website-types/${type}`);
+  };
 
   const totalWebsites = React.useMemo(
     () => websiteTypes.reduce((acc, item) => acc + Number(item.count), 0),
@@ -138,6 +153,8 @@ export function WebsiteTypeStatsChart() {
                 radius={[0, 4, 4, 0]}
                 barSize={28}
                 background={{ fill: "#f1f5f9", radius: 4 }}
+                onClick={handleBarClick}
+                className="cursor-pointer"
                 label={{
                   position: "right", // shows number to the right of the bar
                   fill: "#000", // text color
