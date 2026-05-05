@@ -495,21 +495,6 @@ export function JsonRenderer({
                 ? {}
                 : {
                     ...fixedStyle,
-                    maxWidth: "100%",
-                    maxHeight: "100%",
-                    width:
-                      isCarouselBg || isCover || isLogo
-                        ? "100%"
-                        : hasSize
-                          ? "auto"
-                          : "100%",
-                    height:
-                      isCarouselBg || isCover || isLogo
-                        ? "100%"
-                        : hasSize
-                          ? "auto"
-                          : "auto",
-                    objectFit: isCarouselBg || isCover ? "cover" : "contain",
                     pointerEvents: "auto",
                   }),
 
