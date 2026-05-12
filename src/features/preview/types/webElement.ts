@@ -28,6 +28,7 @@ export type WebsiteData = {
   metadata?: {
     title?: string;
     description?: string;
+    font_family?: string;
     theme?: string;
   };
 };
