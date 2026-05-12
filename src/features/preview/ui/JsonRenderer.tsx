@@ -388,11 +388,11 @@ export function JsonRenderer({
             </div>
           )}
           {/* Overlay content */}
-          <div className="relative z-10 h-full flex items-center justify-center text-center">
+          <>
             {children
               ?.filter((c) => c !== bgImage)
               .map((child) => renderElement(child, componentKey))}
-          </div>
+          </>
           {/* Edit button */}
           <button
             data-tour="hero-background"
