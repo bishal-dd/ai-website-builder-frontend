@@ -76,9 +76,18 @@ export default function Preview() {
 
   const handleWebsiteGenerated = (data: WebsiteData) => {
     setWebsiteData(data);
-    if (data.elements.length > 0) {
-      setCurrentPageId(data.elements[0].page_id);
-    }
+
+    setCurrentPageId((prev) => {
+      // keep current page if it still exists
+      const pageStillExists = data.elements.some((p) => p.page_id === prev);
+
+      if (pageStillExists) {
+        return prev;
+      }
+
+      // otherwise fallback to first page
+      return data.elements[0]?.page_id || "";
+    });
   };
 
   const updateElementRecursive = (
@@ -196,6 +205,7 @@ export default function Preview() {
                 currentPageId={currentPageId}
                 pages={sortedPages}
                 websiteId={websiteId}
+                font={websiteData.metadata?.font_family}
                 onClose={() => setIsChatOpen(false)}
               />
             </div>

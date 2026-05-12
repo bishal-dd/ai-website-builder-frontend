@@ -370,7 +370,7 @@ export function PreviewPanelJson({
           >
             <Frame
               ref={frameRef}
-              key={`${currentPageId}-${device}`}
+              key={`${currentPageId}-${device}-${websiteData.metadata?.font_family}`}
               style={{ width: "100%", height: "100%", border: "none" }}
               initialContent={`
   <!DOCTYPE html>
@@ -378,13 +378,32 @@ export function PreviewPanelJson({
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+      />
+
+      <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+      />
+
+      <link
+        href="https://fonts.googleapis.com/css2?family=${(
+          websiteData.metadata?.font_family || "Inter"
+        )
+          .replace(/ /g, "+")
+          .trim()}:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
       <script src="https://cdn.tailwindcss.com"></script>
 
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.css" />
       <script src="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.js.iife.js"></script>
     </head>
-    <body>
-      <div id="root"></div>
+    <body style="font-family: '${websiteData.metadata?.font_family || "Inter"}', sans-serif;">
+    <div id="root"></div>
     </body>
   </html>
 `}

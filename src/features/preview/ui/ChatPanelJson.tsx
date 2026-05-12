@@ -41,6 +41,66 @@ import { WebsiteRegenerator } from "./WebsiteRegenerator";
 import { WebPages } from "../types";
 import useUpdateWebsite from "../hooks/useUpdateWebsite";
 import useGetGeneratedWebsite from "../hooks/useGetGeneratedWebsite";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+const GOOGLE_FONTS = [
+  // Modern Sans
+  "Inter",
+  "Poppins",
+  "Roboto",
+  "Open Sans",
+  "Montserrat",
+  "Lato",
+  "Nunito",
+  "Raleway",
+  "Ubuntu",
+  "Work Sans",
+  "DM Sans",
+  "Manrope",
+  "Mulish",
+  "Rubik",
+  "Figtree",
+  "Outfit",
+  "Plus Jakarta Sans",
+
+  // Elegant / Luxury
+  "Playfair Display",
+  "Merriweather",
+  "Cormorant Garamond",
+  "Libre Baskerville",
+  "EB Garamond",
+  "Bodoni Moda",
+  "Prata",
+
+  // Bold / Creative
+  "Oswald",
+  "Bebas Neue",
+  "Anton",
+  "Archivo Black",
+  "Abril Fatface",
+  "Cinzel",
+
+  // Friendly / Startup
+  "Quicksand",
+  "Comfortaa",
+  "Josefin Sans",
+  "Cabin",
+  "Karla",
+  "Hind",
+  "Varela Round",
+
+  // Tech / Minimal
+  "Space Grotesk",
+  "Space Mono",
+  "IBM Plex Sans",
+  "JetBrains Mono",
+  "Source Sans 3",
+];
 const ADD_NEW_PAGE = "add_new_page";
 interface Message {
   id: string;
@@ -51,6 +111,7 @@ interface Message {
 interface ChatPanelJsonProps {
   onClose?: () => void;
   websiteId: string;
+  font?: string;
   pages: WebPages[];
   currentPageId: string;
 }
@@ -75,6 +136,7 @@ function getPageIcon(pageName: string) {
 export function ChatPanelJson({
   onClose,
   websiteId,
+  font,
   pages,
   currentPageId,
 }: ChatPanelJsonProps) {
@@ -92,6 +154,7 @@ export function ChatPanelJson({
   const [regenJobId, setRegenJobId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [isWhatsappEnabled, setIsWhatsappEnabled] = useState(false);
+  const [selectedFont, setSelectedFont] = useState(font || "Inter");
   const { mutate: updateWebsiteMutation } = useUpdateWebsite();
 
   /** Page selector state */
@@ -115,16 +178,24 @@ export function ChatPanelJson({
         });
       },
     },
+    {
+      id: "font_family",
+      label: "Website Font",
+      type: "font",
+      value: selectedFont,
+    },
   ];
   useEffect(() => {
     if (data?.floating_whatsapp_enabled !== undefined) {
       setIsWhatsappEnabled(data.floating_whatsapp_enabled);
     }
+    if (data?.metadata?.font_family) {
+      setSelectedFont(data.metadata.font_family);
+    }
   }, [data]);
 
   // Sync with preview page
   useEffect(() => {
-    console.log("Syncing page ID:", currentPageId);
     setSelectedPageId(currentPageId);
   }, [currentPageId]);
 
@@ -137,6 +208,26 @@ export function ChatPanelJson({
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    GOOGLE_FONTS.forEach((font) => {
+      const id = `font-${font.replace(/\s+/g, "-")}`;
+
+      if (document.getElementById(id)) return;
+
+      const link = document.createElement("link");
+
+      link.id = id;
+      link.rel = "stylesheet";
+
+      link.href = `https://fonts.googleapis.com/css2?family=${font.replace(
+        / /g,
+        "+",
+      )}:wght@300;400;500;600;700&display=swap`;
+
+      document.head.appendChild(link);
+    });
+  }, []);
 
   const selectedPage = pages.find((p) => p.page_id === selectedPageId);
   const selectedPageLabel =
@@ -304,6 +395,41 @@ export function ChatPanelJson({
                                 )}
                               />
                             </button>
+                          )}
+                          {component.type === "font" && (
+                            <div className="w-[220px]">
+                              <Select
+                                value={selectedFont}
+                                onValueChange={(font) => {
+                                  setSelectedFont(font);
+
+                                  updateWebsiteMutation({
+                                    websiteId,
+                                    body: {
+                                      font_family: font,
+                                    },
+                                  });
+                                }}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select font" />
+                                </SelectTrigger>
+
+                                <SelectContent>
+                                  {GOOGLE_FONTS.map((font) => (
+                                    <SelectItem
+                                      key={font}
+                                      value={font}
+                                      style={{
+                                        fontFamily: font,
+                                      }}
+                                    >
+                                      {font}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
                           )}
                         </div>
                       ))}
