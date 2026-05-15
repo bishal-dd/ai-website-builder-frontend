@@ -74,6 +74,12 @@ export const ApprovedWebsitesTable = ({
 
   const roundDown = (val: unknown) => Math.floor(Number(val) || 0);
 
+  const formatCurrency = (amount: number, isInternational?: boolean) => {
+    return isInternational
+      ? `$ ${roundDown(amount)}`
+      : `Nu. ${roundDown(amount)}`;
+  };
+
   const updateQuery = useDebouncedCallback((key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value) params.set(key, value);
@@ -168,7 +174,7 @@ export const ApprovedWebsitesTable = ({
                           onClick={() => setSelectedPrice(site)}
                           className="flex items-center gap-1 font-semibold text-blue-600 hover:underline"
                         >
-                          Nu. {roundDown(total)}
+                          {formatCurrency(total, site.country !== "BT")}{" "}
                           <Info className="h-3 w-3" />
                         </button>
                       </TableCell>
@@ -252,11 +258,11 @@ export const ApprovedWebsitesTable = ({
             <div className="flex justify-between pt-2 text-lg font-bold">
               <span>Total Amount</span>
               <span className="text-green-600">
-                Nu.{" "}
-                {roundDown(
+                {formatCurrency(
                   Number(selectedPrice?.domainPrice || 0) +
                     Number(selectedPrice?.hostingPrice || 0) +
                     Number(selectedPrice?.websitePrice || 0),
+                  selectedPrice?.country !== "BT",
                 )}
               </span>
             </div>
@@ -354,7 +360,10 @@ export const ApprovedWebsitesTable = ({
                     Paid Amount
                   </p>
                   <p className="text-xl font-semibold mt-1">
-                    Nu. {roundDown(paidAmount)}
+                    {formatCurrency(
+                      paidAmount,
+                      selectedPayment?.country !== "BT",
+                    )}
                   </p>
                 </div>
 
@@ -363,7 +372,10 @@ export const ApprovedWebsitesTable = ({
                     Total Amount
                   </p>
                   <p className="text-xl font-semibold mt-1">
-                    Nu. {roundDown(totalAmount)}
+                    {formatCurrency(
+                      totalAmount,
+                      selectedPayment?.country !== "BT",
+                    )}
                   </p>
                 </div>
               </div>
@@ -374,7 +386,10 @@ export const ApprovedWebsitesTable = ({
                     Remaining Balance
                   </span>
                   <span className="text-sm font-semibold">
-                    Nu. {roundDown(remainingAmount)}
+                    {formatCurrency(
+                      remainingAmount,
+                      selectedPayment?.country !== "BT",
+                    )}
                   </span>
                 </div>
               )}
@@ -390,7 +405,10 @@ export const ApprovedWebsitesTable = ({
                       Amount
                     </p>
                     <p className="text-sm font-medium mt-1">
-                      Nu. {roundDown(selectedPayment?.installmentAmount || 0)}
+                      {formatCurrency(
+                        selectedPayment?.installmentAmount || 0,
+                        selectedPayment?.country !== "BT",
+                      )}
                     </p>
                   </div>
 

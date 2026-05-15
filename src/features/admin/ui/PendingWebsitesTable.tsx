@@ -66,6 +66,12 @@ export const PendingWebsitesTable = ({
 
   const roundDown = (val: unknown) => Math.floor(Number(val) || 0);
 
+  const formatCurrency = (amount: number, isInternational?: boolean) => {
+    return isInternational
+      ? `$ ${roundDown(amount)}`
+      : `Nu. ${roundDown(amount)}`;
+  };
+
   const updateQuery = useDebouncedCallback((key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value) params.set(key, value);
@@ -177,7 +183,7 @@ export const PendingWebsitesTable = ({
                           onClick={() => setSelectedPrice(site)}
                           className="tabular-nums flex items-center gap-1 font-semibold text-blue-600 hover:underline"
                         >
-                          Nu. {roundDown(total)}
+                          {formatCurrency(total, site.country !== "BT")}{" "}
                           <Info className="h-3 w-3" />
                         </button>
                       </TableCell>
@@ -276,11 +282,11 @@ export const PendingWebsitesTable = ({
             <div className="flex justify-between pt-2 text-lg font-bold">
               <span>Total Amount</span>
               <span className="text-green-600">
-                Nu.{" "}
-                {roundDown(
+                {formatCurrency(
                   Number(selectedPrice?.domainPrice || 0) +
                     Number(selectedPrice?.hostingPrice || 0) +
                     Number(selectedPrice?.websitePrice || 0),
+                  selectedPrice?.country !== "BT",
                 )}
               </span>
             </div>
@@ -398,7 +404,11 @@ export const PendingWebsitesTable = ({
                     Remaining Amount
                   </label>
                   <div className="w-full border rounded px-2 py-1 text-sm bg-gray-50 tabular-nums font-medium">
-                    Nu.{""}
+                    {formatCurrency(
+                      (paymentData.totalAmount || 0) -
+                        (paymentData.paidAmount || 0),
+                      currentSite?.country !== "BT",
+                    )}{" "}
                     {roundDown(
                       (paymentData.totalAmount || 0) -
                         (paymentData.paidAmount || 0),
@@ -409,7 +419,8 @@ export const PendingWebsitesTable = ({
             )}
             <div>
               <label className="text-xs font-semibold">
-                Total Amount (Nu.)
+                Total Amount ({currentSite?.country !== "BT" ? "$" : "Nu."}
+                ){" "}
               </label>
               <input
                 type="number"

@@ -5,6 +5,7 @@ export interface Website {
   userName?: string;
   userEmail?: string;
   userPhone?: string;
+  country?: string;
   createdAt: string;
   deploymentStatus: string;
   domainPrice?: number | null;
