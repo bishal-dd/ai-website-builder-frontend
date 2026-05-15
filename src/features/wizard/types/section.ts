@@ -13,7 +13,8 @@ export type SectionType =
   | "faq"
   | "how-it-works"
   | "about-preview"
-  | "cta";
+  | "cta"
+  | "team";
 
 /**
  * A single section in a page.
@@ -44,12 +45,6 @@ export const sectionTypes: {
     description: "Large banner with headline and CTA",
   },
   {
-    value: "how-it-works",
-    label: "How It Works",
-    icon: Grid3x3,
-    description: "Detailed explanation of how your product or service works",
-  },
-  {
     value: "faq",
     label: "Frequently Asked Questions",
     icon: Grid3x3,
@@ -60,5 +55,11 @@ export const sectionTypes: {
     label: "Testimonials",
     icon: MessageSquare,
     description: "Customer reviews and social proof",
+  },
+  {
+    value: "team",
+    label: "Team",
+    icon: MessageSquare,
+    description: "Team members and their roles",
   },
 ];

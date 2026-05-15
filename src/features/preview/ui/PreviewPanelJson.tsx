@@ -164,6 +164,15 @@ export function PreviewPanelJson({
       },
     );
   };
+  const findScripts = (elements: WebElement[]): WebElement[] => {
+    return elements.flatMap((el) => {
+      const current = el.tag === "script" ? [el] : [];
+
+      const nested = el.children ? findScripts(el.children) : [];
+
+      return [...current, ...nested];
+    });
+  };
 
   return (
     <div className="flex h-screen flex-col bg-muted">
@@ -372,6 +381,28 @@ export function PreviewPanelJson({
               ref={frameRef}
               key={`${currentPageId}-${device}-${websiteData.metadata?.font_family}`}
               style={{ width: "100%", height: "100%", border: "none" }}
+              contentDidMount={() => {
+                const iframe = document.querySelector("iframe");
+
+                const doc =
+                  iframe?.contentDocument || iframe?.contentWindow?.document;
+
+                if (!doc) return;
+
+                const scripts = websiteData.elements.flatMap((page) =>
+                  findScripts(page.pageContent),
+                );
+
+                scripts.forEach((scriptElement) => {
+                  const script = doc.createElement("script");
+
+                  script.type = "text/javascript";
+
+                  script.textContent = scriptElement.content || "";
+
+                  doc.body.appendChild(script);
+                });
+              }}
               initialContent={`
   <!DOCTYPE html>
   <html lang="en">

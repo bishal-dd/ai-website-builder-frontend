@@ -9,14 +9,13 @@ import { useWebsiteWizard } from "./hooks/useWebsiteWizard";
 import { StepOne } from "./ui/StepOne";
 import { StepTwo } from "./ui/StepTwo";
 import { StepThree } from "./ui/StepThree";
-import { StepFour } from "./ui/StepFour";
 import { useWizardStore } from "./store/wizardStore";
 import { createWebsiteAPI } from "@/features/wizard/api/createWebsite";
 import { WebsiteGenerator } from "./ui/WebsiteGenerator";
 import { scrollToFirstError } from "./utils/scrollToFirstError";
 import posthog from "posthog-js";
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 3;
 
 export default function WebsiteWizard() {
   const [isLoading, setIsLoading] = useState(false);
@@ -160,8 +159,6 @@ export default function WebsiteWizard() {
         return <StepTwo stepErrors={stepErrors} />;
       case 3:
         return <StepThree stepErrors={stepErrors} />;
-      case 4:
-        return <StepFour />;
       default:
         return null;
     }

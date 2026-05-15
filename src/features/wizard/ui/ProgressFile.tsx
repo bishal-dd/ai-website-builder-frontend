@@ -1,17 +1,16 @@
-"use client"
+"use client";
 
-import { Check } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { ProgressBarProps } from "../types"
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ProgressBarProps } from "../types";
 import { STEPS } from "../constants";
-
 
 export function ProgressBar({ currentStep }: ProgressBarProps) {
   return (
     <div className="w-full mb-8">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-center max-w-2xl mx-auto">
         {STEPS.map((step, index) => (
-          <div key={step.number} className="flex items-center flex-1">
+          <div key={step.number} className="flex items-center">
             <div className="flex flex-col items-center gap-2">
               <div
                 className={cn(
@@ -23,19 +22,25 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
                       : "bg-muted text-muted-foreground",
                 )}
               >
-                {currentStep > step.number ? <Check className="w-5 h-5" /> : step.number}
+                {currentStep > step.number ? (
+                  <Check className="w-5 h-5" />
+                ) : (
+                  step.number
+                )}
               </div>
               <span
                 className={cn(
                   "text-xs font-medium text-center transition-colors hidden sm:block",
-                  currentStep >= step.number ? "text-foreground" : "text-muted-foreground",
+                  currentStep >= step.number
+                    ? "text-foreground"
+                    : "text-muted-foreground",
                 )}
               >
                 {step.label}
               </span>
             </div>
             {index < STEPS.length - 1 && (
-              <div className="flex-1 h-0.5 mx-2 sm:mx-4">
+              <div className="w-20 sm:w-32 h-0.5 mx-2 sm:mx-4">
                 <div
                   className={cn(
                     "h-full transition-all duration-300",
@@ -48,5 +53,5 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }
