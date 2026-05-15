@@ -15,7 +15,10 @@ import useUpdateWebsitePage from "./hooks/useUpdateWebsitePage";
 import useUpdateWebsite from "@/features/preview/hooks/useUpdateWebsite";
 import { useParams } from "next/navigation";
 import posthog from "posthog-js";
-import { startEditorOnboardingTourInFrame } from "./hooks/useEditorOnboardingTour";
+import {
+  startEditorOnboardingTourInFrame,
+  startAiHelperOnboardingTour,
+} from "./hooks/useEditorOnboardingTour";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -50,18 +53,25 @@ export default function Preview() {
 
       if (!iframeWindow || !iframeDoc) return;
 
+      const finishOnboardingTour = () => {
+        startAiHelperOnboardingTour(() => {
+          updateWebsite.mutate({
+            websiteId,
+            body: { is_congrats_modal_shown: true },
+          });
+        });
+      };
+
       const hasTourTargets =
         iframeDoc.querySelector('[data-tour="editable-text"]') ||
         iframeDoc.querySelector('[data-tour="site-logo"]');
 
-      if (!hasTourTargets) return;
+      if (!hasTourTargets) {
+        finishOnboardingTour();
+        return;
+      }
 
-      startEditorOnboardingTourInFrame(iframeWindow, () => {
-        updateWebsite.mutate({
-          websiteId,
-          body: { is_congrats_modal_shown: true },
-        });
-      });
+      startEditorOnboardingTourInFrame(iframeWindow, finishOnboardingTour);
     }, 1000);
 
     return () => clearTimeout(timeout);
@@ -76,18 +86,9 @@ export default function Preview() {
 
   const handleWebsiteGenerated = (data: WebsiteData) => {
     setWebsiteData(data);
-
-    setCurrentPageId((prev) => {
-      // keep current page if it still exists
-      const pageStillExists = data.elements.some((p) => p.page_id === prev);
-
-      if (pageStillExists) {
-        return prev;
-      }
-
-      // otherwise fallback to first page
-      return data.elements[0]?.page_id || "";
-    });
+    if (data.elements.length > 0) {
+      setCurrentPageId(data.elements[0].page_id);
+    }
   };
 
   const updateElementRecursive = (
@@ -183,6 +184,7 @@ export default function Preview() {
 
         {!isChatOpen && (
           <Button
+            data-tour="ai-helper"
             onClick={() => {
               // Capture AI chat opened event
               posthog.capture("ai_chat_opened", {
@@ -205,7 +207,6 @@ export default function Preview() {
                 currentPageId={currentPageId}
                 pages={sortedPages}
                 websiteId={websiteId}
-                font={websiteData.metadata?.font_family}
                 onClose={() => setIsChatOpen(false)}
               />
             </div>
