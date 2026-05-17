@@ -1,3 +1,6 @@
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
+
 type DriverStep = {
   element: string;
   popover: {
@@ -62,6 +65,32 @@ export function startEditorOnboardingTourInFrame(
           title: "Change your logos or icons",
           description: "Hover over logos or icons and click Change.",
           side: "bottom",
+          align: "center",
+        },
+      },
+    ],
+  });
+
+  driverObj.drive();
+}
+
+export function startAiHelperOnboardingTour(onFinish?: () => void) {
+  const driverObj = driver({
+    showProgress: true,
+    animate: true,
+    allowClose: true,
+    nextBtnText: "Next",
+    prevBtnText: "Back",
+    doneBtnText: "Done",
+    onDestroyed: onFinish,
+    steps: [
+      {
+        element: '[data-tour="ai-helper"]',
+        popover: {
+          title: "Use AI Helper",
+          description:
+            "Click here to chat with AI and ask it to edit or improve your website.",
+          side: "left",
           align: "center",
         },
       },

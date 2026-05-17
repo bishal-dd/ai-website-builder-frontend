@@ -226,14 +226,19 @@ export function JsonRenderer({
       const intervalAttr = element.attributes?.["data-interval"];
       const interval = intervalAttr ? Number(intervalAttr) : undefined;
 
-      // 1️⃣ Find the wrapper (relative h-[80vh])
-      const wrapper = children?.find((child) => child.tag === "div");
+      const findSlides = (nodes?: WebElement[]): WebElement[] => {
+        if (!nodes) return [];
 
-      // 2️⃣ Extract ONLY slide nodes
-      const slides =
-        wrapper?.children?.filter(
-          (child) => child.attributes?.["data-role"] === "carousel-slide",
-        ) ?? [];
+        return nodes.flatMap((node) => {
+          if (node.attributes?.["data-role"] === "carousel-slide") {
+            return [node];
+          }
+
+          return findSlides(node.children);
+        });
+      };
+
+      const slides = findSlides(children);
 
       return (
         <CarouselRenderer
@@ -363,6 +368,69 @@ export function JsonRenderer({
       );
     }
 
+    const isOverLaySection =
+      element.attributes?.["data-component"] === "overlay-section";
+
+    if (isOverLaySection) {
+      const bgImage = children?.find(
+        (c) => c.tag === "img" && c.attributes?.["data-role"] === "overlay-bg",
+      );
+
+      const isUploading = bgImage && uploadingImageId === bgImage.id;
+
+      return (
+        <section key={id} className={cn("relative", className)}>
+          {" "}
+          {/* Background */}
+          {bgImage && renderElement(bgImage, componentKey)}
+          {/* Upload overlay (ONLY when uploading) */}
+          {isUploading && (
+            <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 text-white">
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <span className="text-sm">Uploading...</span>
+              </div>
+            </div>
+          )}
+          {/* Overlay content */}
+          <>
+            {children
+              ?.filter((c) => c !== bgImage)
+              .map((child) => renderElement(child, componentKey))}
+          </>
+          {/* Edit button */}
+          {bgImage && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isUploading) {
+                    fileInputRefs.current[`overlay-${id}`]?.click();
+                  }
+                }}
+                className="absolute top-2 right-2 z-50 bg-yellow-400 text-black px-3 py-1.5 rounded-md shadow-md text-xs font-semibold"
+              >
+                {isUploading ? "Uploading..." : "Change Background"}
+              </button>
+
+              <input
+                ref={(el) => {
+                  fileInputRefs.current[`overlay-${id}`] = el;
+                }}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={isUploading}
+                onChange={(e) => {
+                  handleImageChange(e, bgImage.id, componentKey);
+                }}
+              />
+            </>
+          )}
+        </section>
+      );
+    }
+
     const isHeroSection =
       element.attributes?.["data-component"] === "hero-section";
 
@@ -432,7 +500,9 @@ export function JsonRenderer({
     if (tag === "img") {
       const imageSrc = content?.startsWith("http") ? content : attributes?.src;
       const fixedStyle = cssStringToObject(attributes?.style);
-      const isCarouselBg = element.attributes?.["data-role"] === "carousel-bg";
+      const isBackgroundImage =
+        element.attributes?.["data-role"] === "carousel-bg" ||
+        element.attributes?.["data-role"] === "overlay-bg";
       // ✅ STEP 1: Resolve role (explicit OR fallback)
       let role = element.attributes?.["data-role"];
 
@@ -452,13 +522,15 @@ export function JsonRenderer({
       // ✅ STEP 2: Derive flags from role
       const isLogo = role === "logo";
       const isIcon = role === "social-icon";
+      const isAvatar =
+        className?.includes("rounded-full") && className?.match(/\bw-\d+/);
       const isCover = role === "cover";
       const isContain = role === "contain";
 
       const isActive =
         device === "desktop" ? hoveredImageId === id : activeImageId === id;
 
-      if (isCarouselBg) {
+      if (isBackgroundImage) {
         return (
           <img
             key={id}
@@ -476,7 +548,7 @@ export function JsonRenderer({
           className={cn(
             "relative  leading-none",
             isIcon ? "inline-block" : "block",
-            isIcon ? null : "w-full",
+            isIcon || isAvatar ? null : "w-full",
             isLogo ? "h-full" : "h-auto",
           )}
           style={{

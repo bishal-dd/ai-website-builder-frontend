@@ -102,6 +102,8 @@ const GOOGLE_FONTS = [
   "Source Sans 3",
 ];
 const ADD_NEW_PAGE = "add_new_page";
+
+const MAX_REGEN_PROMPT_LENGTH = 1000;
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -150,6 +152,8 @@ export function ChatPanelJson({
   ]);
 
   const [input, setInput] = useState("");
+  const promptLength = input.length;
+  const isPromptTooLong = promptLength > MAX_REGEN_PROMPT_LENGTH;
   const [showGeneralComponents, setShowGeneralComponents] = useState(false);
   const [regenJobId, setRegenJobId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -239,8 +243,8 @@ export function ChatPanelJson({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isPending || !selectedPageId) return;
-
+    if (!input.trim() || isPending || !selectedPageId || isPromptTooLong)
+      return;
     const pageLabel =
       pages.find((p) => p.page_id === selectedPageId)?.title ??
       pages.find((p) => p.page_id === selectedPageId)?.page ??
@@ -593,14 +597,24 @@ export function ChatPanelJson({
           <Button
             type="submit"
             size="icon"
-            disabled={isPending || !input.trim() || !selectedPageId}
+            disabled={
+              isPending || !input.trim() || !selectedPageId || isPromptTooLong
+            }
           >
             <Send className="h-5 w-5" />
           </Button>
         </form>
 
-        <p className="text-xs text-muted-foreground">
-          Enter to send · Shift+Enter for new line
+        <p
+          className={cn(
+            "text-xs",
+            isPromptTooLong ? "text-destructive" : "text-muted-foreground",
+          )}
+        >
+          {promptLength}/{MAX_REGEN_PROMPT_LENGTH} characters
+          {isPromptTooLong
+            ? " · Prompt is too long"
+            : " · Enter to send · Shift+Enter for new line"}
         </p>
       </div>
 

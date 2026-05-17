@@ -78,69 +78,65 @@ export function CarouselRenderer({
   if (!slides?.length) return null;
 
   return (
-    <section className={cn(className)}>
-      <div className="relative h-[80vh] overflow-hidden">
-        {/* Slides */}
-        {slides.map((slide, i) => {
-          const isActive = i === currentIndex;
+    <section className={cn("relative overflow-hidden h-[700px]", className)}>
+      {/* Slides */}
+      {slides.map((slide, i) => {
+        const isActive = i === currentIndex;
 
-          const updatedSlide: WebElement = {
-            ...slide,
-            class: cn(
-              "absolute inset-0 transition-opacity duration-500",
-              isActive
-                ? "opacity-100 z-10"
-                : "opacity-0 z-0 pointer-events-none",
-            ),
-          };
+        const updatedSlide: WebElement = {
+          ...slide,
+          class: cn(
+            "absolute inset-0 transition-opacity duration-500",
+            isActive ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none",
+          ),
+        };
 
-          return renderElement?.(updatedSlide);
-        })}
-        {/* Prev */}
-        {total > 1 && (
-          <button
-            onClick={() => {
-              prevSlide();
-              resetInterval();
-            }}
-            className="hidden md:flex absolute z-50 left-6 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full backdrop-blur-sm"
-          >
-            ‹
-          </button>
-        )}
+        return renderElement?.(updatedSlide);
+      })}
+      {/* Prev */}
+      {total > 1 && (
+        <button
+          onClick={() => {
+            prevSlide();
+            resetInterval();
+          }}
+          className="hidden md:flex absolute z-50 left-6 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full backdrop-blur-sm"
+        >
+          ‹
+        </button>
+      )}
 
-        {/* Next */}
-        {total > 1 && (
-          <button
-            onClick={() => {
-              nextSlide();
-              resetInterval();
-            }}
-            className="hidden md:flex absolute z-50 right-6 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full backdrop-blur-sm"
-          >
-            ›
-          </button>
-        )}
+      {/* Next */}
+      {total > 1 && (
+        <button
+          onClick={() => {
+            nextSlide();
+            resetInterval();
+          }}
+          className="hidden md:flex absolute z-50 right-6 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full backdrop-blur-sm"
+        >
+          ›
+        </button>
+      )}
 
-        {/* Dots */}
-        {total > 1 && (
-          <div className="absolute z-50 bottom-8 left-1/2 -translate-x-1/2 flex space-x-4">
-            {slides.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  showSlide(i);
-                  resetInterval();
-                }}
-                className={cn(
-                  "w-3 h-3 rounded-full bg-white",
-                  i === currentIndex ? "opacity-100" : "opacity-60",
-                )}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Dots */}
+      {total > 1 && (
+        <div className="absolute z-50 bottom-8 left-1/2 -translate-x-1/2 flex space-x-4">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                showSlide(i);
+                resetInterval();
+              }}
+              className={cn(
+                "w-3 h-3 rounded-full bg-white",
+                i === currentIndex ? "opacity-100" : "opacity-60",
+              )}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
