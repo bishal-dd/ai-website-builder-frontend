@@ -399,32 +399,34 @@ export function JsonRenderer({
               .map((child) => renderElement(child, componentKey))}
           </>
           {/* Edit button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!isUploading) {
-                fileInputRefs.current[`overlay-${id}`]?.click();
-              }
-            }}
-            className="absolute top-2 right-2 z-50 bg-yellow-400 text-black px-3 py-1.5 rounded-md shadow-md text-xs font-semibold"
-          >
-            {isUploading ? "Uploading..." : "Change Background"}
-          </button>
-          {/* Hidden input */}
-          <input
-            ref={(el) => {
-              fileInputRefs.current[`overlay-${id}`] = el;
-            }}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            disabled={isUploading}
-            onChange={(e) => {
-              if (bgImage) {
-                handleImageChange(e, bgImage.id, componentKey);
-              }
-            }}
-          />
+          {bgImage && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isUploading) {
+                    fileInputRefs.current[`overlay-${id}`]?.click();
+                  }
+                }}
+                className="absolute top-2 right-2 z-50 bg-yellow-400 text-black px-3 py-1.5 rounded-md shadow-md text-xs font-semibold"
+              >
+                {isUploading ? "Uploading..." : "Change Background"}
+              </button>
+
+              <input
+                ref={(el) => {
+                  fileInputRefs.current[`overlay-${id}`] = el;
+                }}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={isUploading}
+                onChange={(e) => {
+                  handleImageChange(e, bgImage.id, componentKey);
+                }}
+              />
+            </>
+          )}
         </section>
       );
     }
