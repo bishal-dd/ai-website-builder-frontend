@@ -363,7 +363,7 @@ export function ChatPanelJson({
                     size="sm"
                     onClick={() => setShowGeneralComponents((prev) => !prev)}
                   >
-                    General Components
+                    General Settings
                   </Button>
 
                   {showGeneralComponents && (
