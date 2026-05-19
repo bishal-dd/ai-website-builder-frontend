@@ -11,17 +11,17 @@ export function getRecommendedPrompts(pageName: string, isNewPage: boolean) {
 
   if (name.includes("home") || name === "index") {
     return [
+      "Change the hero section to a sliding image carousel",
       "Add a FAQ section to answer common customer questions",
-      "Improve the hero section with a stronger headline and call to action",
       "Add a testimonials section with 3 customer reviews",
     ];
   }
 
   if (name.includes("about")) {
     return [
-      "Make the about section more personal and story-driven",
       "Add a mission and values section",
       "Add a team introduction section with short profiles",
+      "Make the about section more personal and story-driven",
     ];
   }
 
@@ -43,7 +43,7 @@ export function getRecommendedPrompts(pageName: string, isNewPage: boolean) {
 
   if (name.includes("tour")) {
     return [
-      "Add a detailed itinerary section for this tour",
+      "Add more tour cards",
       "Add what is included and excluded in the package",
       "Add a booking call-to-action section",
     ];
@@ -67,7 +67,7 @@ export function getRecommendedPrompts(pageName: string, isNewPage: boolean) {
 
   if (name.includes("project")) {
     return [
-      "Add a project case study section",
+      "Add more project cards",
       "Add project goals, process, and results",
       "Improve the project page with a stronger visual layout",
     ];
@@ -75,7 +75,7 @@ export function getRecommendedPrompts(pageName: string, isNewPage: boolean) {
 
   if (name.includes("product")) {
     return [
-      "Add product features and benefits",
+      "Add more product cards",
       "Add customer reviews for this product",
       "Add a stronger product call-to-action section",
     ];

@@ -145,14 +145,7 @@ export function ChatPanelJson({
   pages,
   currentPageId,
 }: ChatPanelJsonProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content:
-        "Hi! I'll help you improve this website. Choose a page and describe what you want to change.",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const [input, setInput] = useState("");
   const promptLength = input.length;
@@ -448,7 +441,7 @@ export function ChatPanelJson({
                 Sencill AI
               </h2>
               <p className="truncate text-xs text-muted-foreground">
-                Page-aware website editor
+                Your Personal Web Developer
               </p>
             </div>
           </div>
@@ -472,45 +465,9 @@ export function ChatPanelJson({
       {/* Messages */}
       <ScrollArea className="min-h-0 flex-1">
         <div ref={scrollRef} className="space-y-4 px-4 py-4">
-          {messages.map((message, index) => (
-            <React.Fragment key={message.id}>
-              <div
-                className={cn(
-                  "flex gap-2.5",
-                  message.role === "user" ? "justify-end" : "justify-start",
-                )}
-              >
-                {message.role === "assistant" && (
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/15">
-                    <Sparkles className="h-3.5 w-3.5 text-primary" />
-                  </div>
-                )}
-
-                <div
-                  className={cn(
-                    "max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed shadow-sm",
-                    message.role === "user"
-                      ? "rounded-br-md bg-primary text-primary-foreground"
-                      : "rounded-bl-md border border-border/70 bg-card text-card-foreground",
-                  )}
-                >
-                  {message.content}
-                </div>
-
-                {message.role === "user" && (
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted ring-1 ring-border/70">
-                    <User className="h-3.5 w-3.5 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-
-              {index === 0 && message.role === "assistant" && (
-                <div className="pl-9">
-                  <div className="max-w-[82%]">{generalSettingsPopover}</div>
-                </div>
-              )}
-            </React.Fragment>
-          ))}
+          <div className="pl-9">
+            <div className="max-w-[82%]">{generalSettingsPopover}</div>
+          </div>
         </div>
       </ScrollArea>
 
