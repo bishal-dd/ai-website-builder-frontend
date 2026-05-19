@@ -108,6 +108,20 @@ export const pageOptions: PageOption[] = [
     description: "How we work",
     icon: Clock,
   },
+
+  // Real Estate
+  {
+    type: "properties",
+    label: "Properties",
+    description: "Real estate listings",
+    icon: Home,
+  },
+  {
+    type: "agents",
+    label: "Agents",
+    description: "Meet our agents",
+    icon: Users,
+  },
 ];
 
 /**
@@ -124,7 +138,8 @@ export const websitePagesMap: Record<
   | "hotel"
   | "travel agency"
   | "shop"
-  | "smallMediumBusiness",
+  | "smallMediumBusiness"
+  | "real estate",
   PageType[]
 > = {
   portfolio: ["home", "about", "projects", "services", "contact"],
@@ -138,6 +153,15 @@ export const websitePagesMap: Record<
   shop: ["home", "products", "about", "contact"],
 
   smallMediumBusiness: ["home", "services", "about", "products", "contact"],
+
+  "real estate": [
+    "home",
+    "services",
+    "about",
+    "contact",
+    "properties",
+    "agents",
+  ],
 };
 
 export const websitePageDefaults: Record<
@@ -176,6 +200,11 @@ export const websitePageDefaults: Record<
     required: ["home"],
     defaultSelected: ["services", "about", "contact"],
   },
+
+  "real estate": {
+    required: ["home"],
+    defaultSelected: ["services", "about", "contact", "properties"],
+  },
 };
 
 /**
@@ -211,6 +240,10 @@ export const pageSectionsMap: Record<PageType, SectionType[]> = {
 
   // Service Pages
   process: ["content"], // workflow + description
+
+  // Real Estate
+  properties: ["content"], // property listings + highlights + CTA
+  agents: ["content"], // agent bios + highlights + CTA
 };
 
 export const defaultPagePlaceholders: Record<PageType, Omit<Section, "id">[]> =
@@ -338,6 +371,24 @@ export const defaultPagePlaceholders: Record<PageType, Omit<Section, "id">[]> =
         content: "",
         placeholder:
           "🧩 Explain your workflow or process. Walk visitors through how you deliver your product or service.",
+      },
+    ],
+
+    properties: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "🏡 Showcase your property listings. Describe key features, location benefits, and what makes them special.",
+      },
+    ],
+
+    agents: [
+      {
+        type: "content",
+        content: "",
+        placeholder:
+          "👤 Introduce your real estate agents. Highlight their expertise, experience, and how they can help clients.",
       },
     ],
   };

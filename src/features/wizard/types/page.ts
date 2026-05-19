@@ -14,8 +14,9 @@ export type PageType =
   | "amenities"
   | "location"
   | "tours"
-  | "process";
-
+  | "process"
+  | "properties"
+  | "agents";
 export interface PageContent {
   page: PageType;
   sections: Section[];
