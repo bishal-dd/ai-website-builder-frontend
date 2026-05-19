@@ -500,120 +500,6 @@ export function ChatPanelJson({
       {/* Composer */}
       <div className="shrink-0 border-t border-border/70 bg-card/95">
         <div className="max-h-[52vh] space-y-3 overflow-y-auto px-4 py-3">
-          {/* Page Selector */}
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className={cn(
-                  "group flex w-full items-center justify-between gap-3 rounded-xl border border-border/70 bg-background px-3 py-2.5 text-left transition-all",
-                  "hover:border-primary/40 hover:bg-accent/40",
-                  "focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/15",
-                  open &&
-                    "border-primary/50 bg-accent/40 ring-2 ring-primary/15",
-                )}
-              >
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <SelectedIcon className="h-4 w-4" />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Editing
-                    </p>
-                    <p className="truncate text-sm font-semibold text-foreground">
-                      {selectedPageLabel}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <Badge
-                    variant="secondary"
-                    className="hidden rounded-md px-1.5 text-[10px] font-medium sm:inline-flex"
-                  >
-                    {pages.length}
-                  </Badge>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 text-muted-foreground transition-transform",
-                      open && "rotate-180",
-                    )}
-                  />
-                </div>
-              </button>
-            </PopoverTrigger>
-
-            <PopoverContent
-              className="w-[var(--radix-popover-trigger-width)] p-0"
-              align="start"
-              sideOffset={8}
-            >
-              <Command>
-                <CommandInput placeholder="Search pages..." />
-                <CommandList className="max-h-[240px]">
-                  <CommandEmpty>No pages found.</CommandEmpty>
-
-                  <CommandGroup>
-                    {pages.map((page) => {
-                      const pageLabel = page.title ?? page.page;
-                      const PageIcon = getPageIcon(pageLabel);
-                      const isSelected = page.page_id === selectedPageId;
-
-                      return (
-                        <CommandItem
-                          key={page.page_id}
-                          value={pageLabel}
-                          onSelect={() => {
-                            setSelectedPageId(page.page_id);
-                            setOpen(false);
-                          }}
-                          className={cn(
-                            "flex cursor-pointer items-center gap-3 px-3 py-2.5",
-                            isSelected && "bg-primary/5",
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                              isSelected
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted text-muted-foreground",
-                            )}
-                          >
-                            <PageIcon className="h-4 w-4" />
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <p
-                              className={cn(
-                                "truncate text-sm font-medium",
-                                isSelected && "text-primary",
-                              )}
-                            >
-                              {pageLabel}
-                            </p>
-
-                            {page.page && page.title && (
-                              <p className="truncate text-xs text-muted-foreground">
-                                /{page.page}
-                              </p>
-                            )}
-                          </div>
-
-                          {isSelected && (
-                            <Check className="h-4 w-4 shrink-0 text-primary" />
-                          )}
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-
           {/* Recommended Prompts */}
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
@@ -655,6 +541,121 @@ export function ChatPanelJson({
 
           {/* Input */}
           <form onSubmit={handleSubmit} className="space-y-2.5">
+            {/* Editing Page Selector */}
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "group flex w-full items-center justify-between gap-3 rounded-xl border border-border/70 bg-background px-3 py-2.5 text-left transition-all",
+                    "hover:border-primary/40 hover:bg-accent/40",
+                    "focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/15",
+                    open &&
+                      "border-primary/50 bg-accent/40 ring-2 ring-primary/15",
+                  )}
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <SelectedIcon className="h-4 w-4" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Editing
+                      </p>
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {selectedPageLabel}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <Badge
+                      variant="secondary"
+                      className="hidden rounded-md px-1.5 text-[10px] font-medium sm:inline-flex"
+                    >
+                      {pages.length}
+                    </Badge>
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 text-muted-foreground transition-transform",
+                        open && "rotate-180",
+                      )}
+                    />
+                  </div>
+                </button>
+              </PopoverTrigger>
+
+              <PopoverContent
+                className="w-[var(--radix-popover-trigger-width)] p-0"
+                align="start"
+                sideOffset={8}
+              >
+                <Command>
+                  <CommandInput placeholder="Search pages..." />
+                  <CommandList className="max-h-[240px]">
+                    <CommandEmpty>No pages found.</CommandEmpty>
+
+                    <CommandGroup>
+                      {pages.map((page) => {
+                        const pageLabel = page.title ?? page.page;
+                        const PageIcon = getPageIcon(pageLabel);
+                        const isSelected = page.page_id === selectedPageId;
+
+                        return (
+                          <CommandItem
+                            key={page.page_id}
+                            value={pageLabel}
+                            onSelect={() => {
+                              setSelectedPageId(page.page_id);
+                              setOpen(false);
+                            }}
+                            className={cn(
+                              "flex cursor-pointer items-center gap-3 px-3 py-2.5",
+                              isSelected && "bg-primary/5",
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                                isSelected
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted text-muted-foreground",
+                              )}
+                            >
+                              <PageIcon className="h-4 w-4" />
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <p
+                                className={cn(
+                                  "truncate text-sm font-medium",
+                                  isSelected && "text-primary",
+                                )}
+                              >
+                                {pageLabel}
+                              </p>
+
+                              {page.page && page.title && (
+                                <p className="truncate text-xs text-muted-foreground">
+                                  /{page.page}
+                                </p>
+                              )}
+                            </div>
+
+                            {isSelected && (
+                              <Check className="h-4 w-4 shrink-0 text-primary" />
+                            )}
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+
+            {/* Input */}
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
