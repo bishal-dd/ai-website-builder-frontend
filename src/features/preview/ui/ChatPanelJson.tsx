@@ -676,20 +676,30 @@ export function ChatPanelJson({
             <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
-                variant={
-                  selectedPageId === ADD_NEW_PAGE ? "default" : "outline"
-                }
+                variant={isAddingNewPage ? "default" : "outline"}
                 size="sm"
                 disabled={isPending}
                 onClick={() => {
-                  setSelectedPageId(ADD_NEW_PAGE);
+                  if (isAddingNewPage) {
+                    setSelectedPageId(currentPageId || pages[0]?.page_id || "");
+                  } else {
+                    setSelectedPageId(ADD_NEW_PAGE);
+                  }
+
                   setInput("");
                   setOpen(false);
                 }}
                 className="h-9 min-w-0 gap-2 rounded-lg"
               >
-                <Plus className="h-4 w-4 shrink-0" />
-                <span className="truncate">Add Page</span>
+                {isAddingNewPage ? (
+                  <Layers className="h-4 w-4 shrink-0" />
+                ) : (
+                  <Plus className="h-4 w-4 shrink-0" />
+                )}
+
+                <span className="truncate">
+                  {isAddingNewPage ? "Edit Page" : "Add Page"}
+                </span>
               </Button>
 
               <Button
