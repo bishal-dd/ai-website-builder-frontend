@@ -5,7 +5,13 @@ import { Sparkles } from "lucide-react";
 import { LoadingStateProps, loadingSteps } from "../types/steps";
 import gsap from "gsap";
 
-export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
+export function LoadingState({
+  isOpen,
+  backendProgress,
+  title = "Generating Your Website",
+  description = "It just takes 1-2 minutes.",
+  note = "You will get an email when your website is ready.",
+}: LoadingStateProps) {
   const steps = loadingSteps;
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
@@ -329,20 +335,21 @@ export function LoadingState({ isOpen, backendProgress }: LoadingStateProps) {
               ref={titleRef}
               className="text-2xl font-bold text-center mb-2 text-balance"
             >
-              Generating Your Website
+              {title}
             </h2>
+
             <p
               ref={descRef}
-              className="text-sm text-muted-foreground text-center mb-8 text-balance"
+              className="text-sm text-muted-foreground text-center mb-3 text-balance"
             >
-              It just takes 1-2 minutes.
+              {description}
             </p>
-            <p
-              ref={descRef}
-              className="text-sm text-muted-foreground text-center mb-8 text-balance"
-            >
-              You will get an email when your website is ready.
-            </p>
+
+            {note && (
+              <p className="text-sm text-muted-foreground text-center mb-8 text-balance">
+                {note}
+              </p>
+            )}
 
             <div ref={stepsContainerRef} className="space-y-3">
               {steps.map((step, index) => {
