@@ -147,6 +147,7 @@ export function ChatPanelJson({
   pages,
   currentPageId,
   contactPhone,
+  websiteType,
 }: ChatPanelJsonProps) {
   const [messages, setMessages] = useState<Message[]>([]);
 
@@ -251,6 +252,7 @@ export function ChatPanelJson({
   const recommendedPrompts = getRecommendedPrompts(
     selectedPage?.page ?? selectedPage?.title ?? selectedPageLabel,
     isAddingNewPage,
+    websiteType,
   );
 
   const generalSettingsPopover = (
