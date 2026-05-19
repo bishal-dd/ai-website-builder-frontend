@@ -5,7 +5,8 @@ export type WebsiteType =
   | "restaurant"
   | "hotel"
   | "travel agency"
-  | "smallMediumBusiness";
+  | "smallMediumBusiness"
+  | "real estate";
 
 export type WizardStateForAPI = {
   websiteName: string;

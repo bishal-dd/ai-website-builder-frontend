@@ -79,6 +79,8 @@ const FIXED_MAIN_PAGE_SLUGS = [
   "menu",
   "projects",
   "products",
+  "properties",
+  "agents",
 ];
 
 const canDeletePage = (pageSlug: string) => {
