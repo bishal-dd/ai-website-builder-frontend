@@ -18,6 +18,7 @@ interface ApiData {
   description?: string;
   design_type?: string;
   font_family?: string;
+  type?: string;
   sequence: number;
   shared_components: SharedComponents; // <-- Use the new type
   pages: ApiPage[];
@@ -44,6 +45,7 @@ export const mapApiToWebsiteData = (apiData: ApiData): WebsiteData => {
       description: apiData.description || "",
       theme: apiData.design_type || "light",
       font_family: apiData.font_family || "Inter, sans-serif",
+      type: apiData.type || "ss",
     },
   };
 };

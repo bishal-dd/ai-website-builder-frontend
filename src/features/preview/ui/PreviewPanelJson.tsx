@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   ChevronDown,
   MoveUpRight,
+  Trash2,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -43,6 +44,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useGeneratePreviewWebsite } from "../hooks/useGeneratePreviewWebsite";
+import useDeletePage from "../hooks/useDeletePage";
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
@@ -64,6 +66,35 @@ interface PreviewPanelJsonProps {
   currentPageId: string;
 }
 
+const FIXED_MAIN_PAGE_SLUGS = [
+  "index",
+  "home",
+  "about",
+  "contact",
+  "services",
+  "tours",
+  "rooms",
+  "amenities",
+  "location",
+  "menu",
+  "projects",
+  "products",
+  "properties",
+  "agents",
+];
+
+const canDeletePage = (pageSlug: string) => {
+  const normalizedSlug = pageSlug.toLowerCase();
+
+  const isSubPage = normalizedSlug.includes("/");
+
+  if (isSubPage) {
+    return true;
+  }
+
+  return !FIXED_MAIN_PAGE_SLUGS.includes(normalizedSlug);
+};
+
 export function PreviewPanelJson({
   websiteId,
   websiteData,
@@ -83,6 +114,8 @@ export function PreviewPanelJson({
   const isDeployed = deploymentCount > 0;
   const { mutate: generatePreview, isPending: isGeneratingPreview } =
     useGeneratePreviewWebsite();
+  const { mutate: deletePageMutation, isPending: isDeletingPage } =
+    useDeletePage();
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   useEffect(() => {
     const width = window.innerWidth;
@@ -174,6 +207,53 @@ export function PreviewPanelJson({
     });
   };
 
+  const handleDeletePage = (pageId: string) => {
+    const pageToDelete = sortedPages.find((page) => page.page_id === pageId);
+
+    const parentPageSlug = pageToDelete?.page.includes("/")
+      ? pageToDelete.page.split("/")[0]
+      : null;
+
+    const parentPage = parentPageSlug
+      ? sortedPages.find((page) => page.page === parentPageSlug)
+      : null;
+
+    deletePageMutation(
+      {
+        pageId,
+        websiteId,
+      },
+      {
+        onSuccess: (res) => {
+          if (!res.success) {
+            toast.error(res.error || "Failed to delete page");
+            return;
+          }
+
+          toast.success("Page deleted successfully");
+
+          if (currentPageId === pageId) {
+            if (parentPage) {
+              onPageChange(parentPage.page_id);
+              return;
+            }
+
+            const fallbackPage = sortedPages.find(
+              (page) => page.page_id !== pageId,
+            );
+
+            if (fallbackPage) {
+              onPageChange(fallbackPage.page_id);
+            }
+          }
+        },
+
+        onError: () => {
+          toast.error("Failed to delete page");
+        },
+      },
+    );
+  };
   return (
     <div className="flex h-screen flex-col bg-muted">
       {/* Header */}
@@ -330,17 +410,111 @@ export function PreviewPanelJson({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-60">
                       <DropdownMenuItem
-                        onClick={() => onPageChange(mainPage.page_id)}
+                        onSelect={(e) => e.preventDefault()}
+                        className="flex items-center justify-between gap-2"
                       >
-                        {mainPage.title} (Overview)
+                        <button
+                          type="button"
+                          onClick={() => onPageChange(mainPage.page_id)}
+                          className="flex-1 text-left"
+                        >
+                          {mainPage.title} (Overview)
+                        </button>
+
+                        {canDeletePage(mainPage.page) && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                type="button"
+                                disabled={isDeletingPage}
+                                className="rounded-sm p-1 text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </AlertDialogTrigger>
+
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Delete this page?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This page will be removed from your website
+                                  preview.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleDeletePage(mainPage.page_id)
+                                  }
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete Page
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       {subPages.map((sub) => (
                         <DropdownMenuItem
-                          key={sub.page_id} // Use page_id for keys
-                          onClick={() => onPageChange(sub.page_id)}
+                          key={sub.page_id}
+                          onSelect={(e) => e.preventDefault()}
+                          className="flex items-center justify-between gap-2"
                         >
-                          {sub.title}
+                          <button
+                            type="button"
+                            onClick={() => onPageChange(sub.page_id)}
+                            className="flex-1 text-left"
+                          >
+                            {sub.title}
+                          </button>
+
+                          {canDeletePage(sub.page) && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <button
+                                  type="button"
+                                  disabled={isDeletingPage}
+                                  className="rounded-sm p-1 text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </AlertDialogTrigger>
+
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Delete this subpage?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This subpage will be removed from your
+                                    website preview.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                                  <AlertDialogAction
+                                    onClick={() =>
+                                      handleDeletePage(sub.page_id)
+                                    }
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete Page
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
@@ -350,18 +524,53 @@ export function PreviewPanelJson({
 
               // RENDER SIMPLE BUTTON (For Home, About, Contact, etc.)
               return (
-                <Button
-                  key={mainPage.page_id}
-                  size="sm"
-                  variant={
-                    currentPageId === mainPage.page_id ? "default" : "outline"
-                  }
-                  onClick={() => onPageChange(mainPage.page_id)}
-                >
-                  {/* Icon is now rendered for every simple button */}
-                  <FileText className="h-3 w-3 mr-1" />
-                  {mainPage.title}
-                </Button>
+                <div key={mainPage.page_id} className="flex items-center gap-1">
+                  <Button
+                    size="sm"
+                    variant={
+                      currentPageId === mainPage.page_id ? "default" : "outline"
+                    }
+                    onClick={() => onPageChange(mainPage.page_id)}
+                  >
+                    <FileText className="h-3 w-3 mr-1" />
+                    {mainPage.title}
+                  </Button>
+
+                  {canDeletePage(mainPage.page) && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          disabled={isDeletingPage}
+                          className="h-8 w-8 text-destructive"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete this page?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This page will be removed from your website preview.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                          <AlertDialogAction
+                            onClick={() => handleDeletePage(mainPage.page_id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete Page
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
               );
             })}
           </div>

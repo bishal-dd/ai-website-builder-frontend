@@ -58,7 +58,13 @@ export function WebsiteRegenerator({
 
   return (
     <>
-      <LoadingState isOpen={isOpen} backendProgress={progress} />
+      <LoadingState
+        isOpen={isOpen}
+        backendProgress={progress}
+        title="Regenerating Your Website"
+        description="It will only take a moment"
+        note=""
+      />
       <audio ref={audioRef} src="/sounds/success.wav" />
     </>
   );

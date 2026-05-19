@@ -30,5 +30,6 @@ export type WebsiteData = {
     description?: string;
     font_family?: string;
     theme?: string;
+    type?: string;
   };
 };

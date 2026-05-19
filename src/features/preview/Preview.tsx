@@ -210,13 +210,14 @@ export default function Preview() {
 
         {isChatOpen && (
           <div className="fixed inset-0 z-50 flex items-end justify-end pointer-events-none">
-            <div className="pointer-events-auto h-[600px] w-full max-w-md m-4 rounded-lg shadow-2xl border border-border overflow-hidden">
+            <div className="pointer-events-auto h-[630px] w-full max-w-md m-4 rounded-lg shadow-2xl border border-border overflow-hidden">
               <ChatPanelJson
                 currentPageId={currentPageId}
                 pages={sortedPages}
                 websiteId={websiteId}
                 font={websiteData.metadata?.font_family}
                 onClose={() => setIsChatOpen(false)}
+                websiteType={websiteData.metadata?.type}
               />
             </div>
           </div>
