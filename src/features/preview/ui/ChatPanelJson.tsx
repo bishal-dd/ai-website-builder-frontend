@@ -251,6 +251,130 @@ export function ChatPanelJson({
     isAddingNewPage,
   );
 
+  const generalSettingsPopover = (
+    <Popover
+      open={isGeneralSettingsOpen}
+      onOpenChange={setIsGeneralSettingsOpen}
+    >
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "flex w-full items-center justify-between rounded-xl border border-border/70 bg-card px-3 py-2.5 text-left text-sm shadow-sm transition-colors",
+            "hover:border-primary/40 hover:bg-accent/40",
+            "focus:outline-none focus:ring-2 focus:ring-primary/20",
+          )}
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <Settings className="h-4 w-4 shrink-0 text-primary" />
+            <span className="truncate font-medium">General Settings</span>
+          </span>
+
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
+              isGeneralSettingsOpen && "rotate-180",
+            )}
+          />
+        </button>
+      </PopoverTrigger>
+
+      <PopoverContent
+        align="start"
+        sideOffset={8}
+        className="w-80 rounded-2xl border-border/70 p-0 shadow-xl"
+      >
+        <div className="border-b border-border/70 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Settings className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold">General Settings</h3>
+          </div>
+
+          <p className="mt-1 text-xs text-muted-foreground">
+            Manage site-wide settings.
+          </p>
+        </div>
+
+        <div className="max-h-[320px] space-y-3 overflow-y-auto px-4 py-4">
+          {generalComponents.map((component) => (
+            <div
+              key={component.id}
+              className="rounded-xl border border-border/70 bg-background p-3"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    {component.label}
+                  </p>
+
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {component.id === "floating_whatsapp"
+                      ? "Show or hide the floating WhatsApp button."
+                      : "Change the global website font."}
+                  </p>
+                </div>
+
+                {component.type === "toggle" && (
+                  <button
+                    type="button"
+                    onClick={component.onChange}
+                    className={cn(
+                      "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                      component.value ? "bg-primary" : "bg-input",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
+                        component.value ? "translate-x-5" : "translate-x-0.5",
+                      )}
+                    />
+                  </button>
+                )}
+              </div>
+
+              {component.type === "font" && (
+                <div className="mt-3">
+                  <Select
+                    value={selectedFont}
+                    onValueChange={(font) => {
+                      setSelectedFont(font);
+
+                      updateWebsiteMutation({
+                        websiteId,
+                        body: {
+                          font_family: font,
+                        },
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="h-9 w-full rounded-lg text-xs">
+                      <SelectValue placeholder="Select font" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {GOOGLE_FONTS.map((font) => (
+                        <SelectItem
+                          key={font}
+                          value={font}
+                          style={{
+                            fontFamily: font,
+                          }}
+                        >
+                          {font}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isPending || !selectedPageId || isPromptTooLong)
@@ -330,119 +454,6 @@ export function ChatPanelJson({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
-            <Popover
-              open={isGeneralSettingsOpen}
-              onOpenChange={setIsGeneralSettingsOpen}
-            >
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-lg border border-border/70 bg-background hover:bg-accent"
-                  title="General Settings"
-                >
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-
-              <PopoverContent
-                align="end"
-                sideOffset={10}
-                className="w-80 rounded-2xl border-border/70 p-0 shadow-xl"
-              >
-                <div className="border-b border-border/70 px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <Settings className="h-4 w-4 text-primary" />
-                    <h3 className="text-sm font-semibold">General Settings</h3>
-                  </div>
-
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Manage site-wide settings.
-                  </p>
-                </div>
-
-                <div className="max-h-[320px] space-y-3 overflow-y-auto px-4 py-4">
-                  {generalComponents.map((component) => (
-                    <div
-                      key={component.id}
-                      className="rounded-xl border border-border/70 bg-background p-3"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground">
-                            {component.label}
-                          </p>
-
-                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                            {component.id === "floating_whatsapp"
-                              ? "Show or hide the floating WhatsApp button."
-                              : "Change the global website font."}
-                          </p>
-                        </div>
-
-                        {component.type === "toggle" && (
-                          <button
-                            type="button"
-                            onClick={component.onChange}
-                            className={cn(
-                              "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
-                              component.value ? "bg-primary" : "bg-input",
-                            )}
-                          >
-                            <span
-                              className={cn(
-                                "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                                component.value
-                                  ? "translate-x-5"
-                                  : "translate-x-0.5",
-                              )}
-                            />
-                          </button>
-                        )}
-                      </div>
-
-                      {component.type === "font" && (
-                        <div className="mt-3">
-                          <Select
-                            value={selectedFont}
-                            onValueChange={(font) => {
-                              setSelectedFont(font);
-
-                              updateWebsiteMutation({
-                                websiteId,
-                                body: {
-                                  font_family: font,
-                                },
-                              });
-                            }}
-                          >
-                            <SelectTrigger className="h-9 w-full rounded-lg text-xs">
-                              <SelectValue placeholder="Select font" />
-                            </SelectTrigger>
-
-                            <SelectContent>
-                              {GOOGLE_FONTS.map((font) => (
-                                <SelectItem
-                                  key={font}
-                                  value={font}
-                                  style={{
-                                    fontFamily: font,
-                                  }}
-                                >
-                                  {font}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-
             {onClose && (
               <Button
                 variant="ghost"
@@ -492,6 +503,12 @@ export function ChatPanelJson({
                   </div>
                 )}
               </div>
+
+              {index === 0 && message.role === "assistant" && (
+                <div className="pl-9">
+                  <div className="max-w-[82%]">{generalSettingsPopover}</div>
+                </div>
+              )}
             </React.Fragment>
           ))}
         </div>
