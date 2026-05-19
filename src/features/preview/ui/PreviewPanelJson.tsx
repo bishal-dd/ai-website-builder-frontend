@@ -664,7 +664,7 @@ export function PreviewPanelJson({
         ) : (
           <div className="text-center text-muted-foreground">
             <Sparkles className="mx-auto mb-4 h-10 w-10" />
-            Start chatting to generate content
+            Website is loading...
           </div>
         )}
       </div>
