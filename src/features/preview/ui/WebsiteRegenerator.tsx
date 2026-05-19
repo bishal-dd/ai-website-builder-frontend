@@ -62,8 +62,8 @@ export function WebsiteRegenerator({
         isOpen={isOpen}
         backendProgress={progress}
         title="Regenerating Your Website"
-        description="Applying your requested changes to the selected page."
-        note="Your preview will refresh automatically when the update is ready."
+        description="It will only take a moment"
+        note=""
       />
       <audio ref={audioRef} src="/sounds/success.wav" />
     </>

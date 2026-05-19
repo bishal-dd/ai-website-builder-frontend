@@ -217,6 +217,7 @@ export default function Preview() {
                 websiteId={websiteId}
                 font={websiteData.metadata?.font_family}
                 onClose={() => setIsChatOpen(false)}
+                websiteType={websiteData.metadata?.type}
               />
             </div>
           </div>

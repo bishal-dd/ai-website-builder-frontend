@@ -1,10 +1,49 @@
-export function getRecommendedPrompts(pageName: string, isNewPage: boolean) {
+import { websiteTypes } from "@/types";
+export function getRecommendedPrompts(
+  pageName: string,
+  isNewPage: boolean,
+  websiteType?: string,
+) {
   if (isNewPage) {
-    return [
-      "Create a FAQ page for common customer questions",
-      "Create a pricing page with packages and features",
-      "Create a team page with member profiles",
-    ];
+    switch (websiteType) {
+      case websiteTypes.travelAgency:
+        return [
+          "Create a Flight Ticketing page",
+          "Create a treks page",
+          "Create a Transportation and Car Rental page",
+        ];
+      case websiteTypes.hotel:
+        return [
+          "Create a Spa and Wellness page",
+          "Create a Conference and Events page",
+          "Create a Local Attractions page",
+        ];
+      case websiteTypes.portfolio:
+        return [
+          "Create a Case Studies page",
+          "Create a Resume or Experience page",
+          "Create a Skills and Technologies page",
+        ];
+      case websiteTypes.restaurant:
+        return [
+          "Create a Catering Services page",
+          "Create a Events and Live Music page",
+          "Create a Chef Specialties page",
+        ];
+      case websiteTypes.smallMediumBusiness:
+        return [
+          "Create a Booking or Appointment page",
+          "Create a Careers page",
+        ];
+      case websiteTypes.realEstate:
+        return ["Create a Buyer's Guide page", "Create a Seller's Guide page"];
+      default:
+        return [
+          "Create a FAQ page for common customer questions",
+          "Create a pricing page with packages and features",
+          "Create a team page with member profiles",
+        ];
+    }
   }
 
   const name = pageName.toLowerCase();

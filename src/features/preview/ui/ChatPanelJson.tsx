@@ -119,6 +119,8 @@ interface ChatPanelJsonProps {
   font?: string;
   pages: WebPages[];
   currentPageId: string;
+  contactPhone?: string;
+  websiteType?: string;
 }
 
 // Map page names to appropriate icons
@@ -144,6 +146,7 @@ export function ChatPanelJson({
   font,
   pages,
   currentPageId,
+  contactPhone,
 }: ChatPanelJsonProps) {
   const [messages, setMessages] = useState<Message[]>([]);
 
@@ -161,23 +164,29 @@ export function ChatPanelJson({
   const [selectedPageId, setSelectedPageId] = useState<string>(currentPageId);
   const { data } = useGetGeneratedWebsite(websiteId);
   const generalComponents = [
-    {
-      id: "floating_whatsapp",
-      label: "Floating WhatsApp",
-      type: "toggle",
-      value: isWhatsappEnabled,
-      onChange: async () => {
-        const newValue = !isWhatsappEnabled;
-        setIsWhatsappEnabled(newValue);
+    ...(contactPhone?.trim()
+      ? [
+          {
+            id: "floating_whatsapp",
+            label: "Floating WhatsApp",
+            type: "toggle",
+            value: isWhatsappEnabled,
+            onChange: async () => {
+              const newValue = !isWhatsappEnabled;
 
-        updateWebsiteMutation({
-          websiteId,
-          body: {
-            floating_whatsapp_enabled: newValue,
+              setIsWhatsappEnabled(newValue);
+
+              updateWebsiteMutation({
+                websiteId,
+                body: {
+                  floating_whatsapp_enabled: newValue,
+                },
+              });
+            },
           },
-        });
-      },
-    },
+        ]
+      : []),
+
     {
       id: "font_family",
       label: "Website Font",
