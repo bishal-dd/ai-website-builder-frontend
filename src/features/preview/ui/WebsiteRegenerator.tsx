@@ -58,7 +58,13 @@ export function WebsiteRegenerator({
 
   return (
     <>
-      <LoadingState isOpen={isOpen} backendProgress={progress} />
+      <LoadingState
+        isOpen={isOpen}
+        backendProgress={progress}
+        title="Regenerating Your Website"
+        description="Applying your requested changes to the selected page."
+        note="Your preview will refresh automatically when the update is ready."
+      />
       <audio ref={audioRef} src="/sounds/success.wav" />
     </>
   );

@@ -251,6 +251,130 @@ export function ChatPanelJson({
     isAddingNewPage,
   );
 
+  const generalSettingsPopover = (
+    <Popover
+      open={isGeneralSettingsOpen}
+      onOpenChange={setIsGeneralSettingsOpen}
+    >
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "flex w-full items-center justify-between rounded-xl border border-border/70 bg-card px-3 py-2.5 text-left text-sm shadow-sm transition-colors",
+            "hover:border-primary/40 hover:bg-accent/40",
+            "focus:outline-none focus:ring-2 focus:ring-primary/20",
+          )}
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <Settings className="h-4 w-4 shrink-0 text-primary" />
+            <span className="truncate font-medium">General Settings</span>
+          </span>
+
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
+              isGeneralSettingsOpen && "rotate-180",
+            )}
+          />
+        </button>
+      </PopoverTrigger>
+
+      <PopoverContent
+        align="start"
+        sideOffset={8}
+        className="w-80 rounded-2xl border-border/70 p-0 shadow-xl"
+      >
+        <div className="border-b border-border/70 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Settings className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold">General Settings</h3>
+          </div>
+
+          <p className="mt-1 text-xs text-muted-foreground">
+            Manage site-wide settings.
+          </p>
+        </div>
+
+        <div className="max-h-[320px] space-y-3 overflow-y-auto px-4 py-4">
+          {generalComponents.map((component) => (
+            <div
+              key={component.id}
+              className="rounded-xl border border-border/70 bg-background p-3"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    {component.label}
+                  </p>
+
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {component.id === "floating_whatsapp"
+                      ? "Show or hide the floating WhatsApp button."
+                      : "Change the global website font."}
+                  </p>
+                </div>
+
+                {component.type === "toggle" && (
+                  <button
+                    type="button"
+                    onClick={component.onChange}
+                    className={cn(
+                      "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                      component.value ? "bg-primary" : "bg-input",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
+                        component.value ? "translate-x-5" : "translate-x-0.5",
+                      )}
+                    />
+                  </button>
+                )}
+              </div>
+
+              {component.type === "font" && (
+                <div className="mt-3">
+                  <Select
+                    value={selectedFont}
+                    onValueChange={(font) => {
+                      setSelectedFont(font);
+
+                      updateWebsiteMutation({
+                        websiteId,
+                        body: {
+                          font_family: font,
+                        },
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="h-9 w-full rounded-lg text-xs">
+                      <SelectValue placeholder="Select font" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {GOOGLE_FONTS.map((font) => (
+                        <SelectItem
+                          key={font}
+                          value={font}
+                          style={{
+                            fontFamily: font,
+                          }}
+                        >
+                          {font}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isPending || !selectedPageId || isPromptTooLong)
@@ -330,119 +454,6 @@ export function ChatPanelJson({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
-            <Popover
-              open={isGeneralSettingsOpen}
-              onOpenChange={setIsGeneralSettingsOpen}
-            >
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-lg border border-border/70 bg-background hover:bg-accent"
-                  title="General Settings"
-                >
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-
-              <PopoverContent
-                align="end"
-                sideOffset={10}
-                className="w-80 rounded-2xl border-border/70 p-0 shadow-xl"
-              >
-                <div className="border-b border-border/70 px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <Settings className="h-4 w-4 text-primary" />
-                    <h3 className="text-sm font-semibold">General Settings</h3>
-                  </div>
-
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Manage site-wide settings.
-                  </p>
-                </div>
-
-                <div className="max-h-[320px] space-y-3 overflow-y-auto px-4 py-4">
-                  {generalComponents.map((component) => (
-                    <div
-                      key={component.id}
-                      className="rounded-xl border border-border/70 bg-background p-3"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground">
-                            {component.label}
-                          </p>
-
-                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                            {component.id === "floating_whatsapp"
-                              ? "Show or hide the floating WhatsApp button."
-                              : "Change the global website font."}
-                          </p>
-                        </div>
-
-                        {component.type === "toggle" && (
-                          <button
-                            type="button"
-                            onClick={component.onChange}
-                            className={cn(
-                              "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
-                              component.value ? "bg-primary" : "bg-input",
-                            )}
-                          >
-                            <span
-                              className={cn(
-                                "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                                component.value
-                                  ? "translate-x-5"
-                                  : "translate-x-0.5",
-                              )}
-                            />
-                          </button>
-                        )}
-                      </div>
-
-                      {component.type === "font" && (
-                        <div className="mt-3">
-                          <Select
-                            value={selectedFont}
-                            onValueChange={(font) => {
-                              setSelectedFont(font);
-
-                              updateWebsiteMutation({
-                                websiteId,
-                                body: {
-                                  font_family: font,
-                                },
-                              });
-                            }}
-                          >
-                            <SelectTrigger className="h-9 w-full rounded-lg text-xs">
-                              <SelectValue placeholder="Select font" />
-                            </SelectTrigger>
-
-                            <SelectContent>
-                              {GOOGLE_FONTS.map((font) => (
-                                <SelectItem
-                                  key={font}
-                                  value={font}
-                                  style={{
-                                    fontFamily: font,
-                                  }}
-                                >
-                                  {font}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-
             {onClose && (
               <Button
                 variant="ghost"
@@ -492,6 +503,12 @@ export function ChatPanelJson({
                   </div>
                 )}
               </div>
+
+              {index === 0 && message.role === "assistant" && (
+                <div className="pl-9">
+                  <div className="max-w-[82%]">{generalSettingsPopover}</div>
+                </div>
+              )}
             </React.Fragment>
           ))}
         </div>
@@ -500,120 +517,6 @@ export function ChatPanelJson({
       {/* Composer */}
       <div className="shrink-0 border-t border-border/70 bg-card/95">
         <div className="max-h-[52vh] space-y-3 overflow-y-auto px-4 py-3">
-          {/* Page Selector */}
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className={cn(
-                  "group flex w-full items-center justify-between gap-3 rounded-xl border border-border/70 bg-background px-3 py-2.5 text-left transition-all",
-                  "hover:border-primary/40 hover:bg-accent/40",
-                  "focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/15",
-                  open &&
-                    "border-primary/50 bg-accent/40 ring-2 ring-primary/15",
-                )}
-              >
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <SelectedIcon className="h-4 w-4" />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Editing
-                    </p>
-                    <p className="truncate text-sm font-semibold text-foreground">
-                      {selectedPageLabel}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <Badge
-                    variant="secondary"
-                    className="hidden rounded-md px-1.5 text-[10px] font-medium sm:inline-flex"
-                  >
-                    {pages.length}
-                  </Badge>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 text-muted-foreground transition-transform",
-                      open && "rotate-180",
-                    )}
-                  />
-                </div>
-              </button>
-            </PopoverTrigger>
-
-            <PopoverContent
-              className="w-[var(--radix-popover-trigger-width)] p-0"
-              align="start"
-              sideOffset={8}
-            >
-              <Command>
-                <CommandInput placeholder="Search pages..." />
-                <CommandList className="max-h-[240px]">
-                  <CommandEmpty>No pages found.</CommandEmpty>
-
-                  <CommandGroup>
-                    {pages.map((page) => {
-                      const pageLabel = page.title ?? page.page;
-                      const PageIcon = getPageIcon(pageLabel);
-                      const isSelected = page.page_id === selectedPageId;
-
-                      return (
-                        <CommandItem
-                          key={page.page_id}
-                          value={pageLabel}
-                          onSelect={() => {
-                            setSelectedPageId(page.page_id);
-                            setOpen(false);
-                          }}
-                          className={cn(
-                            "flex cursor-pointer items-center gap-3 px-3 py-2.5",
-                            isSelected && "bg-primary/5",
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                              isSelected
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted text-muted-foreground",
-                            )}
-                          >
-                            <PageIcon className="h-4 w-4" />
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <p
-                              className={cn(
-                                "truncate text-sm font-medium",
-                                isSelected && "text-primary",
-                              )}
-                            >
-                              {pageLabel}
-                            </p>
-
-                            {page.page && page.title && (
-                              <p className="truncate text-xs text-muted-foreground">
-                                /{page.page}
-                              </p>
-                            )}
-                          </div>
-
-                          {isSelected && (
-                            <Check className="h-4 w-4 shrink-0 text-primary" />
-                          )}
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-
           {/* Recommended Prompts */}
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
@@ -632,22 +535,32 @@ export function ChatPanelJson({
               )}
             </div>
 
-            <div className="space-y-1.5">
-              {recommendedPrompts.map((prompt) => (
+            <div className="space-y-1">
+              {recommendedPrompts.map((prompt, index) => (
                 <button
                   key={prompt}
                   type="button"
                   disabled={isPending}
                   onClick={() => setInput(prompt)}
                   className={cn(
-                    "flex w-full items-start rounded-lg border border-border/70 bg-background px-3 py-2 text-left text-xs leading-relaxed text-muted-foreground transition-colors",
-                    "hover:border-primary/50 hover:bg-primary/10 hover:text-primary",
+                    "group flex w-full items-start gap-3 rounded-lg px-2.5 py-2 text-left text-sm leading-relaxed transition-colors",
+                    "text-muted-foreground hover:bg-accent hover:text-foreground",
+                    "focus:outline-none focus:ring-2 focus:ring-primary/20",
                     "disabled:cursor-not-allowed disabled:opacity-50",
-                    input === prompt &&
-                      "border-primary bg-primary/10 text-primary",
+                    input === prompt && "bg-primary/10 text-foreground",
                   )}
                 >
-                  {prompt}
+                  <span
+                    className={cn(
+                      "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-muted text-[10px] font-semibold text-foreground transition-colors",
+                      "group-hover:bg-primary group-hover:text-primary-foreground",
+                      input === prompt && "bg-primary text-primary-foreground",
+                    )}
+                  >
+                    {index + 1}
+                  </span>
+
+                  <span className="min-w-0 flex-1">{prompt}</span>
                 </button>
               ))}
             </div>
@@ -655,6 +568,121 @@ export function ChatPanelJson({
 
           {/* Input */}
           <form onSubmit={handleSubmit} className="space-y-2.5">
+            {/* Editing Page Selector */}
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "group flex w-full items-center justify-between gap-3 rounded-xl border border-border/70 bg-background px-3 py-2.5 text-left transition-all",
+                    "hover:border-primary/40 hover:bg-accent/40",
+                    "focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/15",
+                    open &&
+                      "border-primary/50 bg-accent/40 ring-2 ring-primary/15",
+                  )}
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <SelectedIcon className="h-4 w-4" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Editing
+                      </p>
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {selectedPageLabel}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <Badge
+                      variant="secondary"
+                      className="hidden rounded-md px-1.5 text-[10px] font-medium sm:inline-flex"
+                    >
+                      {pages.length}
+                    </Badge>
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 text-muted-foreground transition-transform",
+                        open && "rotate-180",
+                      )}
+                    />
+                  </div>
+                </button>
+              </PopoverTrigger>
+
+              <PopoverContent
+                className="w-[var(--radix-popover-trigger-width)] p-0"
+                align="start"
+                sideOffset={8}
+              >
+                <Command>
+                  <CommandInput placeholder="Search pages..." />
+                  <CommandList className="max-h-[240px]">
+                    <CommandEmpty>No pages found.</CommandEmpty>
+
+                    <CommandGroup>
+                      {pages.map((page) => {
+                        const pageLabel = page.title ?? page.page;
+                        const PageIcon = getPageIcon(pageLabel);
+                        const isSelected = page.page_id === selectedPageId;
+
+                        return (
+                          <CommandItem
+                            key={page.page_id}
+                            value={pageLabel}
+                            onSelect={() => {
+                              setSelectedPageId(page.page_id);
+                              setOpen(false);
+                            }}
+                            className={cn(
+                              "flex cursor-pointer items-center gap-3 px-3 py-2.5",
+                              isSelected && "bg-primary/5",
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                                isSelected
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted text-muted-foreground",
+                              )}
+                            >
+                              <PageIcon className="h-4 w-4" />
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <p
+                                className={cn(
+                                  "truncate text-sm font-medium",
+                                  isSelected && "text-primary",
+                                )}
+                              >
+                                {pageLabel}
+                              </p>
+
+                              {page.page && page.title && (
+                                <p className="truncate text-xs text-muted-foreground">
+                                  /{page.page}
+                                </p>
+                              )}
+                            </div>
+
+                            {isSelected && (
+                              <Check className="h-4 w-4 shrink-0 text-primary" />
+                            )}
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+
+            {/* Input */}
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -676,20 +704,30 @@ export function ChatPanelJson({
             <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
-                variant={
-                  selectedPageId === ADD_NEW_PAGE ? "default" : "outline"
-                }
+                variant={isAddingNewPage ? "default" : "outline"}
                 size="sm"
                 disabled={isPending}
                 onClick={() => {
-                  setSelectedPageId(ADD_NEW_PAGE);
+                  if (isAddingNewPage) {
+                    setSelectedPageId(currentPageId || pages[0]?.page_id || "");
+                  } else {
+                    setSelectedPageId(ADD_NEW_PAGE);
+                  }
+
                   setInput("");
                   setOpen(false);
                 }}
                 className="h-9 min-w-0 gap-2 rounded-lg"
               >
-                <Plus className="h-4 w-4 shrink-0" />
-                <span className="truncate">Add Page</span>
+                {isAddingNewPage ? (
+                  <Layers className="h-4 w-4 shrink-0" />
+                ) : (
+                  <Plus className="h-4 w-4 shrink-0" />
+                )}
+
+                <span className="truncate">
+                  {isAddingNewPage ? "Edit Page" : "Add Page"}
+                </span>
               </Button>
 
               <Button
