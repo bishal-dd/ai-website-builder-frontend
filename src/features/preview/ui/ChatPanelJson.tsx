@@ -518,22 +518,32 @@ export function ChatPanelJson({
               )}
             </div>
 
-            <div className="space-y-1.5">
-              {recommendedPrompts.map((prompt) => (
+            <div className="space-y-1">
+              {recommendedPrompts.map((prompt, index) => (
                 <button
                   key={prompt}
                   type="button"
                   disabled={isPending}
                   onClick={() => setInput(prompt)}
                   className={cn(
-                    "flex w-full items-start rounded-lg border border-border/70 bg-background px-3 py-2 text-left text-xs leading-relaxed text-muted-foreground transition-colors",
-                    "hover:border-primary/50 hover:bg-primary/10 hover:text-primary",
+                    "group flex w-full items-start gap-3 rounded-lg px-2.5 py-2 text-left text-sm leading-relaxed transition-colors",
+                    "text-muted-foreground hover:bg-accent hover:text-foreground",
+                    "focus:outline-none focus:ring-2 focus:ring-primary/20",
                     "disabled:cursor-not-allowed disabled:opacity-50",
-                    input === prompt &&
-                      "border-primary bg-primary/10 text-primary",
+                    input === prompt && "bg-primary/10 text-foreground",
                   )}
                 >
-                  {prompt}
+                  <span
+                    className={cn(
+                      "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-muted text-[10px] font-semibold text-foreground transition-colors",
+                      "group-hover:bg-primary group-hover:text-primary-foreground",
+                      input === prompt && "bg-primary text-primary-foreground",
+                    )}
+                  >
+                    {index + 1}
+                  </span>
+
+                  <span className="min-w-0 flex-1">{prompt}</span>
                 </button>
               ))}
             </div>
