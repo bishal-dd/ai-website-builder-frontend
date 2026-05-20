@@ -532,12 +532,42 @@ export function JsonRenderer({
 
       if (isBackgroundImage) {
         return (
-          <img
+          <div
             key={id}
-            src={imageSrc}
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ zIndex: 0 }}
-          />
+            className="absolute inset-0"
+            onMouseEnter={() => device === "desktop" && setHoveredImageId(id)}
+            onMouseLeave={() => device === "desktop" && setHoveredImageId(null)}
+          >
+            <img
+              src={imageSrc}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ zIndex: 0 }}
+            />
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+
+                if (!uploadingImageId) {
+                  fileInputRefs.current[String(id)]?.click();
+                }
+              }}
+              className="absolute top-2 right-2 z-50 bg-yellow-400 text-black px-3 py-1.5 rounded-md shadow-md text-xs font-semibold"
+            >
+              {uploadingImageId === id ? "Uploading..." : "Change"}
+            </button>
+
+            <input
+              ref={(el) => {
+                fileInputRefs.current[String(id)] = el;
+              }}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploadingImageId === id}
+              onChange={(e) => handleImageChange(e, id, componentKey)}
+            />
+          </div>
         );
       }
 
