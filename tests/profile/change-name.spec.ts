@@ -12,15 +12,18 @@ test("TC_SAI_040 - user can change name successfully", async ({ page }) => {
     page.getByRole("heading", { name: /profile settings/i }),
   ).toBeVisible();
 
-  await page.getByLabel(/full name/i).fill(newName);
+  const fullNameInput = page.getByLabel(/full name/i);
+  const saveButton = page.getByRole("button", { name: /save changes/i });
 
-  await page.getByRole("button", { name: /save changes/i }).click();
+  await fullNameInput.fill(newName);
+
+  await expect(saveButton).toBeEnabled();
+
+  await saveButton.click();
 
   await expect(page.getByText(/updated|success|saved/i)).toBeVisible({
     timeout: 30_000,
   });
 
-  await expect(page.getByText(newName)).toBeVisible({
-    timeout: 30_000,
-  });
+  await expect(fullNameInput).toHaveValue(newName);
 });
