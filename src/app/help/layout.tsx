@@ -6,7 +6,11 @@ import { source } from "@/lib/source";
 
 export default function HelpLayout({ children }: { children: ReactNode }) {
   return (
-    <RootProvider>
+    <RootProvider
+      search={{
+        enabled: false,
+      }}
+    >
       <DocsLayout tree={source.pageTree} {...baseOptions()}>
         {children}
       </DocsLayout>
