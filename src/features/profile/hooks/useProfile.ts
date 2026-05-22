@@ -66,33 +66,34 @@ export function useProfileLogic() {
     name: ["name", "email"],
   });
 
-  useEffect(() => {
-    if (!user) return;
+  const userId = user?.id ?? user?.email ?? null;
+  const userName = user?.name ?? "";
+  const userEmail = user?.email ?? "";
 
-    const userId = user.id ?? user.email;
+  useEffect(() => {
+    if (!userId) return;
 
     if (initializedUserId.current === userId) return;
 
     initializedUserId.current = userId;
 
     form.reset({
-      name: user.name || "",
-      email: user.email || "",
+      name: userName,
+      email: userEmail,
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
     });
-  }, [user?.id, user?.email, user?.name, form]);
+  }, [userId, userName, userEmail, form]);
 
   const hasProfileChanges =
-    watchedName?.trim() !== (user?.name || "").trim() ||
-    watchedEmail?.trim() !== (user?.email || "").trim();
+    watchedName?.trim() !== userName.trim() ||
+    watchedEmail?.trim() !== userEmail.trim();
 
   const onProfileUpdate = async (data: ProfileFormValues) => {
     try {
-      const nameChanged = data.name.trim() !== (user?.name || "").trim();
-      const emailChanged = data.email.trim() !== (user?.email || "").trim();
-
+      const nameChanged = data.name.trim() !== userName.trim();
+      const emailChanged = data.email.trim() !== userEmail.trim();
       if (!nameChanged && !emailChanged) {
         toast.info("No profile changes to save.");
         return;
