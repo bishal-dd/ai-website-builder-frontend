@@ -1,17 +1,26 @@
 "use client";
 
 import type React from "react";
-import type { WebElement, SharedComponents } from "@/features/preview/types";
-import { createElement, type ReactElement, useState, useRef } from "react";
+import { createElement, type ReactElement, useRef, useState } from "react";
+
+import type { SharedComponents, WebElement } from "@/features/preview/types";
+import { usePreviewImageUpload } from "@/features/preview/hooks/usePreviewImageUpload";
+import { normalizeAttributes } from "@/features/preview/utils/rendererAttributes";
+import { findCarouselSlides } from "@/features/preview/utils/rendererElements";
+import {
+  cssStringToObject,
+  hasExplicitSize,
+} from "@/features/preview/utils/rendererStyles";
 import { useSession } from "@/shared/session";
-import { CarouselRenderer } from "./interactiveComponents/CarouselRenderer";
 import { cn } from "@/lib/utils";
+
+import { CarouselRenderer } from "./interactiveComponents/CarouselRenderer";
 import { FloatingWhatsApp } from "./interactiveComponents/FloatingWhatsApp";
 
 interface JsonRendererProps {
   elements: WebElement[];
   sharedComponents?: SharedComponents;
-  device?: "desktop" | "tablet" | "mobile"; // Prop from PreviewPanel
+  device?: "desktop" | "tablet" | "mobile";
   onUpdateElement?: (id: number, updates: Partial<WebElement>) => void;
   contactPhone?: string;
   floatingWhatsappEnabled?: boolean;
@@ -21,99 +30,6 @@ interface JsonRendererProps {
     updates: Partial<WebElement>,
   ) => void;
 }
-
-const cssStringToObject = (
-  cssString: string | undefined,
-): React.CSSProperties => {
-  if (!cssString) return {};
-  const style: Record<string, string | number> = {};
-  cssString.split(";").forEach((rule) => {
-    const trimmed = rule.trim();
-    if (!trimmed) return;
-    const colonIndex = trimmed.indexOf(":");
-    if (colonIndex === -1) return;
-    const keyRaw = trimmed.slice(0, colonIndex).trim();
-    const value = trimmed.slice(colonIndex + 1).trim();
-    if (!keyRaw || !value) return;
-    const key = keyRaw.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
-    style[key] = value;
-  });
-  return style as React.CSSProperties;
-};
-
-const hasExplicitSize = (className?: string) =>
-  !!className?.match(/\b(w|h)-(\d+|\[.+?\])\b/);
-
-const normalizeAttributes = (
-  attrs?: Record<string, unknown>,
-): Record<string, unknown> => {
-  if (!attrs) return {};
-
-  const result: Record<string, unknown> = {};
-
-  for (const [key, value] of Object.entries(attrs)) {
-    if (key === "style") continue;
-
-    // 1️⃣ Preserve data-* EXACTLY
-    if (key.startsWith("data-")) {
-      result[key] = value;
-      continue;
-    }
-
-    // 2️⃣ Preserve aria-* EXACTLY
-    if (key.startsWith("aria-")) {
-      result[key] = value;
-      continue;
-    }
-
-    // 3️⃣ Event handlers must be FUNCTIONS
-    if (key.toLowerCase().startsWith("on")) {
-      // Ignore string-based handlers (HTML-style)
-      if (typeof value === "function") {
-        const reactEvent = "on" + key.slice(2, 3).toUpperCase() + key.slice(3);
-        result[reactEvent] = value;
-      }
-      continue;
-    }
-
-    // 4️⃣ Convert kebab-case → camelCase (SVG & HTML attrs)
-    const camelKey = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-
-    const allowedAttributes = new Set([
-      "src",
-      "alt",
-      "href",
-      "target",
-      "rel",
-      "className",
-      "id",
-      "title",
-      "width",
-      "height",
-      "viewBox",
-      "fill",
-      "stroke",
-      "xmlns",
-      "strokeWidth",
-      "strokeLinecap",
-      "strokeLinejoin",
-      "d",
-      "r",
-      "cx",
-      "cy",
-    ]);
-
-    if (
-      camelKey.startsWith("data-") ||
-      camelKey.startsWith("aria-") ||
-      allowedAttributes.has(camelKey)
-    ) {
-      result[camelKey] = value;
-    }
-  }
-
-  return result;
-};
 
 export function JsonRenderer({
   elements,
@@ -125,14 +41,20 @@ export function JsonRenderer({
   onUpdateSharedElement,
 }: JsonRendererProps) {
   const { user } = useSession();
+
   const [hoveredImageId, setHoveredImageId] = useState<number | null>(null);
   const [activeImageId, setActiveImageId] = useState<number | null>(null);
-  const [uploadingImageId, setUploadingImageId] = useState<number | null>(null);
-  const [isEditingText, setIsEditingText] = useState(false); // New State
+  const [isEditingText, setIsEditingText] = useState(false);
 
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  const { uploadingImageId, uploadImage } = usePreviewImageUpload({
+    userId: user?.id,
+  });
+
   const isPaused =
     isEditingText || uploadingImageId !== null || activeImageId !== null;
+
   const handleTextSave = (
     id: number,
     componentKey: "navbar" | "footer" | undefined,
@@ -141,9 +63,16 @@ export function JsonRenderer({
     if (newContent.trim() === "") return;
 
     if (componentKey && onUpdateSharedElement) {
-      onUpdateSharedElement(componentKey, id, { content: newContent });
-    } else if (onUpdateElement) {
-      onUpdateElement(id, { content: newContent });
+      onUpdateSharedElement(componentKey, id, {
+        content: newContent,
+      });
+      return;
+    }
+
+    if (onUpdateElement) {
+      onUpdateElement(id, {
+        content: newContent,
+      });
     }
   };
 
@@ -153,47 +82,21 @@ export function JsonRenderer({
     componentKey?: "navbar" | "footer",
   ) => {
     const file = event.target.files?.[0];
+
     if (!file) return;
+
     const updater = componentKey
       ? (content: string) =>
           onUpdateSharedElement?.(componentKey, id, { content })
       : (content: string) => onUpdateElement?.(id, { content });
-    try {
-      setUploadingImageId(id); // 👈 start loader
-      const fileKey = `${crypto.randomUUID()}.${file.name.split(".").pop() || "png"}`;
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-      if (!backendUrl) {
-        throw new Error("NEXT_PUBLIC_BACKEND_URL is not defined");
-      }
+    await uploadImage({
+      file,
+      elementId: id,
+      onUploaded: updater,
+    });
 
-      const presignUrlResponse = await fetch(`${backendUrl}/presign`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user?.id,
-          fileName: fileKey,
-          fileType: file.type,
-        }),
-      });
-      const { url: presignedUrl } = await presignUrlResponse.json();
-      await fetch(presignedUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      const cloudfront = process.env.NEXT_PUBLIC_CLOUDFRONT_URL;
-
-      if (!cloudfront) {
-        throw new Error("NEXT_PUBLIC_CLOUDFRONT_URL is not defined");
-      }
-
-      updater(`${cloudfront}/${user?.id}/previews/images/${fileKey}`);
-    } catch (err) {
-      console.error("Upload failed", err);
-    } finally {
-      setUploadingImageId(null); // 👈 stop loader
-    }
+    event.target.value = "";
   };
 
   const renderElement = (
@@ -211,7 +114,7 @@ export function JsonRenderer({
 
     const props: React.AllHTMLAttributes<HTMLElement> & { key: React.Key } = {
       key: `${id}-${device}`,
-      className: className,
+      className,
       ...normalizeAttributes(attributes),
       style: {
         ...cssStringToObject(attributes?.style),
@@ -222,23 +125,9 @@ export function JsonRenderer({
 
     if (componentType === "carousel") {
       const autoplay = String(element.attributes?.["data-autoplay"]) === "true";
-
       const intervalAttr = element.attributes?.["data-interval"];
       const interval = intervalAttr ? Number(intervalAttr) : undefined;
-
-      const findSlides = (nodes?: WebElement[]): WebElement[] => {
-        if (!nodes) return [];
-
-        return nodes.flatMap((node) => {
-          if (node.attributes?.["data-role"] === "carousel-slide") {
-            return [node];
-          }
-
-          return findSlides(node.children);
-        });
-      };
-
-      const slides = findSlides(children);
+      const slides = findCarouselSlides(children);
 
       return (
         <CarouselRenderer
@@ -253,14 +142,13 @@ export function JsonRenderer({
       );
     }
 
-    // --- INLINE EDITING LOGIC ---
     const isLink = tag === "a";
+
     if (isLink) {
       props.href = undefined;
       props.onClick = undefined;
     }
 
-    // A text element is either a tag with direct content OR a span/p/label etc.
     const hasNoChildren = !children || children.length === 0;
 
     const isTextElement =
@@ -272,42 +160,45 @@ export function JsonRenderer({
     if (isEditable) {
       props.contentEditable = true;
       props.suppressContentEditableWarning = true;
+
       if (["h1", "h2", "p"].includes(tag)) {
         (
           props as unknown as React.HTMLAttributes<HTMLElement> &
             Record<string, unknown>
         )["data-tour"] = "editable-text";
       }
+
       props.style = {
         ...(props.style || {}),
         cursor: "text",
         transition: "all 0.15s ease",
       };
 
-      props.onFocus = (e) => {
+      props.onFocus = (event) => {
         setIsEditingText(true);
-        e.currentTarget.style.outline = "2px solid #facc15"; // yellow
+        event.currentTarget.style.outline = "2px solid #facc15";
       };
 
-      props.onBlur = (e) => {
+      props.onBlur = (event) => {
         setIsEditingText(false);
-        e.currentTarget.style.outline = "none";
-        handleTextSave(id, componentKey, e.currentTarget.innerText);
+        event.currentTarget.style.outline = "none";
+        handleTextSave(id, componentKey, event.currentTarget.innerText);
       };
 
-      props.onMouseEnter = (e) => {
-        e.currentTarget.style.outline = "2px dashed rgba(250,204,21,0.7)";
+      props.onMouseEnter = (event) => {
+        event.currentTarget.style.outline = "2px dashed rgba(250,204,21,0.7)";
       };
 
-      props.onMouseLeave = (e) => {
-        if (document.activeElement !== e.currentTarget) {
-          e.currentTarget.style.outline = "none";
+      props.onMouseLeave = (event) => {
+        if (document.activeElement !== event.currentTarget) {
+          event.currentTarget.style.outline = "none";
         }
       };
-      props.onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          e.currentTarget.blur();
+
+      props.onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          event.currentTarget.blur();
         }
       };
     }
@@ -318,24 +209,23 @@ export function JsonRenderer({
     if (isCarouselSlide) {
       return (
         <div key={id} className={cn("w-full h-full", className)}>
-          {/* Slide Content */}
           {children?.map((child) => renderElement(child, componentKey))}
 
-          {/* Small Edit Button - Always Visible */}
           <button
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={(event) => {
+              event.stopPropagation();
 
               const bgImage = children?.find(
-                (c) =>
-                  c.tag === "img" &&
-                  c.attributes?.["data-role"] === "carousel-bg",
+                (child) =>
+                  child.tag === "img" &&
+                  child.attributes?.["data-role"] === "carousel-bg",
               );
 
               if (bgImage) {
                 if (activeImageId !== bgImage.id) {
                   setActiveImageId(bgImage.id);
                 }
+
                 fileInputRefs.current[String(id)]?.click();
               }
             }}
@@ -345,21 +235,21 @@ export function JsonRenderer({
           </button>
 
           <input
-            ref={(el) => {
-              fileInputRefs.current[String(id)] = el;
+            ref={(element) => {
+              fileInputRefs.current[String(id)] = element;
             }}
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={(e) => {
+            onChange={(event) => {
               const bgImage = children?.find(
-                (c) =>
-                  c.tag === "img" &&
-                  c.attributes?.["data-role"] === "carousel-bg",
+                (child) =>
+                  child.tag === "img" &&
+                  child.attributes?.["data-role"] === "carousel-bg",
               );
 
               if (bgImage) {
-                handleImageChange(e, bgImage.id, componentKey);
+                handleImageChange(event, bgImage.id, componentKey);
                 setActiveImageId(null);
               }
             }}
@@ -373,17 +263,17 @@ export function JsonRenderer({
 
     if (isOverLaySection) {
       const bgImage = children?.find(
-        (c) => c.tag === "img" && c.attributes?.["data-role"] === "overlay-bg",
+        (child) =>
+          child.tag === "img" &&
+          child.attributes?.["data-role"] === "overlay-bg",
       );
 
       const isUploading = bgImage && uploadingImageId === bgImage.id;
 
       return (
         <section key={id} className={cn("relative", className)}>
-          {" "}
-          {/* Background */}
           {bgImage && renderElement(bgImage, componentKey)}
-          {/* Upload overlay (ONLY when uploading) */}
+
           {isUploading && (
             <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 text-white">
               <div className="flex flex-col items-center gap-2">
@@ -392,18 +282,19 @@ export function JsonRenderer({
               </div>
             </div>
           )}
-          {/* Overlay content */}
+
           <>
             {children
-              ?.filter((c) => c !== bgImage)
+              ?.filter((child) => child !== bgImage)
               .map((child) => renderElement(child, componentKey))}
           </>
-          {/* Edit button */}
+
           {bgImage && (
             <>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={(event) => {
+                  event.stopPropagation();
+
                   if (!isUploading) {
                     fileInputRefs.current[`overlay-${id}`]?.click();
                   }
@@ -414,15 +305,15 @@ export function JsonRenderer({
               </button>
 
               <input
-                ref={(el) => {
-                  fileInputRefs.current[`overlay-${id}`] = el;
+                ref={(element) => {
+                  fileInputRefs.current[`overlay-${id}`] = element;
                 }}
                 type="file"
                 accept="image/*"
                 className="hidden"
-                disabled={isUploading}
-                onChange={(e) => {
-                  handleImageChange(e, bgImage.id, componentKey);
+                disabled={Boolean(isUploading)}
+                onChange={(event) => {
+                  handleImageChange(event, bgImage.id, componentKey);
                 }}
               />
             </>
@@ -436,17 +327,17 @@ export function JsonRenderer({
 
     if (isHeroSection) {
       const bgImage = children?.find(
-        (c) => c.tag === "img" && c.attributes?.["data-role"] === "carousel-bg",
+        (child) =>
+          child.tag === "img" &&
+          child.attributes?.["data-role"] === "carousel-bg",
       );
 
       const isUploading = bgImage && uploadingImageId === bgImage.id;
 
       return (
         <section key={id} className={cn("relative", className)}>
-          {" "}
-          {/* Background */}
           {bgImage && renderElement(bgImage, componentKey)}
-          {/* Upload overlay (ONLY when uploading) */}
+
           {isUploading && (
             <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 text-white">
               <div className="flex flex-col items-center gap-2">
@@ -455,17 +346,18 @@ export function JsonRenderer({
               </div>
             </div>
           )}
-          {/* Overlay content */}
+
           <>
             {children
-              ?.filter((c) => c !== bgImage)
+              ?.filter((child) => child !== bgImage)
               .map((child) => renderElement(child, componentKey))}
           </>
-          {/* Edit button */}
+
           <button
             data-tour="hero-background"
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={(event) => {
+              event.stopPropagation();
+
               if (!isUploading) {
                 fileInputRefs.current[`hero-${id}`]?.click();
               }
@@ -474,18 +366,18 @@ export function JsonRenderer({
           >
             {isUploading ? "Uploading..." : "Change Background"}
           </button>
-          {/* Hidden input */}
+
           <input
-            ref={(el) => {
-              fileInputRefs.current[`hero-${id}`] = el;
+            ref={(element) => {
+              fileInputRefs.current[`hero-${id}`] = element;
             }}
             type="file"
             accept="image/*"
             className="hidden"
-            disabled={isUploading}
-            onChange={(e) => {
+            disabled={Boolean(isUploading)}
+            onChange={(event) => {
               if (bgImage) {
-                handleImageChange(e, bgImage.id, componentKey);
+                handleImageChange(event, bgImage.id, componentKey);
               }
             }}
           />
@@ -493,17 +385,14 @@ export function JsonRenderer({
       );
     }
 
-    // --- IMAGE LOGIC ---
-    // Inside renderElement, replace the img logic:
-    const hasSize = hasExplicitSize(className);
-
     if (tag === "img") {
       const imageSrc = content?.startsWith("http") ? content : attributes?.src;
       const fixedStyle = cssStringToObject(attributes?.style);
+
       const isBackgroundImage =
         element.attributes?.["data-role"] === "carousel-bg" ||
         element.attributes?.["data-role"] === "overlay-bg";
-      // ✅ STEP 1: Resolve role (explicit OR fallback)
+
       let role = element.attributes?.["data-role"];
 
       if (!role) {
@@ -519,13 +408,12 @@ export function JsonRenderer({
         }
       }
 
-      // ✅ STEP 2: Derive flags from role
       const isLogo = role === "logo";
       const isIcon = role === "social-icon";
       const isAvatar =
         className?.includes("rounded-full") && className?.match(/\bw-\d+/);
-      const isCover = role === "cover";
-      const isContain = role === "contain";
+
+      hasExplicitSize(className);
 
       const isActive =
         device === "desktop" ? hoveredImageId === id : activeImageId === id;
@@ -542,11 +430,12 @@ export function JsonRenderer({
               src={imageSrc}
               className="absolute inset-0 w-full h-full object-cover"
               style={{ zIndex: 0 }}
+              alt=""
             />
 
             <button
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={(event) => {
+                event.stopPropagation();
 
                 if (!uploadingImageId) {
                   fileInputRefs.current[String(id)]?.click();
@@ -558,14 +447,14 @@ export function JsonRenderer({
             </button>
 
             <input
-              ref={(el) => {
-                fileInputRefs.current[String(id)] = el;
+              ref={(element) => {
+                fileInputRefs.current[String(id)] = element;
               }}
               type="file"
               accept="image/*"
               className="hidden"
               disabled={uploadingImageId === id}
-              onChange={(e) => handleImageChange(e, id, componentKey)}
+              onChange={(event) => handleImageChange(event, id, componentKey)}
             />
           </div>
         );
@@ -599,15 +488,15 @@ export function JsonRenderer({
                     ...fixedStyle,
                     pointerEvents: "auto",
                   }),
-
               display: "block",
             },
           })}
-          {/* ✅ Normal images → always visible */}
+
           {!isLogo && !isIcon && (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={(event) => {
+                event.stopPropagation();
+
                 if (!uploadingImageId) {
                   fileInputRefs.current[String(id)]?.click();
                 }
@@ -618,7 +507,6 @@ export function JsonRenderer({
             </button>
           )}
 
-          {/* ✅ Logo & Icons → hover behavior */}
           {(isLogo || isIcon) && isActive && (
             <div
               className="absolute inset-0 flex items-center justify-center"
@@ -626,8 +514,9 @@ export function JsonRenderer({
                 backgroundColor: "rgba(0,0,0,0.35)",
                 zIndex: 9999,
               }}
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={(event) => {
+                event.stopPropagation();
+
                 if (!uploadingImageId) {
                   fileInputRefs.current[String(id)]?.click();
                 }
@@ -645,15 +534,16 @@ export function JsonRenderer({
               )}
             </div>
           )}
+
           <input
-            ref={(el) => {
-              fileInputRefs.current[String(id)] = el;
+            ref={(element) => {
+              fileInputRefs.current[String(id)] = element;
             }}
             type="file"
             accept="image/*"
             className="hidden"
             disabled={uploadingImageId === id}
-            onChange={(e) => handleImageChange(e, id, componentKey)}
+            onChange={(event) => handleImageChange(event, id, componentKey)}
           />
         </div>
       );
@@ -662,7 +552,7 @@ export function JsonRenderer({
     if (tag === "svg") {
       props.style = {
         ...props.style,
-        flexShrink: 0, // Prevent icons from squishing in flex containers
+        flexShrink: 0,
         display: "block",
       };
     }
@@ -671,7 +561,6 @@ export function JsonRenderer({
       ? children.flatMap((child, index) => {
           const el = renderElement(child, componentKey);
 
-          // add space between inline text/span siblings
           if (index < children.length - 1) {
             return [el, " "];
           }
@@ -687,9 +576,16 @@ export function JsonRenderer({
 
   return (
     <>
-      {sharedComponents?.navbar.map((el) => renderElement(el, "navbar"))}
-      <div>{elements.map((el) => renderElement(el))}</div>
-      {sharedComponents?.footer.map((el) => renderElement(el, "footer"))}
+      {sharedComponents?.navbar.map((element) =>
+        renderElement(element, "navbar"),
+      )}
+
+      <div>{elements.map((element) => renderElement(element))}</div>
+
+      {sharedComponents?.footer.map((element) =>
+        renderElement(element, "footer"),
+      )}
+
       {floatingWhatsappEnabled && (
         <FloatingWhatsApp phone={contactPhone ?? ""} />
       )}
