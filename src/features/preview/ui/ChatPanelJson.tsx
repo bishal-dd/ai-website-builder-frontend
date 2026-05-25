@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,16 +22,10 @@ import {
 import {
   Send,
   Sparkles,
-  User,
   X,
   ChevronDown,
   Check,
-  Home,
-  Info,
-  Mail,
   Settings,
-  ShoppingCart,
-  Users,
   Layers,
   Plus,
 } from "lucide-react";
@@ -50,63 +43,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getRecommendedPrompts } from "@/features/preview/utils/getRecommendedPrompts";
+import { useGoogleFonts } from "../hooks/useGoogleFonts";
+import {
+  ADD_NEW_PAGE,
+  GOOGLE_FONTS,
+  MAX_REGEN_PROMPT_LENGTH,
+} from "../constants/chat";
+import { getPageIcon } from "../utils/getPageIcon";
 
-const GOOGLE_FONTS = [
-  // Modern Sans
-  "Inter",
-  "Poppins",
-  "Roboto",
-  "Open Sans",
-  "Montserrat",
-  "Lato",
-  "Nunito",
-  "Raleway",
-  "Ubuntu",
-  "Work Sans",
-  "DM Sans",
-  "Manrope",
-  "Mulish",
-  "Rubik",
-  "Figtree",
-  "Outfit",
-  "Plus Jakarta Sans",
-
-  // Elegant / Luxury
-  "Playfair Display",
-  "Merriweather",
-  "Cormorant Garamond",
-  "Libre Baskerville",
-  "EB Garamond",
-  "Bodoni Moda",
-  "Prata",
-
-  // Bold / Creative
-  "Oswald",
-  "Bebas Neue",
-  "Anton",
-  "Archivo Black",
-  "Abril Fatface",
-  "Cinzel",
-
-  // Friendly / Startup
-  "Quicksand",
-  "Comfortaa",
-  "Josefin Sans",
-  "Cabin",
-  "Karla",
-  "Hind",
-  "Varela Round",
-
-  // Tech / Minimal
-  "Space Grotesk",
-  "Space Mono",
-  "IBM Plex Sans",
-  "JetBrains Mono",
-  "Source Sans 3",
-];
-const ADD_NEW_PAGE = "add_new_page";
-
-const MAX_REGEN_PROMPT_LENGTH = 1000;
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -123,23 +67,6 @@ interface ChatPanelJsonProps {
   websiteType?: string;
 }
 
-// Map page names to appropriate icons
-function getPageIcon(pageName: string) {
-  const name = pageName.toLowerCase();
-  if (name.includes("home") || name === "index" || name === "/") return Home;
-  if (name.includes("about")) return Info;
-  if (name.includes("contact")) return Mail;
-  if (name.includes("setting")) return Settings;
-  if (
-    name.includes("cart") ||
-    name.includes("shop") ||
-    name.includes("product")
-  )
-    return ShoppingCart;
-  if (name.includes("team") || name.includes("user")) return Users;
-  return Layers;
-}
-
 export function ChatPanelJson({
   onClose,
   websiteId,
@@ -149,21 +76,43 @@ export function ChatPanelJson({
   contactPhone,
   websiteType,
 }: ChatPanelJsonProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  useGoogleFonts();
 
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const promptLength = input.length;
-  const isPromptTooLong = promptLength > MAX_REGEN_PROMPT_LENGTH;
   const [isGeneralSettingsOpen, setIsGeneralSettingsOpen] = useState(false);
   const [regenJobId, setRegenJobId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [isWhatsappEnabled, setIsWhatsappEnabled] = useState(false);
   const [selectedFont, setSelectedFont] = useState(font || "Inter");
-  const { mutate: updateWebsiteMutation } = useUpdateWebsite();
-
-  /** Page selector state */
   const [selectedPageId, setSelectedPageId] = useState<string>(currentPageId);
+
+  const promptLength = input.length;
+  const isPromptTooLong = promptLength > MAX_REGEN_PROMPT_LENGTH;
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const { data } = useGetGeneratedWebsite(websiteId);
+  const { mutate: updateWebsiteMutation } = useUpdateWebsite();
+  const { mutate: regenerate, isPending } = useRegenerateWebsite();
+
+  const selectedPage = pages.find((page) => page.page_id === selectedPageId);
+
+  const selectedPageLabel =
+    selectedPageId === ADD_NEW_PAGE
+      ? "Add Additional Page"
+      : (selectedPage?.title ?? selectedPage?.page ?? "Select page");
+
+  const SelectedIcon = getPageIcon(selectedPageLabel);
+
+  const isAddingNewPage = selectedPageId === ADD_NEW_PAGE;
+
+  const recommendedPrompts = getRecommendedPrompts(
+    selectedPage?.page ?? selectedPage?.title ?? selectedPageLabel,
+    isAddingNewPage,
+    websiteType,
+  );
+
   const generalComponents = [
     ...(contactPhone?.trim()
       ? [
@@ -195,65 +144,26 @@ export function ChatPanelJson({
       value: selectedFont,
     },
   ];
+
   useEffect(() => {
     if (data?.floating_whatsapp_enabled !== undefined) {
       setIsWhatsappEnabled(data.floating_whatsapp_enabled);
     }
+
     if (data?.metadata?.font_family) {
       setSelectedFont(data.metadata.font_family);
     }
   }, [data]);
 
-  // Sync with preview page
   useEffect(() => {
     setSelectedPageId(currentPageId);
   }, [currentPageId]);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const { mutate: regenerate, isPending } = useRegenerateWebsite();
-
-  // Auto-scroll
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
-
-  useEffect(() => {
-    GOOGLE_FONTS.forEach((font) => {
-      const id = `font-${font.replace(/\s+/g, "-")}`;
-
-      if (document.getElementById(id)) return;
-
-      const link = document.createElement("link");
-
-      link.id = id;
-      link.rel = "stylesheet";
-
-      link.href = `https://fonts.googleapis.com/css2?family=${font.replace(
-        / /g,
-        "+",
-      )}:wght@300;400;500;600;700&display=swap`;
-
-      document.head.appendChild(link);
-    });
-  }, []);
-
-  const selectedPage = pages.find((p) => p.page_id === selectedPageId);
-  const selectedPageLabel =
-    selectedPageId === ADD_NEW_PAGE
-      ? "Add Additional Page"
-      : (selectedPage?.title ?? selectedPage?.page ?? "Select page");
-
-  const SelectedIcon = getPageIcon(selectedPageLabel);
-
-  const isAddingNewPage = selectedPageId === ADD_NEW_PAGE;
-
-  const recommendedPrompts = getRecommendedPrompts(
-    selectedPage?.page ?? selectedPage?.title ?? selectedPageLabel,
-    isAddingNewPage,
-    websiteType,
-  );
 
   const generalSettingsPopover = (
     <Popover
@@ -381,14 +291,17 @@ export function ChatPanelJson({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isPending || !selectedPageId || isPromptTooLong)
+
+    if (!input.trim() || isPending || !selectedPageId || isPromptTooLong) {
       return;
+    }
+
     const isNewPage = selectedPageId === ADD_NEW_PAGE;
 
     const pageLabel = isNewPage
       ? "Add Additional Page"
-      : (pages.find((p) => p.page_id === selectedPageId)?.title ??
-        pages.find((p) => p.page_id === selectedPageId)?.page ??
+      : (pages.find((page) => page.page_id === selectedPageId)?.title ??
+        pages.find((page) => page.page_id === selectedPageId)?.page ??
         "Unknown page");
 
     const userMessage: Message = {
@@ -399,7 +312,6 @@ export function ChatPanelJson({
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
-    console.log("Selected page ID:", selectedPageId);
 
     regenerate(
       {
@@ -411,6 +323,7 @@ export function ChatPanelJson({
         onSuccess: (data) => {
           if (data.jobId) {
             setRegenJobId(data.jobId);
+
             setMessages((prev) => [
               ...prev,
               {
@@ -424,6 +337,7 @@ export function ChatPanelJson({
         },
         onError: (err: unknown) => {
           const errorMessage = err instanceof Error ? err.message : String(err);
+
           setMessages((prev) => [
             ...prev,
             {
@@ -650,7 +564,6 @@ export function ChatPanelJson({
               </PopoverContent>
             </Popover>
 
-            {/* Input */}
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -728,6 +641,7 @@ export function ChatPanelJson({
           </p>
         </div>
       </div>
+
       {/* Regeneration Overlay */}
       {regenJobId && (
         <WebsiteRegenerator jobId={regenJobId} websiteId={websiteId} />
