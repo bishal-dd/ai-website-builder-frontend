@@ -14,9 +14,9 @@ import {
   getInitialPreviewPage,
 } from "@/features/preview/utils/previewPanel";
 
-import { PreviewHeader } from "@/features/preview/ui/panel/PreviewHeader";
-import { PageSelector } from "@/features/preview/ui/panel/PageSelector";
-import { PreviewFrame } from "@/features/preview/ui/panel/PreviewFrame";
+import { PreviewHeader } from "@/features/preview/ui/previewPanel/PreviewHeader";
+import { PageSelector } from "@/features/preview/ui/previewPanel/PageSelector";
+import { PreviewFrame } from "@/features/preview/ui/previewPanel/PreviewFrame";
 
 import type {
   DeviceType,

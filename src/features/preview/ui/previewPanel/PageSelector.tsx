@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { DeletePageAction } from "@/features/preview/ui/panel/DeletePageAction";
+import { DeletePageAction } from "@/features/preview/ui/previewPanel/DeletePageAction";
 import type { PreviewPage } from "@/features/preview/types/previewPanel";
 import { canDeletePage } from "@/features/preview/utils/previewPanel";
 
