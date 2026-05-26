@@ -1,0 +1,16 @@
+export const FIXED_MAIN_PAGE_SLUGS = [
+  "index",
+  "home",
+  "about",
+  "contact",
+  "services",
+  "tours",
+  "rooms",
+  "amenities",
+  "location",
+  "menu",
+  "projects",
+  "products",
+  "properties",
+  "agents",
+];
