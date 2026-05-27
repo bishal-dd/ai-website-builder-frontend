@@ -1,126 +1,88 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ChatPanelJson } from "./ui/ChatPanelJson";
-import { PreviewPanelJson } from "./ui/PreviewPanelJson";
-import { Button } from "@/components/ui/button";
+import { useCallback, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { MessageSquare } from "lucide-react";
+import posthog from "posthog-js";
+
+import { Button } from "@/components/ui/button";
 import type {
   WebElement,
   WebsiteData,
 } from "@/features/preview/types/webElement";
 import useGetGeneratedWebsite from "@/features/preview/hooks/useGetGeneratedWebsite";
-import { mapApiToWebsiteData } from "@/features/preview/utils/mapApiToWebsiteData";
-import useUpdateWebsitePage from "./hooks/useUpdateWebsitePage";
 import useUpdateWebsite from "@/features/preview/hooks/useUpdateWebsite";
-import { useParams } from "next/navigation";
-import posthog from "posthog-js";
-import {
-  startEditorOnboardingTourInFrame,
-  startAiHelperOnboardingTour,
-} from "./hooks/useEditorOnboardingTour";
+import useUpdateWebsitePage from "@/features/preview/hooks/useUpdateWebsitePage";
+import { usePreviewOnboardingTour } from "@/features/preview/hooks/usePreviewOnboardingTour";
+import { mapApiToWebsiteData } from "@/features/preview/utils/mapApiToWebsiteData";
+import { updateElementRecursive } from "@/features/preview/utils/previewElements";
+
+import { ChatPanelJson } from "./ui/ChatPanelJson";
+import { PreviewPanelJson } from "./ui/PreviewPanelJson";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
-
-  const updatePage = useUpdateWebsitePage();
-  const updateWebsite = useUpdateWebsite();
   const [contactPhone, setContactPhone] = useState<string>("");
-
+  const [currentPageId, setCurrentPageId] = useState<string>("");
   const [websiteData, setWebsiteData] = useState<WebsiteData>({
     elements: [],
-    sharedComponents: { navbar: [], footer: [] },
+    sharedComponents: {
+      navbar: [],
+      footer: [],
+    },
     metadata: {},
   });
-  const [currentPageId, setCurrentPageId] = useState<string>("");
 
   const params = useParams();
   const websiteId = params.websiteId as string;
 
+  const updatePage = useUpdateWebsitePage();
+  const updateWebsite = useUpdateWebsite();
+
   const { data: generatedWebsite } = useGetGeneratedWebsite(websiteId);
 
-  useEffect(() => {
-    if (!generatedWebsite) return;
-    if (!websiteData.elements.length) return;
+  const handleFinishOnboardingTour = useCallback(() => {
+    updateWebsite.mutate({
+      websiteId,
+      body: {
+        is_congrats_modal_shown: true,
+      },
+    });
+  }, [updateWebsite, websiteId]);
 
-    const hasSeenTour = generatedWebsite.is_congrats_modal_shown;
-    if (hasSeenTour) return;
+  usePreviewOnboardingTour({
+    websiteId,
+    hasGeneratedWebsite: Boolean(generatedWebsite),
+    hasWebsiteElements: websiteData.elements.length > 0,
+    hasSeenTour: generatedWebsite?.is_congrats_modal_shown,
+    onFinish: handleFinishOnboardingTour,
+  });
 
-    const timeout = setTimeout(() => {
-      const iframe = document.querySelector("iframe");
-      const iframeWindow = iframe?.contentWindow;
-      const iframeDoc = iframe?.contentDocument;
-
-      if (!iframeWindow || !iframeDoc) return;
-
-      const finishOnboardingTour = () => {
-        startAiHelperOnboardingTour(() => {
-          updateWebsite.mutate({
-            websiteId,
-            body: { is_congrats_modal_shown: true },
-          });
-        });
-      };
-
-      const hasTourTargets =
-        iframeDoc.querySelector('[data-tour="editable-text"]') ||
-        iframeDoc.querySelector('[data-tour="site-logo"]');
-
-      if (!hasTourTargets) {
-        finishOnboardingTour();
-        return;
-      }
-
-      startEditorOnboardingTourInFrame(iframeWindow, finishOnboardingTour);
-    }, 1000);
-
-    return () => clearTimeout(timeout);
-  }, [generatedWebsite, websiteData.elements.length, updateWebsite, websiteId]);
-  useEffect(() => {
-    if (generatedWebsite) {
-      setContactPhone(generatedWebsite.contact_phone ?? "");
-      const websiteDataFormatted = mapApiToWebsiteData(generatedWebsite);
-      handleWebsiteGenerated(websiteDataFormatted);
-    }
-  }, [generatedWebsite]);
-
-  const handleWebsiteGenerated = (data: WebsiteData) => {
+  const handleWebsiteGenerated = useCallback((data: WebsiteData) => {
     setWebsiteData(data);
+
     setCurrentPageId((prev) => {
-      // keep current page if it still exists
-      const pageStillExists = data.elements.some((p) => p.page_id === prev);
+      const pageStillExists = data.elements.some(
+        (page) => page.page_id === prev,
+      );
 
       if (pageStillExists) {
         return prev;
       }
 
-      // otherwise fallback to first page
       return data.elements[0]?.page_id || "";
     });
-  };
+  }, []);
 
-  const updateElementRecursive = (
-    elements: WebElement[],
-    elementId: number,
-    updates: Partial<WebElement>,
-  ): WebElement[] => {
-    return elements.map((element) => {
-      if (element.id === elementId) {
-        return { ...element, ...updates };
-      }
-      if (element.children) {
-        return {
-          ...element,
-          children: updateElementRecursive(
-            element.children,
-            elementId,
-            updates,
-          ),
-        };
-      }
-      return element;
-    });
-  };
+  useEffect(() => {
+    if (!generatedWebsite) return;
+
+    setContactPhone(generatedWebsite.contact_phone ?? "");
+
+    const websiteDataFormatted = mapApiToWebsiteData(generatedWebsite);
+
+    handleWebsiteGenerated(websiteDataFormatted);
+  }, [generatedWebsite, handleWebsiteGenerated]);
 
   const handleUpdateElement = async (
     pageId: string,
@@ -140,12 +102,24 @@ export default function Preview() {
         : page,
     );
 
-    setWebsiteData((prev) => ({ ...prev, elements: newElements }));
+    setWebsiteData((prev) => ({
+      ...prev,
+      elements: newElements,
+    }));
 
-    const updatedPage = newElements.find((el) => el.page_id === pageId);
-    if (!updatedPage) return console.error("Page not found", pageId);
+    const updatedPage = newElements.find((page) => page.page_id === pageId);
 
-    await updatePage.mutateAsync({ pageId, body: { content: updatedPage } });
+    if (!updatedPage) {
+      console.error("Page not found", pageId);
+      return;
+    }
+
+    await updatePage.mutateAsync({
+      pageId,
+      body: {
+        content: updatedPage,
+      },
+    });
   };
 
   const handleUpdateSharedElement = async (
@@ -169,7 +143,9 @@ export default function Preview() {
 
     await updateWebsite.mutateAsync({
       websiteId,
-      body: { shared_components: newSharedComponents },
+      body: {
+        shared_components: newSharedComponents,
+      },
     });
   };
 
@@ -177,9 +153,18 @@ export default function Preview() {
     (a, b) => (a.sequence ?? 0) - (b.sequence ?? 0),
   );
 
+  const handleOpenAiHelper = () => {
+    posthog.capture("ai_chat_opened", {
+      website_id: websiteId,
+      current_page_id: currentPageId,
+    });
+
+    setIsChatOpen(true);
+  };
+
   return (
-    <div className="h-screen w-screen overflow-hidden bg-background flex flex-col">
-      <main className="flex-1 relative overflow-hidden">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
+      <main className="relative flex-1 overflow-hidden">
         <PreviewPanelJson
           contactPhone={contactPhone}
           websiteId={websiteId}
@@ -193,15 +178,8 @@ export default function Preview() {
         {!isChatOpen && (
           <Button
             data-tour="ai-helper"
-            onClick={() => {
-              // Capture AI chat opened event
-              posthog.capture("ai_chat_opened", {
-                website_id: websiteId,
-                current_page_id: currentPageId,
-              });
-              setIsChatOpen(true);
-            }}
-            className="fixed bottom-6 right-6 z-50 h-14 px-4 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+            onClick={handleOpenAiHelper}
+            className="fixed bottom-6 right-6 z-50 flex h-14 items-center gap-2 rounded-full px-4 shadow-lg transition-all hover:shadow-xl"
           >
             <MessageSquare className="h-6 w-6" />
             <span className="text-sm font-medium">AI Helper</span>
@@ -209,14 +187,15 @@ export default function Preview() {
         )}
 
         {isChatOpen && (
-          <div className="fixed inset-0 z-50 flex items-end justify-end pointer-events-none">
-            <div className="pointer-events-auto h-[600px] w-full max-w-md m-4 rounded-lg shadow-2xl border border-border overflow-hidden">
+          <div className="pointer-events-none fixed inset-0 z-50 flex items-end justify-end">
+            <div className="pointer-events-auto m-4 h-[630px] w-full max-w-md overflow-hidden rounded-lg border border-border shadow-2xl">
               <ChatPanelJson
                 currentPageId={currentPageId}
                 pages={sortedPages}
                 websiteId={websiteId}
                 font={websiteData.metadata?.font_family}
                 onClose={() => setIsChatOpen(false)}
+                websiteType={websiteData.metadata?.type}
               />
             </div>
           </div>

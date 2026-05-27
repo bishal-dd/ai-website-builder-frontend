@@ -15,6 +15,9 @@ export interface LoadingStep {
 export interface LoadingStateProps {
   isOpen: boolean;
   backendProgress: number;
+  title?: string;
+  description?: string;
+  note?: string;
 }
 
 export const loadingSteps: LoadingStep[] = [
