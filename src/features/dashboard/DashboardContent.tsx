@@ -33,7 +33,12 @@ export function DashboardContent() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Button size="default" className="gap-2 shadow-sm" asChild>
+              <Button
+                data-testid="create-project-header"
+                size="default"
+                className="gap-2 shadow-sm"
+                asChild
+              >
                 <Link href="/wizard">
                   <Plus className="size-4" />
                   <span className="hidden sm:inline">New Project</span>

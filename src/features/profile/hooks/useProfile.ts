@@ -4,19 +4,16 @@ import { useSession } from "@/shared/session/useSession";
 import { useAuthActions } from "@/features/auth/hooks/useAuthActions";
 import { toast } from "sonner";
 import posthog from "posthog-js";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
-// Validation schema for the combined form
 const profileSchema = z
   .object({
-    // Profile fields
     name: z.string().min(1, "Name is required"),
     email: z.string().email("Invalid email address"),
 
-    // Password fields (optional for profile update)
     currentPassword: z.string().optional(),
     newPassword: z
       .string()
@@ -27,7 +24,6 @@ const profileSchema = z
   })
   .refine(
     (data) => {
-      // If any password field is filled, validate all password fields
       const hasPasswordFields =
         data.currentPassword || data.newPassword || data.confirmPassword;
 
@@ -52,61 +48,81 @@ export function useProfileLogic() {
   const { user } = useSession();
   const { updateName, changeEmail, changePassword } = useAuthActions();
 
+  const initializedUserId = useRef<string | null>(null);
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user?.name || "",
-      email: user?.email || "",
+      name: "",
+      email: "",
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
     },
   });
 
-  // Update form values when user data changes
-  useEffect(() => {
-    if (user) {
-      form.reset({
-        name: user.name || "",
-        email: user.email || "",
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-    }
-  }, [user, form]);
+  const [watchedName, watchedEmail] = useWatch({
+    control: form.control,
+    name: ["name", "email"],
+  });
 
-  // Handle profile updates (name + email)
+  const userId = user?.id ?? user?.email ?? null;
+  const userName = user?.name ?? "";
+  const userEmail = user?.email ?? "";
+
+  useEffect(() => {
+    if (!userId) return;
+
+    if (initializedUserId.current === userId) return;
+
+    initializedUserId.current = userId;
+
+    form.reset({
+      name: userName,
+      email: userEmail,
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+  }, [userId, userName, userEmail, form]);
+
+  const hasProfileChanges =
+    watchedName?.trim() !== userName.trim() ||
+    watchedEmail?.trim() !== userEmail.trim();
+
   const onProfileUpdate = async (data: ProfileFormValues) => {
     try {
-      // Update name if changed
-      if (data.name !== user?.name) {
-        await toast.promise(updateName(data.name), {
+      const nameChanged = data.name.trim() !== userName.trim();
+      const emailChanged = data.email.trim() !== userEmail.trim();
+      if (!nameChanged && !emailChanged) {
+        toast.info("No profile changes to save.");
+        return;
+      }
+
+      if (nameChanged) {
+        await toast.promise(updateName(data.name.trim()), {
           loading: "Updating name...",
           success: "Name updated successfully!",
           error: "Failed to update name",
         });
       }
 
-      // Update email if changed
-      if (data.email !== user?.email) {
-        await toast.promise(changeEmail(data.email), {
+      if (emailChanged) {
+        await toast.promise(changeEmail(data.email.trim()), {
           loading: "Sending verification email...",
           success: "Check your inbox to verify the new email!",
           error: "Failed to update email",
         });
       }
 
-      // Capture profile updated event
       posthog.capture("profile_updated", {
-        name_changed: data.name !== user?.name,
-        email_changed: data.email !== user?.email,
+        name_changed: nameChanged,
+        email_changed: emailChanged,
       });
 
-      // Reset form with new values
       form.reset({
-        name: data.name,
-        email: data.email,
+        name: data.name.trim(),
+        email: data.email.trim(),
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
@@ -118,11 +134,14 @@ export function useProfileLogic() {
     }
   };
 
-  // Handle password updates
   const onPasswordUpdate = async (data: ProfileFormValues) => {
-    // Ensure password fields are present
     if (!data.currentPassword || !data.newPassword || !data.confirmPassword) {
       toast.error("Please fill in all password fields");
+      return;
+    }
+
+    if (data.newPassword !== data.confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -136,10 +155,8 @@ export function useProfileLogic() {
         },
       );
 
-      // Capture password changed event
       posthog.capture("password_changed");
 
-      // Clear password fields
       form.reset({
         ...form.getValues(),
         currentPassword: "",
@@ -147,6 +164,7 @@ export function useProfileLogic() {
         confirmPassword: "",
       });
     } catch (err) {
+      toast.error("Failed to update password");
       console.error(err);
       posthog.captureException(err);
     }
@@ -155,6 +173,7 @@ export function useProfileLogic() {
   return {
     user,
     form,
+    hasProfileChanges,
     onProfileUpdate,
     onPasswordUpdate,
   };

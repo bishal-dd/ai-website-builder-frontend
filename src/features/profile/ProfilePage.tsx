@@ -16,12 +16,12 @@ import { Camera, Save, Loader2 } from "lucide-react";
 import { useProfileLogic } from "./hooks/useProfile";
 
 export default function ProfilePage() {
-  const { user, form, onProfileUpdate, onPasswordUpdate } = useProfileLogic();
-
+  const { user, form, hasProfileChanges, onProfileUpdate, onPasswordUpdate } =
+    useProfileLogic();
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isDirty },
+    formState: { errors, isSubmitting },
   } = form;
 
   return (
@@ -114,7 +114,10 @@ export default function ProfilePage() {
                     </p>
                   )}
                 </div>
-                <Button type="submit" disabled={isSubmitting || !isDirty}>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !hasProfileChanges}
+                >
                   {isSubmitting ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
