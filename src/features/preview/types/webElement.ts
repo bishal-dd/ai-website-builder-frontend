@@ -25,6 +25,7 @@ export type SharedComponents = {
 export type WebsiteData = {
   elements: WebPages[];
   sharedComponents: SharedComponents;
+  primary_color?: string;
   metadata?: {
     title?: string;
     description?: string;

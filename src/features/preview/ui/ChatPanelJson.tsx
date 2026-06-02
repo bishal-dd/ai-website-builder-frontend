@@ -1,7 +1,17 @@
 "use client";
 
-import React from "react";
-import { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Check,
+  ChevronDown,
+  Layers,
+  Plus,
+  Send,
+  Settings,
+  Sparkles,
+  X,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,28 +30,18 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
-  Send,
-  Sparkles,
-  X,
-  ChevronDown,
-  Check,
-  Settings,
-  Layers,
-  Plus,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useRegenerateWebsite } from "../hooks/useRegenerateWebsite";
-import { WebsiteRegenerator } from "./WebsiteRegenerator";
-import { WebPages } from "../types";
-import useUpdateWebsite from "../hooks/useUpdateWebsite";
-import useGetGeneratedWebsite from "../hooks/useGetGeneratedWebsite";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { useRegenerateWebsite } from "../hooks/useRegenerateWebsite";
+import { WebsiteRegenerator } from "./WebsiteRegenerator";
+import { WebPages } from "../types";
+import useUpdateWebsite from "../hooks/useUpdateWebsite";
+import useGetGeneratedWebsite from "../hooks/useGetGeneratedWebsite";
 import { getRecommendedPrompts } from "@/features/preview/utils/getRecommendedPrompts";
 import { useGoogleFonts } from "../hooks/useGoogleFonts";
 import {
@@ -67,6 +67,41 @@ interface ChatPanelJsonProps {
   websiteType?: string;
 }
 
+type GeneralComponent =
+  | {
+      id: "floating_whatsapp";
+      label: string;
+      type: "toggle";
+      value: boolean;
+      onChange: () => void;
+    }
+  | {
+      id: "theme_color";
+      label: string;
+      type: "color";
+      value: string;
+    }
+  | {
+      id: "font_family";
+      label: string;
+      type: "font";
+      value: string;
+    };
+
+const DEFAULT_THEME_COLOR = "#2563eb";
+
+function getSettingDescription(id: GeneralComponent["id"]) {
+  if (id === "floating_whatsapp") {
+    return "Show or hide the floating WhatsApp button.";
+  }
+
+  if (id === "theme_color") {
+    return "Change the global website theme color.";
+  }
+
+  return "Change the global website font.";
+}
+
 export function ChatPanelJson({
   onClose,
   websiteId,
@@ -85,16 +120,18 @@ export function ChatPanelJson({
   const [open, setOpen] = useState(false);
   const [isWhatsappEnabled, setIsWhatsappEnabled] = useState(false);
   const [selectedFont, setSelectedFont] = useState(font || "Inter");
+  const [selectedThemeColor, setSelectedThemeColor] =
+    useState(DEFAULT_THEME_COLOR);
   const [selectedPageId, setSelectedPageId] = useState<string>(currentPageId);
-
-  const promptLength = input.length;
-  const isPromptTooLong = promptLength > MAX_REGEN_PROMPT_LENGTH;
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data } = useGetGeneratedWebsite(websiteId);
   const { mutate: updateWebsiteMutation } = useUpdateWebsite();
   const { mutate: regenerate, isPending } = useRegenerateWebsite();
+
+  const promptLength = input.length;
+  const isPromptTooLong = promptLength > MAX_REGEN_PROMPT_LENGTH;
 
   const selectedPage = pages.find((page) => page.page_id === selectedPageId);
 
@@ -104,7 +141,6 @@ export function ChatPanelJson({
       : (selectedPage?.title ?? selectedPage?.page ?? "Select page");
 
   const SelectedIcon = getPageIcon(selectedPageLabel);
-
   const isAddingNewPage = selectedPageId === ADD_NEW_PAGE;
 
   const recommendedPrompts = getRecommendedPrompts(
@@ -113,15 +149,15 @@ export function ChatPanelJson({
     websiteType,
   );
 
-  const generalComponents = [
+  const generalComponents: GeneralComponent[] = [
     ...(contactPhone?.trim()
       ? [
           {
-            id: "floating_whatsapp",
+            id: "floating_whatsapp" as const,
             label: "Floating WhatsApp",
-            type: "toggle",
+            type: "toggle" as const,
             value: isWhatsappEnabled,
-            onChange: async () => {
+            onChange: () => {
               const newValue = !isWhatsappEnabled;
 
               setIsWhatsappEnabled(newValue);
@@ -136,6 +172,13 @@ export function ChatPanelJson({
           },
         ]
       : []),
+
+    {
+      id: "theme_color",
+      label: "Website Color",
+      type: "color",
+      value: selectedThemeColor,
+    },
 
     {
       id: "font_family",
@@ -153,6 +196,10 @@ export function ChatPanelJson({
     if (data?.metadata?.font_family) {
       setSelectedFont(data.metadata.font_family);
     }
+
+    if (data?.primary_color) {
+      setSelectedThemeColor(data.primary_color);
+    }
   }, [data]);
 
   useEffect(() => {
@@ -160,10 +207,72 @@ export function ChatPanelJson({
   }, [currentPageId]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    if (!scrollRef.current) return;
+
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!input.trim() || isPending || !selectedPageId || isPromptTooLong) {
+      return;
+    }
+
+    const isNewPage = selectedPageId === ADD_NEW_PAGE;
+
+    const pageLabel = isNewPage
+      ? "Add Additional Page"
+      : (pages.find((page) => page.page_id === selectedPageId)?.title ??
+        pages.find((page) => page.page_id === selectedPageId)?.page ??
+        "Unknown page");
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: `[${pageLabel}] ${input}`,
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+
+    regenerate(
+      {
+        websiteId,
+        pageId: isNewPage ? undefined : selectedPageId,
+        userMessage: input,
+      },
+      {
+        onSuccess: (data) => {
+          if (!data.jobId) return;
+
+          setRegenJobId(data.jobId);
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: (Date.now() + 1).toString(),
+              role: "assistant",
+              content:
+                "✅ Changes are being applied to this page. Updating preview…",
+            },
+          ]);
+        },
+        onError: (err: unknown) => {
+          const errorMessage = err instanceof Error ? err.message : String(err);
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: (Date.now() + 2).toString(),
+              role: "assistant",
+              content: `❌ Failed: ${errorMessage}`,
+            },
+          ]);
+        },
+      },
+    );
+  };
 
   const generalSettingsPopover = (
     <Popover
@@ -222,9 +331,7 @@ export function ChatPanelJson({
                   </p>
 
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    {component.id === "floating_whatsapp"
-                      ? "Show or hide the floating WhatsApp button."
-                      : "Change the global website font."}
+                    {getSettingDescription(component.id)}
                   </p>
                 </div>
 
@@ -247,17 +354,44 @@ export function ChatPanelJson({
                 )}
               </div>
 
-              {component.type === "font" && (
-                <div className="mt-3">
-                  <Select
-                    value={selectedFont}
-                    onValueChange={(font) => {
-                      setSelectedFont(font);
+              {component.type === "color" && (
+                <div className="mt-3 flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={selectedThemeColor}
+                    onChange={(e) => {
+                      const color = e.target.value;
+
+                      setSelectedThemeColor(color);
 
                       updateWebsiteMutation({
                         websiteId,
                         body: {
-                          font_family: font,
+                          primary_color: color,
+                        },
+                      });
+                    }}
+                    className="h-9 w-12 cursor-pointer rounded-lg border border-border bg-transparent p-1"
+                    aria-label="Change website color"
+                  />
+
+                  <span className="rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+                    {selectedThemeColor}
+                  </span>
+                </div>
+              )}
+
+              {component.type === "font" && (
+                <div className="mt-3">
+                  <Select
+                    value={selectedFont}
+                    onValueChange={(nextFont) => {
+                      setSelectedFont(nextFont);
+
+                      updateWebsiteMutation({
+                        websiteId,
+                        body: {
+                          font_family: nextFont,
                         },
                       });
                     }}
@@ -289,71 +423,8 @@ export function ChatPanelJson({
     </Popover>
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!input.trim() || isPending || !selectedPageId || isPromptTooLong) {
-      return;
-    }
-
-    const isNewPage = selectedPageId === ADD_NEW_PAGE;
-
-    const pageLabel = isNewPage
-      ? "Add Additional Page"
-      : (pages.find((page) => page.page_id === selectedPageId)?.title ??
-        pages.find((page) => page.page_id === selectedPageId)?.page ??
-        "Unknown page");
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: `[${pageLabel}] ${input}`,
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-
-    regenerate(
-      {
-        websiteId,
-        pageId: isNewPage ? undefined : selectedPageId,
-        userMessage: input,
-      },
-      {
-        onSuccess: (data) => {
-          if (data.jobId) {
-            setRegenJobId(data.jobId);
-
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: (Date.now() + 1).toString(),
-                role: "assistant",
-                content:
-                  "✅ Changes are being applied to this page. Updating preview…",
-              },
-            ]);
-          }
-        },
-        onError: (err: unknown) => {
-          const errorMessage = err instanceof Error ? err.message : String(err);
-
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: (Date.now() + 2).toString(),
-              role: "assistant",
-              content: `❌ Failed: ${errorMessage}`,
-            },
-          ]);
-        },
-      },
-    );
-  };
-
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
-      {/* Header */}
       <div className="shrink-0 border-b border-border/70 bg-card/95 px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -387,7 +458,6 @@ export function ChatPanelJson({
         </div>
       </div>
 
-      {/* Messages */}
       <ScrollArea className="min-h-0 flex-1">
         <div ref={scrollRef} className="space-y-4 px-4 py-4">
           <div className="pl-9">
@@ -396,10 +466,8 @@ export function ChatPanelJson({
         </div>
       </ScrollArea>
 
-      {/* Composer */}
       <div className="shrink-0 border-t border-border/70 bg-card/95">
         <div className="max-h-[52vh] space-y-3 overflow-y-auto px-4 py-3">
-          {/* Recommended Prompts */}
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-medium text-muted-foreground">
@@ -448,9 +516,7 @@ export function ChatPanelJson({
             </div>
           </div>
 
-          {/* Input */}
           <form onSubmit={handleSubmit} className="space-y-2.5">
-            {/* Editing Page Selector */}
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <button
@@ -485,6 +551,7 @@ export function ChatPanelJson({
                     >
                       {pages.length}
                     </Badge>
+
                     <ChevronDown
                       className={cn(
                         "h-4 w-4 text-muted-foreground transition-transform",
@@ -642,7 +709,6 @@ export function ChatPanelJson({
         </div>
       </div>
 
-      {/* Regeneration Overlay */}
       {regenJobId && (
         <WebsiteRegenerator jobId={regenJobId} websiteId={websiteId} />
       )}
