@@ -167,6 +167,12 @@ export function PreviewPanelJson({
     );
   };
 
+  const previewWebsiteData = {
+    ...websiteData,
+    primary_color: freshData?.primary_color ?? websiteData.primary_color,
+    font_family: freshData?.font_family ?? websiteData.metadata?.font_family,
+  };
+
   return (
     <div className="flex h-screen flex-col bg-muted">
       <PreviewHeader
@@ -191,7 +197,7 @@ export function PreviewPanelJson({
 
       <PreviewFrame
         device={device}
-        websiteData={websiteData}
+        websiteData={previewWebsiteData}
         currentPage={currentPage}
         currentPageId={currentPageId}
         contactPhone={contactPhone}
