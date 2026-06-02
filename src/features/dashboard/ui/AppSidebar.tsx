@@ -29,15 +29,16 @@ const navigationItems = [
     icon: LayoutDashboard,
     href: "/dashboard",
   },
-  {
-    title: "Profile",
-    icon: User,
-    href: "/dashboard/profile",
-  },
+
   {
     title: "Domains",
     icon: Globe2,
     href: "/dashboard/domain",
+  },
+  {
+    title: "Profile",
+    icon: User,
+    href: "/dashboard/profile",
   },
 ];
 
