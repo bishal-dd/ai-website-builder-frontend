@@ -50,6 +50,9 @@ export function PreviewFrame({
   const iframeWidth = getIframeWidth(device);
   const hasContent = currentPage && currentPage.pageContent.length > 0;
   const fontFamily = websiteData.metadata?.font_family || "Inter";
+  const primaryColor = websiteData.primary_color || "#2563eb";
+  console.log("2 PreviewPanel websiteData:", websiteData.primary_color);
+
   const encodedFontFamily = fontFamily.replace(/ /g, "+").trim();
 
   return (
@@ -61,7 +64,7 @@ export function PreviewFrame({
         >
           <Frame
             ref={frameRef}
-            key={`${currentPageId}-${device}-${websiteData.metadata?.font_family}`}
+            key={`${currentPageId}-${device}-${websiteData.metadata?.font_family}-${websiteData.primary_color}`}
             style={{ width: "100%", height: "100%", border: "none" }}
             contentDidMount={() => {
               const iframe = document.querySelector("iframe");
@@ -106,8 +109,20 @@ export function PreviewFrame({
         href="https://fonts.googleapis.com/css2?family=${encodedFontFamily}:wght@300;400;500;600;700&display=swap"
         rel="stylesheet"
       />
-      <script src="https://cdn.tailwindcss.com"></script>
-
+ <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            website: "${primaryColor}",
+          "website-light": "color-mix(in srgb, ${primaryColor} 14%, white)",
+          "website-dark": "color-mix(in srgb, ${primaryColor} 75%, black)"
+          }
+        }
+      }
+    };
+  </script>
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.css" />
       <script src="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.js.iife.js"></script>
     </head>
