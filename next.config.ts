@@ -1,7 +1,9 @@
+import { createMDX } from "fumadocs-mdx/next";
 import type { NextConfig } from "next";
 
+const withMDX = createMDX();
+
 const nextConfig: NextConfig = {
-  /* config options here */
   async rewrites() {
     return [
       {
@@ -14,9 +16,9 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // This is required to support PostHog trailing slash API requests
+
   skipTrailingSlashRedirect: true,
   reactCompiler: true,
 };
 
-export default nextConfig;
+export default withMDX(nextConfig);

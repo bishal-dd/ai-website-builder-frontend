@@ -1,0 +1,14 @@
+{
+  "title": "Help Center",
+  "pages": [
+    "index",
+    "sign-up",
+    "sign-in",
+    "getting-started",
+    "generating-a-website",
+    "editing-your-website",
+    "publishing-your-website",
+    "domains-and-hosting",
+    "payments"
+  ]
+}

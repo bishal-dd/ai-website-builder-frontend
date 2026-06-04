@@ -7,7 +7,9 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -35,6 +37,9 @@
     "date-fns": "^4.1.0",
     "driver.js": "^1.4.0",
     "framer-motion": "^12.38.0",
+    "fumadocs-core": "^16.8.11",
+    "fumadocs-mdx": "^15.0.6",
+    "fumadocs-ui": "^16.8.11",
     "gsap": "^3.13.0",
     "i18n-iso-countries": "^7.14.0",
     "lodash": "^4.17.23",
@@ -59,12 +64,15 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
     "@types/lodash": "^4.17.23",
+    "@types/mdx": "^2.0.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "^1.0.0",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "husky": "^9.1.7",
