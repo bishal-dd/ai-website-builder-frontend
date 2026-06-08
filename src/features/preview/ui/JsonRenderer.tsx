@@ -25,6 +25,14 @@ import type {
 import { ImageElementRenderer } from "@/features/preview/ui/renderer/image/ImageElementRenderer";
 import { HeroSectionRenderer } from "@/features/preview/ui/renderer/sections/HeroSectionRenderer";
 import { OverlaySectionRenderer } from "@/features/preview/ui/renderer/sections/OverlaySectionRenderer";
+import { ArrowDown, ArrowUp, GripVertical } from "lucide-react";
+import { closestCenter, DndContext, type DragEndEvent } from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 interface JsonRendererProps {
   elements: WebElement[];
@@ -33,11 +41,38 @@ interface JsonRendererProps {
   onUpdateElement?: (id: number, updates: Partial<WebElement>) => void;
   contactPhone?: string;
   floatingWhatsappEnabled?: boolean;
+  onReorderSections?: (reorderedSections: WebElement[]) => void;
   onUpdateSharedElement?: (
     componentKey: ComponentKey,
     elementId: number,
     updates: Partial<WebElement>,
   ) => void;
+}
+
+function SortablePreviewSection({
+  element,
+  children,
+  toolbar,
+}: {
+  element: WebElement;
+  device: DeviceType;
+  children: React.ReactNode;
+  toolbar: (dragHandleProps: {
+    attributes: ReturnType<typeof useSortable>["attributes"];
+    listeners: ReturnType<typeof useSortable>["listeners"];
+    isDragging: boolean;
+  }) => React.ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, isDragging } = useSortable({
+    id: element.id,
+  });
+
+  return (
+    <div ref={setNodeRef} className="group relative">
+      {toolbar({ attributes, listeners, isDragging })}
+      {children}
+    </div>
+  );
 }
 
 export function JsonRenderer({
@@ -48,6 +83,7 @@ export function JsonRenderer({
   contactPhone,
   floatingWhatsappEnabled,
   onUpdateSharedElement,
+  onReorderSections,
 }: JsonRendererProps) {
   const { user } = useSession();
 
@@ -184,14 +220,99 @@ export function JsonRenderer({
     ],
   );
 
+  const handleMoveSection = (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+
+    if (newIndex < 0 || newIndex >= elements.length) return;
+
+    const updatedSections = [...elements];
+
+    [updatedSections[index], updatedSections[newIndex]] = [
+      updatedSections[newIndex],
+      updatedSections[index],
+    ];
+
+    onReorderSections?.(updatedSections);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = elements.findIndex((section) => section.id === active.id);
+    const newIndex = elements.findIndex((section) => section.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reorderedSections = arrayMove(elements, oldIndex, newIndex);
+
+    onReorderSections?.(reorderedSections);
+  };
+
   return (
     <>
       {sharedComponents?.navbar.map((element) =>
         renderElement(element, "navbar"),
       )}
 
-      <div>{elements.map((element) => renderElement(element))}</div>
+      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext
+          items={elements.map((element) => element.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div>
+            {elements.map((element, index) => (
+              <SortablePreviewSection
+                key={getElementKey(element, device)}
+                element={element}
+                device={device}
+                toolbar={({ attributes, listeners, isDragging }) =>
+                  onReorderSections && (
+                    <div className="absolute right-4 top-16 z-50 hidden items-center gap-1 rounded-full border border-white/20 bg-black/60 px-2 py-1 shadow-lg backdrop-blur-md group-hover:flex">
+                      <button
+                        type="button"
+                        {...attributes}
+                        {...listeners}
+                        className={`rounded-full p-1.5 transition ${
+                          isDragging
+                            ? "bg-white text-black"
+                            : "text-white hover:bg-white/20"
+                        }`}
+                        title="Drag section"
+                      >
+                        <GripVertical className="h-4 w-4" />
+                      </button>
 
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        onClick={() => handleMoveSection(index, "up")}
+                        className="rounded-full p-1.5 text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-30"
+                        title="Move section up"
+                      >
+                        <ArrowUp className="h-4 w-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={index === elements.length - 1}
+                        onClick={() => handleMoveSection(index, "down")}
+                        className="rounded-full p-1.5 text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-30"
+                        title="Move section down"
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )
+                }
+              >
+                {renderElement(element)}
+              </SortablePreviewSection>
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
       {sharedComponents?.footer.map((element) =>
         renderElement(element, "footer"),
       )}
