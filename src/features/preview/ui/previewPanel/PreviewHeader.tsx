@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  CircleHelp,
   LayoutDashboard,
   Monitor,
   MoveUpRight,
@@ -96,6 +97,14 @@ export function PreviewHeader({
               Help?
             </span>
           </a>
+        </Button>
+
+        <Button variant="outline" asChild>
+          <Link href="/help" className="flex items-center gap-2">
+            <CircleHelp className="h-4 w-4" />
+            <span className="hidden sm:inline">Help Docs</span>
+            <span className="sm:hidden">Docs</span>
+          </Link>
         </Button>
 
         <Button variant="outline" asChild>

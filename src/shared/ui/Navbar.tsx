@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, ArrowLeft } from "lucide-react";
+import { LogOut, ArrowLeft, CircleHelp } from "lucide-react";
 import { useSession } from "@/shared/session/useSession";
 import Image from "next/image";
 
@@ -53,6 +53,12 @@ export default function Navbar() {
         {/* Profile Dropdown - only show if authenticated */}
         {user ? (
           <div className="flex items-center gap-3">
+            <Button asChild variant="outline" className="rounded-2xl">
+              <Link href="/help" className="flex items-center gap-2">
+                <CircleHelp className="h-4 w-4" />
+                Help Docs
+              </Link>
+            </Button>
             <Button
               asChild
               className="bg-green-600 hover:bg-green-700 text-white shadow-sm
