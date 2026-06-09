@@ -1,6 +1,12 @@
 "use client";
 
-import { Globe2, LayoutDashboard, LogOut, User } from "lucide-react";
+import {
+  CircleHelp,
+  Globe2,
+  LayoutDashboard,
+  LogOut,
+  User,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -87,7 +93,18 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
-        <SidebarMenu>
+        <SidebarMenu className="gap-2">
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/help">
+                <CircleHelp />
+                <span>Help Docs</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <div className="my-2 border-t border-sidebar-border" />
+
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -102,6 +119,7 @@ export function AppSidebar() {
                     />
                     <AvatarFallback className="rounded-lg">JD</AvatarFallback>
                   </Avatar>
+
                   <div className="flex flex-col gap-0.5 text-left text-sm leading-tight">
                     <span className="font-semibold">{user?.name}</span>
                     <span className="text-xs text-muted-foreground">
@@ -110,12 +128,9 @@ export function AppSidebar() {
                   </div>
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-56"
-                onClick={signOut}
-              >
-                <DropdownMenuItem>
+
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={signOut}>
                   <LogOut className="mr-2 size-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
