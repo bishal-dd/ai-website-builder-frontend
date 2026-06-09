@@ -20,4 +20,5 @@ export interface PreviewPanelJsonProps {
   ) => void;
   onPageChange: (pageId: string) => void;
   currentPageId: string;
+  onReorderSections: (pageId: string, reorderedSections: WebElement[]) => void;
 }

@@ -16,7 +16,7 @@ import useUpdateWebsitePage from "@/features/preview/hooks/useUpdateWebsitePage"
 import { usePreviewOnboardingTour } from "@/features/preview/hooks/usePreviewOnboardingTour";
 import { mapApiToWebsiteData } from "@/features/preview/utils/mapApiToWebsiteData";
 import { updateElementRecursive } from "@/features/preview/utils/previewElements";
-
+import useReorderPageSections from "@/features/preview/hooks/useReorderPageSections";
 import { ChatPanelJson } from "./ui/ChatPanelJson";
 import { PreviewPanelJson } from "./ui/PreviewPanelJson";
 
@@ -32,6 +32,7 @@ export default function Preview() {
     },
     metadata: {},
   });
+  const reorderPageSections = useReorderPageSections();
 
   const params = useParams();
   const websiteId = params.websiteId as string;
@@ -57,6 +58,28 @@ export default function Preview() {
     hasSeenTour: generatedWebsite?.is_congrats_modal_shown,
     onFinish: handleFinishOnboardingTour,
   });
+
+  const handleReorderSections = async (
+    pageId: string,
+    reorderedSections: WebElement[],
+  ) => {
+    setWebsiteData((prev) => ({
+      ...prev,
+      elements: prev.elements.map((page) =>
+        page.page_id === pageId
+          ? {
+              ...page,
+              pageContent: reorderedSections,
+            }
+          : page,
+      ),
+    }));
+
+    await reorderPageSections.mutateAsync({
+      pageId,
+      sectionIds: reorderedSections.map((section) => section.id),
+    });
+  };
 
   const handleWebsiteGenerated = useCallback((data: WebsiteData) => {
     setWebsiteData(data);
@@ -173,6 +196,7 @@ export default function Preview() {
           onUpdateElement={handleUpdateElement}
           onUpdateSharedElement={handleUpdateSharedElement}
           onPageChange={setCurrentPageId}
+          onReorderSections={handleReorderSections}
         />
 
         {!isChatOpen && (

@@ -30,6 +30,7 @@ export function PreviewPanelJson({
   onUpdateElement,
   onUpdateSharedElement,
   onPageChange,
+  onReorderSections,
   currentPageId,
 }: PreviewPanelJsonProps) {
   const [device, setDevice] = useState<DeviceType>("desktop");
@@ -204,6 +205,7 @@ export function PreviewPanelJson({
         floatingWhatsappEnabled={freshData?.floating_whatsapp_enabled}
         onUpdateElement={onUpdateElement}
         onUpdateSharedElement={onUpdateSharedElement}
+        onReorderSections={onReorderSections}
       />
     </div>
   );
