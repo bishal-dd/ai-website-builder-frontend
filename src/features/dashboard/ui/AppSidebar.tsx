@@ -96,7 +96,7 @@ export function AppSidebar() {
         <SidebarMenu className="gap-2">
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link href="/help">
+              <Link href="/help" target="_blank" rel="noopener noreferrer">
                 <CircleHelp />
                 <span>Help Docs</span>
               </Link>
