@@ -100,7 +100,12 @@ export function PreviewHeader({
         </Button>
 
         <Button variant="outline" asChild>
-          <Link href="/help" className="flex items-center gap-2">
+          <Link
+            href="/help"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2"
+          >
             <CircleHelp className="h-4 w-4" />
             <span className="hidden sm:inline">Help Docs</span>
             <span className="sm:hidden">Docs</span>

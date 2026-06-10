@@ -54,7 +54,12 @@ export default function Navbar() {
         {user ? (
           <div className="flex items-center gap-3">
             <Button asChild variant="outline" className="rounded-2xl">
-              <Link href="/help" className="flex items-center gap-2">
+              <Link
+                href="/help"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2"
+              >
                 <CircleHelp className="h-4 w-4" />
                 Help Docs
               </Link>
