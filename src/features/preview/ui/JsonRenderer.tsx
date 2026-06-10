@@ -33,6 +33,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface JsonRendererProps {
   elements: WebElement[];
@@ -61,16 +62,25 @@ function SortablePreviewSection({
     attributes: ReturnType<typeof useSortable>["attributes"];
     listeners: ReturnType<typeof useSortable>["listeners"];
     isDragging: boolean;
+    transform: ReturnType<typeof useSortable>["transform"];
+    transition: ReturnType<typeof useSortable>["transition"];
   }) => React.ReactNode;
 }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    isDragging,
+    transform,
+    transition,
+  } = useSortable({
     id: element.id,
   });
 
   return (
     <div ref={setNodeRef} className="group relative">
-      {toolbar({ attributes, listeners, isDragging })}
-      {children}
+      {toolbar({ attributes, listeners, isDragging, transform, transition })}
+      <div>{children}</div>
     </div>
   );
 }
@@ -86,7 +96,6 @@ export function JsonRenderer({
   onReorderSections,
 }: JsonRendererProps) {
   const { user } = useSession();
-
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const isEditingText = useRendererStore((state) => state.isEditingText);
@@ -105,7 +114,6 @@ export function JsonRenderer({
 
   const isPaused =
     isEditingText || uploadingImageId !== null || activeImageId !== null;
-
   const canEdit = Boolean(onUpdateElement || onUpdateSharedElement);
 
   const renderElement = useCallback(
@@ -113,10 +121,7 @@ export function JsonRenderer({
       const elementKey = getElementKey(element, device);
       const elementKind = getElementKind(element);
 
-      let props = createElementProps({
-        element,
-        device,
-      });
+      let props = createElementProps({ element, device });
 
       if (element.tag === "a") {
         props.href = undefined;
@@ -143,7 +148,6 @@ export function JsonRenderer({
               renderElement={renderElement}
             />
           );
-
         case "carousel-slide":
           return (
             <CarouselSlideRenderer
@@ -156,7 +160,6 @@ export function JsonRenderer({
               onImageChange={handleImageChange}
             />
           );
-
         case "overlay-section":
           return (
             <OverlaySectionRenderer
@@ -169,7 +172,6 @@ export function JsonRenderer({
               onImageChange={handleImageChange}
             />
           );
-
         case "hero-section":
           return (
             <HeroSectionRenderer
@@ -182,7 +184,6 @@ export function JsonRenderer({
               onImageChange={handleImageChange}
             />
           );
-
         case "image":
           return (
             <ImageElementRenderer
@@ -196,7 +197,6 @@ export function JsonRenderer({
               onImageChange={handleImageChange}
             />
           );
-
         default:
           return (
             <DefaultElementRenderer
@@ -222,32 +222,25 @@ export function JsonRenderer({
 
   const handleMoveSection = (index: number, direction: "up" | "down") => {
     const newIndex = direction === "up" ? index - 1 : index + 1;
-
     if (newIndex < 0 || newIndex >= elements.length) return;
 
     const updatedSections = [...elements];
-
     [updatedSections[index], updatedSections[newIndex]] = [
       updatedSections[newIndex],
       updatedSections[index],
     ];
-
     onReorderSections?.(updatedSections);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-
     if (!over || active.id === over.id) return;
 
     const oldIndex = elements.findIndex((section) => section.id === active.id);
     const newIndex = elements.findIndex((section) => section.id === over.id);
 
     if (oldIndex === -1 || newIndex === -1) return;
-
-    const reorderedSections = arrayMove(elements, oldIndex, newIndex);
-
-    onReorderSections?.(reorderedSections);
+    onReorderSections?.(arrayMove(elements, oldIndex, newIndex));
   };
 
   return (
@@ -261,22 +254,40 @@ export function JsonRenderer({
           items={elements.map((element) => element.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div>
+          <div className="space-y-2">
             {elements.map((element, index) => (
               <SortablePreviewSection
                 key={getElementKey(element, device)}
                 element={element}
                 device={device}
-                toolbar={({ attributes, listeners, isDragging }) =>
+                toolbar={({
+                  attributes,
+                  listeners,
+                  isDragging,
+                  transform,
+                  transition,
+                }) =>
                   onReorderSections && (
-                    <div className="absolute right-4 top-16 z-50 hidden items-center gap-1 rounded-full border border-white/20 bg-black/60 px-2 py-1 shadow-lg backdrop-blur-md group-hover:flex">
+                    <div
+                      style={{
+                        transform: isDragging
+                          ? CSS.Translate.toString(transform)
+                          : undefined,
+                        transition,
+                      }}
+                      className={`absolute right-4 top-16 z-50 w-max whitespace-nowrap items-center gap-1 rounded-full border px-2 py-1 shadow-xl backdrop-blur-md ${
+                        isDragging
+                          ? "flex border-blue-500 bg-black/90 ring-2 ring-blue-500/20"
+                          : "hidden border-white/20 bg-black/60 group-hover:flex"
+                      }`}
+                    >
                       <button
                         type="button"
                         {...attributes}
                         {...listeners}
-                        className={`rounded-full p-1.5 transition ${
+                        className={`cursor-grab rounded-full p-1.5 transition active:cursor-grabbing ${
                           isDragging
-                            ? "bg-white text-black"
+                            ? "bg-blue-600 text-white"
                             : "text-white hover:bg-white/20"
                         }`}
                         title="Drag section"
@@ -313,10 +324,10 @@ export function JsonRenderer({
           </div>
         </SortableContext>
       </DndContext>
+
       {sharedComponents?.footer.map((element) =>
         renderElement(element, "footer"),
       )}
-
       {floatingWhatsappEnabled && (
         <FloatingWhatsApp phone={contactPhone ?? ""} />
       )}
