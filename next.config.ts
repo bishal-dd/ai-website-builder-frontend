@@ -17,6 +17,15 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "d343yoq90h416j.cloudfront.net",
+      },
+    ],
+  },
+
   skipTrailingSlashRedirect: true,
   reactCompiler: true,
 };
