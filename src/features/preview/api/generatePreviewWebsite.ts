@@ -1,6 +1,6 @@
 export const generatePreviewWebsite = async (websiteId: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/preview`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/preview/website`,
     {
       method: "POST",
       headers: {

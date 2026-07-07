@@ -4,6 +4,7 @@ import {
   CircleHelp,
   Globe2,
   LayoutDashboard,
+  LayoutTemplate,
   LogOut,
   User,
 } from "lucide-react";
@@ -35,7 +36,11 @@ const navigationItems = [
     icon: LayoutDashboard,
     href: "/dashboard",
   },
-
+  {
+    title: "Templates",
+    icon: LayoutTemplate,
+    href: "/dashboard/templates",
+  },
   {
     title: "Domains",
     icon: Globe2,
