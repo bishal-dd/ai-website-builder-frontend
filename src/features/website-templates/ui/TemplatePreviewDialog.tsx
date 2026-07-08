@@ -29,7 +29,6 @@ export function TemplatePreviewDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="
-          [&>button]:hidden
           flex
           h-[90vh]
           w-[95vw]
@@ -41,7 +40,7 @@ export function TemplatePreviewDialog({
           p-0
         "
       >
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 shrink-0 border-b px-6 py-4 gap-4">
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 shrink-0 border-b px-6 py-4 pr-14 gap-4">
           <DialogTitle className="truncate">
             {title ?? "Template Preview"}
           </DialogTitle>
