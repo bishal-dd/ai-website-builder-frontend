@@ -15,9 +15,12 @@ const useUpdateWebsite = () => {
     }) => updateWebsite(websiteId, body),
 
     onSuccess: (_data, variables) => {
-      // 🔥 This is the magic
       queryClient.invalidateQueries({
         queryKey: ["website", variables.websiteId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["projects"],
       });
     },
   });
