@@ -47,12 +47,16 @@ export default function Preview() {
 
   const { data: generatedWebsite } = useGetGeneratedWebsite(websiteId);
 
+  const [hasOpenedSetup, setHasOpenedSetup] = useState(false);
+
   useEffect(() => {
-    if (shouldShowSetup && generatedWebsite) {
+    if (shouldShowSetup && generatedWebsite && !hasOpenedSetup) {
       setShowWebsiteSetup(true);
-      // router.replace(`/preview/${websiteId}`);
+      setHasOpenedSetup(true);
+
+      router.replace(`/preview/${websiteId}`);
     }
-  }, [shouldShowSetup, generatedWebsite, router, websiteId]);
+  }, [shouldShowSetup, generatedWebsite, hasOpenedSetup, router, websiteId]);
 
   const handleFinishOnboardingTour = useCallback(() => {
     updateWebsite.mutate({
