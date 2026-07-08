@@ -11,24 +11,24 @@ const exampleSites = [
     description:
       "Showcase your travel agency’s services, destinations, and expert guides with a modern, professional layout.",
     category: "Travel",
-    image: "/images/travelwebsite.webp",
-    link: "https://newgentravel.online/",
+    image: "/images/category/travel-agency.png",
+    link: "/dashboard/templates/travel-agency",
   },
   {
     title: "Hotel Website",
     description:
       "Beautifully designed website for hotels and resorts featuring rooms, amenities, booking info, and stunning visuals to attract guests.",
     category: "Hospitality",
-    image: "/images/hotelwebsite.webp",
-    link: "https://www.lightwebx.link/",
+    image: "/images/category/hotel.png",
+    link: "/dashboard/templates/hotel",
   },
   {
     title: "Restaurant",
     description:
       "Clean and professional landing page for small or medium businesses to showcase services, products, and contact info effectively.",
     category: "Business",
-    image: "/images/restaurantwebsite.webp",
-    link: "https://lightwebx.store",
+    image: "/images/category/restaurant.png",
+    link: "/dashboard/templates/restaurant",
   },
 ];
 
@@ -68,8 +68,6 @@ export function EmptyState() {
           <motion.a
             key={i}
             href={site.link}
-            target="_blank"
-            rel="noopener noreferrer"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -91,7 +89,7 @@ export function EmptyState() {
               />
               <div className="absolute inset-0 bg-zinc-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                 <div className="bg-white text-zinc-900 px-5 py-2 rounded-full text-[10px] font-black tracking-widest flex items-center gap-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                  VISIT SITE <ExternalLink size={12} />
+                  EXPLORE TEMPLATE <ExternalLink size={12} />
                 </div>
               </div>
             </div>
