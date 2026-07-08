@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { MessageSquare } from "lucide-react";
 import posthog from "posthog-js";
 
@@ -19,11 +19,13 @@ import { updateElementRecursive } from "@/features/preview/utils/previewElements
 import useReorderPageSections from "@/features/preview/hooks/useReorderPageSections";
 import { ChatPanelJson } from "./ui/ChatPanelJson";
 import { PreviewPanelJson } from "./ui/PreviewPanelJson";
+import { WebsiteSetupModal } from "../website-templates/ui/WebsiteSetupModal";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [contactPhone, setContactPhone] = useState<string>("");
   const [currentPageId, setCurrentPageId] = useState<string>("");
+  const [showWebsiteSetup, setShowWebsiteSetup] = useState(false);
   const [websiteData, setWebsiteData] = useState<WebsiteData>({
     elements: [],
     sharedComponents: {
@@ -39,8 +41,18 @@ export default function Preview() {
 
   const updatePage = useUpdateWebsitePage();
   const updateWebsite = useUpdateWebsite();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const shouldShowSetup = searchParams.get("setup") === "true";
 
   const { data: generatedWebsite } = useGetGeneratedWebsite(websiteId);
+
+  useEffect(() => {
+    if (shouldShowSetup && generatedWebsite) {
+      setShowWebsiteSetup(true);
+      // router.replace(`/preview/${websiteId}`);
+    }
+  }, [shouldShowSetup, generatedWebsite, router, websiteId]);
 
   const handleFinishOnboardingTour = useCallback(() => {
     updateWebsite.mutate({
@@ -185,6 +197,28 @@ export default function Preview() {
     setIsChatOpen(true);
   };
 
+  const handleWebsiteSetup = ({
+    title,
+    description,
+  }: {
+    title: string;
+    description: string;
+  }) => {
+    updateWebsite.mutate(
+      {
+        websiteId,
+        body: {
+          title: title,
+          description,
+        },
+      },
+      {
+        onSuccess: () => {
+          setShowWebsiteSetup(false);
+        },
+      },
+    );
+  };
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
       <main className="relative flex-1 overflow-hidden">
@@ -212,7 +246,7 @@ export default function Preview() {
 
         {isChatOpen && (
           <div className="pointer-events-none fixed inset-0 z-50 flex items-end justify-end">
-            <div className="pointer-events-auto m-4 h-[630px] w-full max-w-md overflow-hidden rounded-lg border border-border shadow-2xl">
+            <div className="pointer-events-auto m-4 h-157.5 w-full max-w-md overflow-hidden rounded-lg border border-border shadow-2xl">
               <ChatPanelJson
                 currentPageId={currentPageId}
                 pages={sortedPages}
@@ -225,6 +259,12 @@ export default function Preview() {
           </div>
         )}
       </main>
+
+      <WebsiteSetupModal
+        open={showWebsiteSetup}
+        onOpenChange={setShowWebsiteSetup}
+        onSubmit={handleWebsiteSetup}
+      />
     </div>
   );
 }

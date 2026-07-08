@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { useTemplates } from "./hooks/useTemplates";
+import { useGetAllTemplates } from "./hooks/useGetAllTemplates";
 import { useGeneratePreviewTemplate } from "./hooks/useGeneratePreviewTemplate";
-import { useUseTemplate } from "./hooks/useUseTemplate";
+import { useGenerateTemplate } from "./hooks/useGenerateTemplate";
 
 import { TemplateGrid } from "./ui/TemplateGrid";
 import { TEMPLATE_CATEGORIES } from "./types/categories";
@@ -28,12 +28,12 @@ export function WebsiteTemplates() {
     null,
   );
 
-  const { templates, isLoading, error } = useTemplates({
+  const { templates, isLoading, error } = useGetAllTemplates({
     category,
   });
 
   const { mutate: generateTemplatePreview } = useGeneratePreviewTemplate();
-  const { mutate: applyTemplate } = useUseTemplate();
+  const { mutate: applyTemplate } = useGenerateTemplate();
   const handlePreview = (templateId: string) => {
     const template = templates.find((template) => template.id === templateId);
 
@@ -70,7 +70,7 @@ export function WebsiteTemplates() {
           {
             onSuccess: (data) => {
               setLoadingTemplateId(null);
-              router.push(data.redirectUrl);
+              router.replace(`${data.redirectUrl}?setup=true`);
               resolve();
             },
             onError: (err) => {
