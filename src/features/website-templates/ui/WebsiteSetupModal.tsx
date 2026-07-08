@@ -37,7 +37,7 @@ export function WebsiteSetupModal({ open, onOpenChange, onSubmit }: Props) {
 
             <DialogDescription>
               Give your website a name and description. You can change these
-              details anytime from your settings.
+              details anytime from your dashboard.
             </DialogDescription>
           </div>
         </DialogHeader>
