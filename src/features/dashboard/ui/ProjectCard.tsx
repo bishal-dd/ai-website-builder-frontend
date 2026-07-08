@@ -1,9 +1,15 @@
 "use client";
-
-import { Clock, Globe, ArrowUpRight } from "lucide-react";
+import { Clock, Globe, ArrowUpRight, Pencil, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import useUpdateWebsite from "@/features/preview/hooks/useUpdateWebsite";
+import { WebsiteDetailsDialog } from "./WebsiteDetailsDialog";
+import { useRouter } from "next/navigation";
+import useDeleteWebsite from "../hooks/useDeleteWebsite";
+import { toast } from "sonner";
+import { DeleteWebsiteDialog } from "./DeleteWebsiteDialog";
 
 interface Project {
   id: string;
@@ -23,7 +29,34 @@ export function ProjectCard({ project }: { project: Project }) {
     },
   );
 
-  // Generate a consistent gradient based on project name
+  const router = useRouter();
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const updateWebsite = useUpdateWebsite();
+  const deleteWebsite = useDeleteWebsite();
+
+  const handleDelete = () => {
+    toast.promise(deleteWebsite.mutateAsync(project.id), {
+      loading: "Deleting website...",
+      success: "Website deleted successfully",
+      error: "Failed to delete website",
+    });
+  };
+
+  const handleUpdate = ({
+    title,
+    description,
+  }: {
+    title: string;
+    description: string;
+  }) => {
+    updateWebsite.mutate({
+      websiteId: project.id,
+      body: { title, description },
+    });
+  };
+
   const getGradientClass = (name: string) => {
     const hash = name
       .split("")
@@ -39,32 +72,56 @@ export function ProjectCard({ project }: { project: Project }) {
   };
 
   return (
-    <Link href={`/preview/${project.id}`} className="block">
-      <Card className="group relative overflow-hidden border-border/50 bg-card transition-all duration-500 hover:border-border hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1">
+    <div className="block">
+      <Card
+        className="group relative cursor-pointer overflow-hidden border-border/50 bg-card transition-all duration-500 hover:border-border hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1"
+        onClick={() => router.push(`/preview/${project.id}`)}
+      >
         {/* Animated gradient background */}
         <div
-          className={`absolute inset-0 bg-gradient-to-br ${getGradientClass(
+          className={`absolute inset-0 bg-linear-to-br ${getGradientClass(
             project.name,
           )} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
         />
-
         {/* Subtle pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_1px)] bg-[length:24px_24px]" />
+        <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_1px)] bg-size-[24px_24px]" />
 
         {/* Top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+        {/* FLOATING ACTIONS: Appears smoothly on card hover */}
+        <div
+          className="absolute top-3 right-3 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0"
+          onClick={(e) => e.stopPropagation()} // Stop card click anywhere in this container
+        >
+          <Button
+            variant="secondary"
+            size="icon"
+            className="size-8 rounded-lg bg-background/80 backdrop-blur-md shadow-xs hover:bg-background border"
+            onClick={() => setEditOpen(true)}
+          >
+            <Pencil className="size-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+          </Button>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="size-8 rounded-lg bg-background/80 backdrop-blur-md shadow-xs hover:bg-destructive hover:text-destructive-foreground border text-muted-foreground transition-colors"
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        </div>
 
         <div className="relative flex flex-col p-5">
           {/* Header with icon and domain */}
-          <div className="flex items-start justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
               <Globe className="size-5" />
             </div>
-
             {project.domain && (
               <Badge
                 variant="secondary"
-                className="font-mono text-[10px] tracking-wide bg-secondary/80 backdrop-blur-sm"
+                className="font-mono text-[10px] tracking-wide bg-secondary/80 backdrop-blur-sm max-w-37.5 truncate"
               >
                 {project.domain}
               </Badge>
@@ -73,10 +130,9 @@ export function ProjectCard({ project }: { project: Project }) {
 
           {/* Content */}
           <div className="flex-1 space-y-2 mb-4">
-            <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground group-hover:text-foreground/90 transition-colors line-clamp-1">
+            <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground group-hover:text-foreground/90 transition-colors line-clamp-1 pr-16">
               {project.name}
             </h3>
-
             {project.description ? (
               <p className="text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed">
                 {project.description}
@@ -94,7 +150,6 @@ export function ProjectCard({ project }: { project: Project }) {
               <Clock className="size-3.5" />
               <span>{formattedDate}</span>
             </div>
-
             <div className="flex items-center gap-1.5 text-xs font-medium text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
               <span>Open</span>
               <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -105,6 +160,20 @@ export function ProjectCard({ project }: { project: Project }) {
         {/* Corner accent */}
         <div className="absolute -bottom-12 -right-12 size-24 rounded-full bg-primary/5 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       </Card>
-    </Link>
+
+      <WebsiteDetailsDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initialName={project.name}
+        initialDescription={project.description ?? ""}
+        onSave={handleUpdate}
+      />
+      <DeleteWebsiteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        websiteName={project.name}
+        onConfirm={handleDelete}
+      />
+    </div>
   );
 }
