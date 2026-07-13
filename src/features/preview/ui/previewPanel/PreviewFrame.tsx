@@ -111,6 +111,10 @@ export function PreviewFrame({
         href="https://fonts.googleapis.com/css2?family=${encodedFontFamily}:wght@300;400;500;600;700&display=swap"
         rel="stylesheet"
       />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Inter+Tight:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -125,10 +129,35 @@ export function PreviewFrame({
       }
     };
   </script>
+  <style>
+  :root{
+    --font-heading:"GT Ultra","Fraunces",serif;
+    --font-body: 'Inter Tight', sans-serif;
+  }
+
+  body{
+    font-family: var(--font-body);
+  }
+
+  h1,h2,h3,h4,h5,h6{
+    font-family: var(--font-heading);
+  }
+
+  @font-face{
+      font-family:"GT Ultra";
+      src:url("https://d343yoq90h416j.cloudfront.net/oV2wcyBgXKPr3xw3DB9FUXFIOigKzZ7E/font/GT-Ultra-Median-Bold.otf") format("opentype");
+      font-weight:700;
+      font-style:normal;
+  }
+
+  :root{
+      --font-heading:"GT Ultra","Fraunces",serif;
+  }
+  </style>
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.css" />
       <script src="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.js.iife.js"></script>
     </head>
-    <body style="font-family: '${fontFamily}', sans-serif;">
+    <body>
     <div id="root"></div>
     </body>
   </html>
