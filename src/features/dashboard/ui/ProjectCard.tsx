@@ -1,5 +1,12 @@
 "use client";
-import { Clock, Globe, ArrowUpRight, Pencil, Trash2 } from "lucide-react";
+import {
+  Clock,
+  Globe,
+  ArrowUpRight,
+  Pencil,
+  Trash2,
+  MoreVertical,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
@@ -10,6 +17,12 @@ import { useRouter } from "next/navigation";
 import useDeleteWebsite from "../hooks/useDeleteWebsite";
 import { toast } from "sonner";
 import { DeleteWebsiteDialog } from "./DeleteWebsiteDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Project {
   id: string;
@@ -89,48 +102,64 @@ export function ProjectCard({ project }: { project: Project }) {
         {/* Top accent line */}
         <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-        {/* FLOATING ACTIONS: Appears smoothly on card hover */}
-        <div
-          className="absolute top-3 right-3 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0"
-          onClick={(e) => e.stopPropagation()} // Stop card click anywhere in this container
-        >
-          <Button
-            variant="secondary"
-            size="icon"
-            className="size-8 rounded-lg bg-background/80 backdrop-blur-md shadow-xs hover:bg-background border"
-            onClick={() => setEditOpen(true)}
-          >
-            <Pencil className="size-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="icon"
-            className="size-8 rounded-lg bg-background/80 backdrop-blur-md shadow-xs hover:bg-destructive hover:text-destructive-foreground border text-muted-foreground transition-colors"
-            onClick={() => setDeleteOpen(true)}
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
-        </div>
-
         <div className="relative flex flex-col p-5">
           {/* Header with icon and domain */}
           <div className="mb-4 flex items-center justify-between">
             <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
               <Globe className="size-5" />
             </div>
-            {project.domain && (
-              <Badge
-                variant="secondary"
-                className="font-mono text-[10px] tracking-wide bg-secondary/80 backdrop-blur-sm max-w-37.5 truncate"
-              >
-                {project.domain}
-              </Badge>
-            )}
+
+            <div className="flex items-center gap-2">
+              {project.domain && (
+                <Badge
+                  variant="secondary"
+                  className="font-mono text-[10px] tracking-wide bg-secondary/80 backdrop-blur-sm max-w-37.5 truncate"
+                >
+                  {project.domain}
+                </Badge>
+              )}
+
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 rounded-lg bg-background/80 backdrop-blur-md border shadow-sm"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="size-4 text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditOpen(true);
+                    }}
+                  >
+                    <Pencil className="mr-2 size-4" />
+                    Edit
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteOpen(true);
+                    }}
+                  >
+                    <Trash2 className="mr-2 size-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
           {/* Content */}
           <div className="flex-1 space-y-2 mb-4">
-            <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground group-hover:text-foreground/90 transition-colors line-clamp-1 pr-16">
+            <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground group-hover:text-foreground/90 transition-colors line-clamp-1">
               {project.name}
             </h3>
             {project.description ? (
