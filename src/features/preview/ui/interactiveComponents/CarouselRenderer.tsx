@@ -78,7 +78,7 @@ export function CarouselRenderer({
   if (!slides?.length) return null;
 
   return (
-    <section className={cn("relative overflow-hidden h-[700px]", className)}>
+    <section className={cn("relative overflow-hidden h-175", className)}>
       {/* Slides */}
       {slides.map((slide, i) => {
         const isActive = i === currentIndex;

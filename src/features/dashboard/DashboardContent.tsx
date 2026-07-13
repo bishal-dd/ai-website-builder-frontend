@@ -18,7 +18,7 @@ export function DashboardContent() {
   return (
     <div className="flex min-h-svh flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
         <div className="flex h-16 items-center gap-4 px-6">
           <SidebarTrigger className="-ml-2" />
           <div className="flex flex-1 items-center justify-between gap-4">
