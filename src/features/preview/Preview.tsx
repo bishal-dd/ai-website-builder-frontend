@@ -72,6 +72,7 @@ export default function Preview() {
     hasGeneratedWebsite: Boolean(generatedWebsite),
     hasWebsiteElements: websiteData.elements.length > 0,
     hasSeenTour: generatedWebsite?.is_congrats_modal_shown,
+    disabled: showWebsiteSetup,
     onFinish: handleFinishOnboardingTour,
   });
 

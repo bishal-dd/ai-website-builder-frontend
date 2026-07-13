@@ -12,6 +12,7 @@ interface UsePreviewOnboardingTourParams {
   hasGeneratedWebsite: boolean;
   hasWebsiteElements: boolean;
   hasSeenTour?: boolean;
+  disabled?: boolean;
   onFinish: () => void;
 }
 
@@ -20,6 +21,7 @@ export function usePreviewOnboardingTour({
   hasGeneratedWebsite,
   hasWebsiteElements,
   hasSeenTour,
+  disabled = false,
   onFinish,
 }: UsePreviewOnboardingTourParams) {
   useEffect(() => {
@@ -27,6 +29,7 @@ export function usePreviewOnboardingTour({
     if (!hasGeneratedWebsite) return;
     if (!hasWebsiteElements) return;
     if (hasSeenTour) return;
+    if (disabled) return;
 
     const timeout = setTimeout(() => {
       const iframe = document.querySelector("iframe");
@@ -57,6 +60,7 @@ export function usePreviewOnboardingTour({
     hasGeneratedWebsite,
     hasWebsiteElements,
     hasSeenTour,
+    disabled,
     onFinish,
   ]);
 }
