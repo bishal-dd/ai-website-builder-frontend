@@ -137,7 +137,12 @@ export function PreviewFrame({
             <JsonRenderer
               contactPhone={contactPhone}
               device={device}
-              elements={currentPage.pageContent}
+              elements={
+                currentPage.pageContent.length === 1 &&
+                currentPage.pageContent[0]?.children
+                  ? currentPage.pageContent[0].children
+                  : currentPage.pageContent
+              }
               sharedComponents={websiteData.sharedComponents}
               onUpdateElement={(elementId, updates) =>
                 onUpdateElement?.(currentPageId, elementId, updates)
