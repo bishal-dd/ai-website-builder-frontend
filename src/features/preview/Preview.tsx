@@ -20,6 +20,8 @@ import useReorderPageSections from "@/features/preview/hooks/useReorderPageSecti
 import { ChatPanelJson } from "./ui/ChatPanelJson";
 import { PreviewPanelJson } from "./ui/PreviewPanelJson";
 import { WebsiteSetupModal } from "../website-templates/ui/WebsiteSetupModal";
+import useDeletePageSection from "./hooks/useDeletePageSection";
+import { DeleteSectionDialog } from "./ui/previewPanel/DeleteSectionDialog";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -34,7 +36,13 @@ export default function Preview() {
     },
     metadata: {},
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedSection, setSelectedSection] = useState<{
+    pageId: string;
+    sectionId: number;
+  } | null>(null);
   const reorderPageSections = useReorderPageSections();
+  const deletePageSection = useDeletePageSection();
 
   const params = useParams();
   const websiteId = params.websiteId as string;
@@ -96,6 +104,64 @@ export default function Preview() {
       pageId,
       sectionIds: reorderedSections.map((section) => section.id),
     });
+  };
+
+  const handleOpenDeleteDialog = (pageId: string, sectionId: number) => {
+    setSelectedSection({
+      pageId,
+      sectionId,
+    });
+
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteSection = async (pageId: string, sectionId: number) => {
+    const previousElements = websiteData.elements;
+
+    const updatedElements = websiteData.elements.map((page) => {
+      if (page.page_id !== pageId) return page;
+
+      const isMainChildren =
+        page.pageContent.length === 1 &&
+        Array.isArray(page.pageContent[0]?.children);
+
+      if (isMainChildren) {
+        const wrapper = page.pageContent[0];
+        return {
+          ...page,
+          pageContent: [
+            {
+              ...wrapper,
+              children: (wrapper.children ?? []).filter(
+                (section: WebElement) => section.id !== sectionId,
+              ),
+            },
+          ],
+        };
+      }
+
+      return {
+        ...page,
+        pageContent: page.pageContent.filter(
+          (section) => section.id !== sectionId,
+        ),
+      };
+    });
+
+    setWebsiteData((prev) => ({
+      ...prev,
+      elements: updatedElements,
+    }));
+
+    try {
+      await deletePageSection.mutateAsync({ pageId, sectionId });
+    } catch (err) {
+      console.error("Failed to delete section, rolling back:", err);
+      setWebsiteData((prev) => ({
+        ...prev,
+        elements: previousElements,
+      }));
+    }
   };
 
   const handleWebsiteGenerated = useCallback((data: WebsiteData) => {
@@ -236,6 +302,7 @@ export default function Preview() {
           onUpdateSharedElement={handleUpdateSharedElement}
           onPageChange={setCurrentPageId}
           onReorderSections={handleReorderSections}
+          onDeleteSection={handleOpenDeleteDialog}
         />
 
         {!isChatOpen && (
@@ -269,6 +336,22 @@ export default function Preview() {
         open={showWebsiteSetup}
         onOpenChange={setShowWebsiteSetup}
         onSubmit={handleWebsiteSetup}
+      />
+
+      <DeleteSectionDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={async () => {
+          if (!selectedSection) return;
+
+          await handleDeleteSection(
+            selectedSection.pageId,
+            selectedSection.sectionId,
+          );
+
+          setSelectedSection(null);
+          setDeleteDialogOpen(false);
+        }}
       />
     </div>
   );

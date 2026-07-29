@@ -25,7 +25,7 @@ import type {
 import { ImageElementRenderer } from "@/features/preview/ui/renderer/image/ImageElementRenderer";
 import { HeroSectionRenderer } from "@/features/preview/ui/renderer/sections/HeroSectionRenderer";
 import { OverlaySectionRenderer } from "@/features/preview/ui/renderer/sections/OverlaySectionRenderer";
-import { ArrowDown, ArrowUp, GripVertical } from "lucide-react";
+import { ArrowDown, ArrowUp, GripVertical, Trash2 } from "lucide-react";
 import { closestCenter, DndContext, type DragEndEvent } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -43,6 +43,7 @@ interface JsonRendererProps {
   contactPhone?: string;
   floatingWhatsappEnabled?: boolean;
   onReorderSections?: (reorderedSections: WebElement[]) => void;
+  onDeleteSection?: (sectionId: number) => void;
   onUpdateSharedElement?: (
     componentKey: ComponentKey,
     elementId: number,
@@ -94,6 +95,7 @@ export function JsonRenderer({
   floatingWhatsappEnabled,
   onUpdateSharedElement,
   onReorderSections,
+  onDeleteSection,
 }: JsonRendererProps) {
   const { user } = useSession();
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -313,6 +315,15 @@ export function JsonRenderer({
                         title="Move section down"
                       >
                         <ArrowDown className="h-4 w-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => onDeleteSection?.(element.id)}
+                        className="rounded-full p-1.5 text-red-400 transition hover:bg-red-500/20"
+                        title="Delete section"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   )

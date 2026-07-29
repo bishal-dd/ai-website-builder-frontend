@@ -34,6 +34,7 @@ interface PreviewFrameProps {
     updates: Partial<WebElement>,
   ) => void;
   onReorderSections?: (pageId: string, reorderedSections: WebElement[]) => void;
+  onDeleteSection?: (pageId: string, sectionId: number) => void;
 }
 
 export function PreviewFrame({
@@ -46,6 +47,7 @@ export function PreviewFrame({
   onUpdateElement,
   onUpdateSharedElement,
   onReorderSections,
+  onDeleteSection,
 }: PreviewFrameProps) {
   const frameRef = useRef<HTMLIFrameElement | null>(null);
 
@@ -150,6 +152,9 @@ export function PreviewFrame({
               onUpdateSharedElement={onUpdateSharedElement}
               onReorderSections={(reorderedSections) =>
                 onReorderSections?.(currentPageId, reorderedSections)
+              }
+              onDeleteSection={(sectionId) =>
+                onDeleteSection?.(currentPageId, sectionId)
               }
               floatingWhatsappEnabled={floatingWhatsappEnabled}
             />
