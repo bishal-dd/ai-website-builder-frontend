@@ -35,6 +35,7 @@ interface PreviewFrameProps {
     updates: Partial<WebElement>,
   ) => void;
   onReorderSections?: (pageId: string, reorderedSections: WebElement[]) => void;
+  onDeleteSection?: (pageId: string, sectionId: number) => void;
 }
 
 export function PreviewFrame({
@@ -47,6 +48,7 @@ export function PreviewFrame({
   onUpdateElement,
   onUpdateSharedElement,
   onReorderSections,
+  onDeleteSection,
 }: PreviewFrameProps) {
   const frameRef = useRef<HTMLIFrameElement | null>(null);
 
@@ -157,7 +159,12 @@ export function PreviewFrame({
             <JsonRenderer
               contactPhone={contactPhone}
               device={device}
-              elements={currentPage.pageContent}
+              elements={
+                currentPage.pageContent.length === 1 &&
+                currentPage.pageContent[0]?.children
+                  ? currentPage.pageContent[0].children
+                  : currentPage.pageContent
+              }
               sharedComponents={websiteData.sharedComponents}
               onUpdateElement={(elementId, updates) =>
                 onUpdateElement?.(currentPageId, elementId, updates)
@@ -165,6 +172,9 @@ export function PreviewFrame({
               onUpdateSharedElement={onUpdateSharedElement}
               onReorderSections={(reorderedSections) =>
                 onReorderSections?.(currentPageId, reorderedSections)
+              }
+              onDeleteSection={(sectionId) =>
+                onDeleteSection?.(currentPageId, sectionId)
               }
               floatingWhatsappEnabled={floatingWhatsappEnabled}
             />

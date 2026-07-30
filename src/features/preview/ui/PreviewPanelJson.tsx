@@ -31,6 +31,7 @@ export function PreviewPanelJson({
   onUpdateSharedElement,
   onPageChange,
   onReorderSections,
+  onDeleteSection,
   currentPageId,
 }: PreviewPanelJsonProps) {
   const [device, setDevice] = useState<DeviceType>("desktop");
@@ -206,6 +207,7 @@ export function PreviewPanelJson({
         onUpdateElement={onUpdateElement}
         onUpdateSharedElement={onUpdateSharedElement}
         onReorderSections={onReorderSections}
+        onDeleteSection={onDeleteSection}
       />
     </div>
   );
