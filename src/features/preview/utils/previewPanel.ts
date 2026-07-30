@@ -62,6 +62,15 @@ export function findScripts(elements: WebElement[]): WebElement[] {
   });
 }
 
+export function findStyles(elements: WebElement[]): WebElement[] {
+  return elements.flatMap((element) => {
+    const current = element.tag === "style" ? [element] : [];
+    const nested = element.children ? findStyles(element.children) : [];
+
+    return [...current, ...nested];
+  });
+}
+
 export function getIframeWidth(device: "desktop" | "tablet" | "mobile") {
   return {
     desktop: "100%",

@@ -13,6 +13,7 @@ import type {
 } from "@/features/preview/types/previewPanel";
 import {
   findScripts,
+  findStyles,
   getIframeWidth,
 } from "@/features/preview/utils/previewPanel";
 
@@ -77,18 +78,37 @@ export function PreviewFrame({
                 return;
               }
 
-              const scripts = websiteData.elements.flatMap((page) =>
-                findScripts(page.pageContent),
-              );
+              const navbar = websiteData.sharedComponents?.navbar ?? [];
+                const footer = websiteData.sharedComponents?.footer ?? [];
 
-              scripts.forEach((scriptElement) => {
-                const script = doc.createElement("script");
+                const scripts = [
+                  ...websiteData.elements.flatMap((page) => findScripts(page.pageContent)),
+                  ...findScripts(navbar),
+                  ...findScripts(footer),
+                ];
 
-                script.type = "text/javascript";
-                script.textContent = scriptElement.content || "";
+                const styles = [
+                  ...websiteData.elements.flatMap((page) => findStyles(page.pageContent)),
+                  ...findStyles(navbar),
+                  ...findStyles(footer),
+                ];
 
-                doc.body.appendChild(script);
-              });
+                // styles can go in immediately, order doesn't matter for correctness
+                styles.forEach((styleEl) => {
+                  const style = doc.createElement("style");
+                  style.textContent = styleEl.content || "";
+                  doc.head.appendChild(style);
+                });
+
+                // defer script injection one frame so the JsonRenderer portal has painted
+                requestAnimationFrame(() => {
+                  scripts.forEach((scriptElement) => {
+                    const script = doc.createElement("script");
+                    script.type = "text/javascript";
+                    script.textContent = scriptElement.content || "";
+                    doc.body.appendChild(script);
+                  });
+                });
             }}
             initialContent={`
   <!DOCTYPE html>
@@ -128,7 +148,7 @@ export function PreviewFrame({
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.css" />
       <script src="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.js.iife.js"></script>
     </head>
-    <body style="font-family: '${fontFamily}', sans-serif;">
+    <body>
     <div id="root"></div>
     </body>
   </html>
