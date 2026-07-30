@@ -13,6 +13,7 @@ import type {
 } from "@/features/preview/types/previewPanel";
 import {
   findScripts,
+  findStyles,
   getIframeWidth,
 } from "@/features/preview/utils/previewPanel";
 
@@ -77,18 +78,37 @@ export function PreviewFrame({
                 return;
               }
 
-              const scripts = websiteData.elements.flatMap((page) =>
-                findScripts(page.pageContent),
-              );
+              const navbar = websiteData.sharedComponents?.navbar ?? [];
+                const footer = websiteData.sharedComponents?.footer ?? [];
 
-              scripts.forEach((scriptElement) => {
-                const script = doc.createElement("script");
+                const scripts = [
+                  ...websiteData.elements.flatMap((page) => findScripts(page.pageContent)),
+                  ...findScripts(navbar),
+                  ...findScripts(footer),
+                ];
 
-                script.type = "text/javascript";
-                script.textContent = scriptElement.content || "";
+                const styles = [
+                  ...websiteData.elements.flatMap((page) => findStyles(page.pageContent)),
+                  ...findStyles(navbar),
+                  ...findStyles(footer),
+                ];
 
-                doc.body.appendChild(script);
-              });
+                // styles can go in immediately, order doesn't matter for correctness
+                styles.forEach((styleEl) => {
+                  const style = doc.createElement("style");
+                  style.textContent = styleEl.content || "";
+                  doc.head.appendChild(style);
+                });
+
+                // defer script injection one frame so the JsonRenderer portal has painted
+                requestAnimationFrame(() => {
+                  scripts.forEach((scriptElement) => {
+                    const script = doc.createElement("script");
+                    script.type = "text/javascript";
+                    script.textContent = scriptElement.content || "";
+                    doc.body.appendChild(script);
+                  });
+                });
             }}
             initialContent={`
   <!DOCTYPE html>
@@ -111,10 +131,6 @@ export function PreviewFrame({
         href="https://fonts.googleapis.com/css2?family=${encodedFontFamily}:wght@300;400;500;600;700&display=swap"
         rel="stylesheet"
       />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Inter+Tight:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet"
-      />
  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -129,31 +145,6 @@ export function PreviewFrame({
       }
     };
   </script>
-  <style>
-  :root{
-    --font-heading:"GT Ultra","Fraunces",serif;
-    --font-body: 'Inter Tight', sans-serif;
-  }
-
-  body{
-    font-family: var(--font-body);
-  }
-
-  h1,h2,h3,h4,h5,h6{
-    font-family: var(--font-heading);
-  }
-
-  @font-face{
-      font-family:"GT Ultra";
-      src:url("https://d343yoq90h416j.cloudfront.net/oV2wcyBgXKPr3xw3DB9FUXFIOigKzZ7E/font/GT-Ultra-Median-Bold.otf") format("opentype");
-      font-weight:700;
-      font-style:normal;
-  }
-
-  :root{
-      --font-heading:"GT Ultra","Fraunces",serif;
-  }
-  </style>
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.css" />
       <script src="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.js.iife.js"></script>
     </head>
