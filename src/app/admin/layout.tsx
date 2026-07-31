@@ -11,7 +11,7 @@ export default function AdminLayout({
 }) {
   return (
     /* 1. Wrap everything in the ProtectedRoute with the 'admin' role requirement */
-    <ProtectedRoute allowedRole="admin">
+    <ProtectedRoute allowedRoles={["admin"]}>
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <Suspense

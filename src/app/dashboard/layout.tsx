@@ -9,7 +9,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ProtectedRoute allowedRole="user">
+    <ProtectedRoute allowedRoles={["user"]}>
       <div className="pt-16">
         <SidebarProvider defaultOpen={true}>
           <AppSidebar />
