@@ -22,11 +22,14 @@ import type {
   DeviceType,
   PreviewPanelJsonProps,
 } from "@/features/preview/types/previewPanel";
+import { useCreateTemplateFromWebsite } from "@/features/website-templates/hooks/useCreateTemplateFromWebsite";
+import { CreateTemplateDialog } from "@/features/website-templates/ui/CreateTemplateDialog";
 
 export function PreviewPanelJson({
   websiteId,
   websiteData,
   contactPhone,
+  isAdmin,
   onUpdateElement,
   onUpdateSharedElement,
   onPageChange,
@@ -39,6 +42,9 @@ export function PreviewPanelJson({
   const router = useRouter();
   const didInitPageRef = useRef(false);
 
+  const [createTemplateDialogOpen, setCreateTemplateDialogOpen] =
+    useState(false);
+
   const { data: freshData, isLoading: isFetchingData } =
     useGetGeneratedWebsite(websiteId);
 
@@ -50,6 +56,8 @@ export function PreviewPanelJson({
 
   const deploymentCount = freshData?.deployment_count ?? 0;
   const isDeployed = deploymentCount > 0;
+
+  const createTemplateMutation = useCreateTemplateFromWebsite();
 
   const { sortedPages, mainPages, groupedSubPages } = getGroupedPreviewPages(
     websiteData.elements,
@@ -169,6 +177,25 @@ export function PreviewPanelJson({
     );
   };
 
+  const handleOpenCreateTemplateDialog = () => {
+    setCreateTemplateDialogOpen(true);
+  };
+  const handleCreateTemplate = () => {
+    createTemplateMutation.mutate(
+      {
+        websiteId,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Template created successfully");
+        },
+        onError: (error) => {
+          toast.error(error.message || "Failed to create template");
+        },
+      },
+    );
+  };
+
   const previewWebsiteData = {
     ...websiteData,
     primary_color: freshData?.primary_color ?? websiteData.primary_color,
@@ -182,10 +209,12 @@ export function PreviewPanelJson({
         isFetchingData={isFetchingData}
         isDeployed={isDeployed}
         isGeneratingPreview={isGeneratingPreview}
+        isAdmin={isAdmin}
         onDeviceChange={setDevice}
         onSharePreview={handleSharePreview}
         onRepublish={handleRepublish}
         onPublish={() => router.push(`/domain/${websiteId}`)}
+        onCreateTemplate={handleOpenCreateTemplateDialog}
       />
 
       <PageSelector
@@ -208,6 +237,14 @@ export function PreviewPanelJson({
         onUpdateSharedElement={onUpdateSharedElement}
         onReorderSections={onReorderSections}
         onDeleteSection={onDeleteSection}
+      />
+
+      <CreateTemplateDialog
+        open={createTemplateDialogOpen}
+        onOpenChange={setCreateTemplateDialogOpen}
+        websiteName={freshData?.title ?? "this website"}
+        onConfirm={handleCreateTemplate}
+        loading={createTemplateMutation.isPending}
       />
     </div>
   );
