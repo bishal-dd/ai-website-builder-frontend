@@ -27,6 +27,7 @@ import {
   Mail,
   Phone,
   User,
+  Eye,
 } from "lucide-react";
 import { useDebouncedCallback } from "../hooks/useDebounce";
 
@@ -91,6 +92,7 @@ export const DraftWebsitesTable = ({
                 <TableHead>Contact</TableHead>
                 <TableHead>Website Title</TableHead>
                 <TableHead>Created At</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -98,7 +100,7 @@ export const DraftWebsitesTable = ({
               {websites.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={6}
                     className="h-24 text-center text-muted-foreground"
                   >
                     No results found.
@@ -129,6 +131,17 @@ export const DraftWebsitesTable = ({
                         {site.createdAt
                           ? new Date(site.createdAt).toLocaleDateString("en-GB")
                           : "-"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push(`/preview/${site.id}`)}
+                          className="gap-2"
+                        >
+                          <Eye className="h-4 w-4" />
+                          Preview
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
