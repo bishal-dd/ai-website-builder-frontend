@@ -22,6 +22,7 @@ import { PreviewPanelJson } from "./ui/PreviewPanelJson";
 import { WebsiteSetupModal } from "../website-templates/ui/WebsiteSetupModal";
 import useDeletePageSection from "./hooks/useDeletePageSection";
 import { DeleteSectionDialog } from "./ui/previewPanel/DeleteSectionDialog";
+import { useSession } from "@/shared/session/useSession";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -56,6 +57,10 @@ export default function Preview() {
   const { data: generatedWebsite } = useGetGeneratedWebsite(websiteId);
 
   const [hasOpenedSetup, setHasOpenedSetup] = useState(false);
+
+  const { user } = useSession();
+
+  const isAdmin = user?.role === "admin";
 
   useEffect(() => {
     if (shouldShowSetup && generatedWebsite && !hasOpenedSetup) {
@@ -297,6 +302,7 @@ export default function Preview() {
           contactPhone={contactPhone}
           websiteId={websiteId}
           websiteData={websiteData}
+          isAdmin={isAdmin}
           currentPageId={currentPageId}
           onUpdateElement={handleUpdateElement}
           onUpdateSharedElement={handleUpdateSharedElement}

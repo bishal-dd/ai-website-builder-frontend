@@ -30,6 +30,7 @@ import {
   Mail,
   Phone,
   User,
+  Eye,
 } from "lucide-react";
 import { useApprovePayment } from "@/features/admin/hooks/useApprovePayment";
 import { useDebouncedCallback } from "../hooks/useDebounce";
@@ -193,25 +194,37 @@ export const PendingWebsitesTable = ({
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                          onClick={() => {
-                            setCurrentSite(site);
-                            setPaymentData({
-                              websiteId: site.id,
-                              totalAmount: total,
-                              paymentType: "full",
-                              paidAmount: roundDown(site.domainPrice),
-                              paymentDate: new Date()
-                                .toISOString()
-                                .split("T")[0],
-                            });
-                            setPaymentModalOpen(true);
-                          }}
-                        >
-                          Approve
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push(`/preview/${site.id}`)}
+                            className="gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            Preview
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => {
+                              setCurrentSite(site);
+                              setPaymentData({
+                                websiteId: site.id,
+                                totalAmount: total,
+                                paymentType: "full",
+                                paidAmount: roundDown(site.domainPrice),
+                                paymentDate: new Date()
+                                  .toISOString()
+                                  .split("T")[0],
+                              });
+                              setPaymentModalOpen(true);
+                            }}
+                          >
+                            Approve
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

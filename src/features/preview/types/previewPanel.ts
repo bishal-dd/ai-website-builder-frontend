@@ -8,6 +8,7 @@ export interface PreviewPanelJsonProps {
   websiteId: string;
   websiteData: WebsiteData;
   contactPhone: string;
+  isAdmin: boolean;
   onUpdateElement?: (
     pageId: string,
     elementId: number,

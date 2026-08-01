@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   CircleHelp,
+  FilePlus,
   LayoutDashboard,
   Monitor,
   MoveUpRight,
@@ -30,10 +31,12 @@ interface PreviewHeaderProps {
   isFetchingData: boolean;
   isDeployed: boolean;
   isGeneratingPreview: boolean;
+  isAdmin: boolean;
   onDeviceChange: (device: DeviceType) => void;
   onSharePreview: () => void;
   onRepublish: () => void;
   onPublish: () => void;
+  onCreateTemplate: () => void;
 }
 
 export function PreviewHeader({
@@ -41,10 +44,12 @@ export function PreviewHeader({
   isFetchingData,
   isDeployed,
   isGeneratingPreview,
+  isAdmin,
   onDeviceChange,
   onSharePreview,
   onRepublish,
   onPublish,
+  onCreateTemplate,
 }: PreviewHeaderProps) {
   return (
     <div className="flex items-center justify-between border-b bg-card px-4 py-3">
@@ -111,6 +116,20 @@ export function PreviewHeader({
             <span className="sm:hidden">Docs</span>
           </Link>
         </Button>
+
+        {isAdmin && (
+          <Button
+            variant="outline"
+            onClick={onCreateTemplate}
+            className="flex items-center gap-2"
+          >
+            <FilePlus className="h-4 w-4" />
+
+            <span className="hidden sm:inline">Create Template</span>
+
+            <span className="sm:hidden">Template</span>
+          </Button>
+        )}
 
         <Button variant="outline" asChild>
           <Link href="/dashboard" className="flex items-center gap-2">

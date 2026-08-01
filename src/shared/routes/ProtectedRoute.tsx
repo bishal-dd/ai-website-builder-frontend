@@ -4,17 +4,26 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "../session";
 
+type UserRole = "admin" | "user";
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRole?: "admin" | "user";
+  allowedRoles?: UserRole[];
 }
 
 export const ProtectedRoute = ({
   children,
-  allowedRole,
+  allowedRoles,
 }: ProtectedRouteProps) => {
   const { authenticated, loading, user } = useSession();
   const router = useRouter();
+
+  const isUserRole = (role?: string): role is UserRole => {
+    return role === "admin" || role === "user";
+  };
+
+  const hasAccess =
+    !allowedRoles ||
+    (isUserRole(user?.role) && allowedRoles.includes(user.role));
 
   useEffect(() => {
     if (loading) return;
@@ -24,8 +33,10 @@ export const ProtectedRoute = ({
       return;
     }
 
-    if (allowedRole && user?.role !== allowedRole) {
-      console.warn(`Access denied. Expected ${allowedRole}, got ${user?.role}`);
+    if (!hasAccess) {
+      console.warn(
+        `Access denied. Expected ${allowedRoles?.join(", ")}, got ${user?.role}`,
+      );
 
       if (user?.role === "admin") {
         router.replace("/admin/dashboard");
@@ -33,16 +44,12 @@ export const ProtectedRoute = ({
         router.replace("/dashboard");
       }
     }
-  }, [authenticated, loading, user, router, allowedRole]);
+  }, [authenticated, loading, user, router, allowedRoles, hasAccess]);
 
-  if (
-    loading ||
-    !authenticated ||
-    (allowedRole && user?.role !== allowedRole)
-  ) {
+  if (loading || !authenticated || !hasAccess) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
