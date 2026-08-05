@@ -3,7 +3,7 @@ import { ProtectedRoute } from "@/shared/routes";
 
 export default function Home() {
   return (
-    <ProtectedRoute allowedRole="user">
+    <ProtectedRoute allowedRoles={["user", "admin"]}>
       <Preview />
     </ProtectedRoute>
   );

@@ -7,7 +7,7 @@ export default function WizardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ProtectedRoute allowedRole="user">
+    <ProtectedRoute allowedRoles={["user"]}>
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-1">{children}</main>

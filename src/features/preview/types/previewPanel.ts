@@ -8,6 +8,7 @@ export interface PreviewPanelJsonProps {
   websiteId: string;
   websiteData: WebsiteData;
   contactPhone: string;
+  isAdmin: boolean;
   onUpdateElement?: (
     pageId: string,
     elementId: number,
@@ -21,4 +22,5 @@ export interface PreviewPanelJsonProps {
   onPageChange: (pageId: string) => void;
   currentPageId: string;
   onReorderSections: (pageId: string, reorderedSections: WebElement[]) => void;
+  onDeleteSection?: (pageId: string, sectionId: number) => void;
 }

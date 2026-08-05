@@ -30,6 +30,7 @@ import {
   Mail,
   Phone,
   User,
+  Eye,
 } from "lucide-react";
 import { useDebouncedCallback } from "../hooks/useDebounce";
 import { toast } from "sonner";
@@ -121,7 +122,7 @@ export const ApprovedWebsitesTable = ({
                 <TableHead>Contact</TableHead>
                 <TableHead>Website Title</TableHead>
                 <TableHead>Total Price</TableHead>
-                <TableHead className="text-right">Payment</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -180,14 +181,26 @@ export const ApprovedWebsitesTable = ({
                       </TableCell>
 
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedPayment(site)}
-                          className="h-8 gap-2 hover:bg-blue-50 hover:text-blue-700"
-                        >
-                          View Payment
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push(`/preview/${site.id}`)}
+                            className="gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            Preview
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedPayment(site)}
+                            className="h-8 gap-2 hover:bg-blue-50 hover:text-blue-700"
+                          >
+                            View Payment
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
