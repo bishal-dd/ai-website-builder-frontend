@@ -11,7 +11,7 @@ const exampleSites = [
     description:
       "Showcase your travel agency’s services, destinations, and expert guides with a modern, professional layout.",
     category: "Travel",
-    image: "/images/category/travel-agency.png",
+    image: "/images/category/travel-agency.webp",
     link: "/dashboard/templates/travel-agency",
   },
   {
@@ -19,7 +19,7 @@ const exampleSites = [
     description:
       "Beautifully designed website for hotels and resorts featuring rooms, amenities, booking info, and stunning visuals to attract guests.",
     category: "Hospitality",
-    image: "/images/category/hotel.png",
+    image: "/images/category/hotel.webp",
     link: "/dashboard/templates/hotel",
   },
   {
@@ -27,7 +27,7 @@ const exampleSites = [
     description:
       "Clean and professional landing page for small or medium businesses to showcase services, products, and contact info effectively.",
     category: "Business",
-    image: "/images/category/restaurant.png",
+    image: "/images/category/restaurant.webp",
     link: "/dashboard/templates/restaurant",
   },
 ];
