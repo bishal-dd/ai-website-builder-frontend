@@ -30,6 +30,8 @@ interface Project {
   domain: string | null;
   createdAt: string;
   description?: string;
+  contact_email?: string;
+  contact_phone?: string;
 }
 
 export function ProjectCard({ project }: { project: Project }) {
@@ -60,13 +62,22 @@ export function ProjectCard({ project }: { project: Project }) {
   const handleUpdate = ({
     title,
     description,
+    contactEmail,
+    contactPhone,
   }: {
     title: string;
     description: string;
+    contactEmail: string;
+    contactPhone: string;
   }) => {
     updateWebsite.mutate({
       websiteId: project.id,
-      body: { title, description },
+      body: {
+        title,
+        description,
+        contact_email: contactEmail,
+        contact_phone: contactPhone,
+      },
     });
   };
 
@@ -195,6 +206,8 @@ export function ProjectCard({ project }: { project: Project }) {
         onOpenChange={setEditOpen}
         initialName={project.name}
         initialDescription={project.description ?? ""}
+        initialEmail={project.contact_email ?? ""}
+        initialPhone={project.contact_phone ?? ""}
         onSave={handleUpdate}
       />
       <DeleteWebsiteDialog

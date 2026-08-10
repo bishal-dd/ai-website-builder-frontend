@@ -2,6 +2,8 @@ import { SharedComponents } from "./webElement";
 export type WebsiteInput = {
   title: string;
   description?: string;
+  contact_email?: string;
+  contact_phone?: string;
   design_type?: string;
   primary_color?: string;
   secondary_color?: string;
