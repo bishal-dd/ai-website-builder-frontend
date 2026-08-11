@@ -54,7 +54,11 @@ export default function Preview() {
   const searchParams = useSearchParams();
   const shouldShowSetup = searchParams.get("setup") === "true";
 
-  const { data: generatedWebsite } = useGetGeneratedWebsite(websiteId);
+  const {
+    data: generatedWebsite,
+    isLoading: isWebsiteLoading,
+    error: websiteError,
+  } = useGetGeneratedWebsite(websiteId);
 
   const [hasOpenedSetup, setHasOpenedSetup] = useState(false);
 
@@ -295,6 +299,31 @@ export default function Preview() {
       },
     );
   };
+
+  if (isWebsiteLoading) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center">
+        <p className="text-muted-foreground">Loading website...</p>
+      </div>
+    );
+  }
+
+  if (websiteError || !generatedWebsite) {
+    return (
+      <div className="flex h-screen w-screen flex-col items-center justify-center gap-4">
+        <div className="text-center">
+          <h1 className="text-xl font-semibold">Website not found</h1>
+
+          <p className="mt-2 text-sm text-muted-foreground">
+            You don&apos;t have permission to access this website.
+          </p>
+        </div>
+
+        <Button onClick={() => router.push("/dashboard")}>Go back</Button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
       <main className="relative flex-1 overflow-hidden">
