@@ -13,14 +13,21 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Globe, FileText } from "lucide-react";
+import { Globe, FileText, Phone, Mail } from "lucide-react";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialName: string;
   initialDescription: string;
-  onSave: (data: { title: string; description: string }) => void;
+  initialEmail: string;
+  initialPhone: string;
+  onSave: (data: {
+    title: string;
+    description: string;
+    contactEmail: string;
+    contactPhone: string;
+  }) => void;
 }
 
 export function WebsiteDetailsDialog({
@@ -28,21 +35,27 @@ export function WebsiteDetailsDialog({
   onOpenChange,
   initialName,
   initialDescription,
+  initialEmail,
+  initialPhone,
   onSave,
 }: Props) {
   const [title, setTitle] = useState(initialName);
   const [description, setDescription] = useState(initialDescription);
+  const [email, setEmail] = useState(initialEmail);
+  const [phone, setPhone] = useState(initialPhone);
 
   useEffect(() => {
     if (open) {
       setTitle(initialName);
       setDescription(initialDescription);
+      setEmail(initialEmail);
+      setPhone(initialPhone);
     }
-  }, [open, initialName, initialDescription]);
+  }, [open, initialName, initialDescription, initialEmail, initialPhone]);
 
   const handleSave = () => {
     if (!title.trim()) return;
-    onSave({ title, description });
+    onSave({ title, description, contactEmail: email, contactPhone: phone });
     onOpenChange(false);
   };
 
@@ -95,6 +108,44 @@ export function WebsiteDetailsDialog({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="min-h-27.5 resize-none focus-visible:ring-primary/50 leading-relaxed"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label
+              htmlFor="email"
+              className="text-sm font-medium flex items-center gap-2 text-foreground/90"
+            >
+              <Mail className="size-4 text-muted-foreground" />
+              Contact Email
+            </Label>
+
+            <Input
+              id="email"
+              type="email"
+              placeholder="hello@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="h-10 focus-visible:ring-primary/50"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label
+              htmlFor="phone"
+              className="text-sm font-medium flex items-center gap-2 text-foreground/90"
+            >
+              <Phone className="size-4 text-muted-foreground" />
+              Contact Phone
+            </Label>
+
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="+975 17XXXXXX"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="h-10 focus-visible:ring-primary/50"
             />
           </div>
         </div>
