@@ -108,31 +108,36 @@ export const ApprovedWebsitesTable = ({
   });
 
   // Sync edit form values whenever the fetched payment changes
+  const selectedPaymentDomainPrice = selectedPayment?.domainPrice;
+  const hasSelectedPayment = !!selectedPayment;
+
   useEffect(() => {
-    if (payment && selectedPayment) {
+    if (payment && hasSelectedPayment) {
       setEditValues({
-        domainPrice: String(selectedPayment.domainPrice ?? ""),
+        domainPrice: String(selectedPaymentDomainPrice ?? ""),
         hostingPrice: String(payment.hostingPrice ?? ""),
         generationPrice: String(payment.generationPrice ?? ""),
         totalAmount: String(payment.totalAmount ?? ""),
       });
     }
-  }, [payment, selectedPayment?.domainPrice]);
+  }, [payment, hasSelectedPayment, selectedPaymentDomainPrice]);
 
   // Reset the create form whenever a different website's modal opens
+  const selectedPaymentId = selectedPayment?.id;
+
   useEffect(() => {
-    if (!selectedPayment) {
+    if (selectedPaymentId === undefined) {
       setCreateValues(emptyPaymentForm);
       return;
     }
 
     setCreateValues({
-      domainPrice: String(selectedPayment.domainPrice ?? ""),
+      domainPrice: String(selectedPaymentDomainPrice ?? ""),
       hostingPrice: "",
       generationPrice: "",
       paymentDate: new Date().toISOString().split("T")[0],
     });
-  }, [selectedPayment?.id, selectedPayment?.domainPrice]);
+  }, [selectedPaymentId, selectedPaymentDomainPrice]);
 
   const roundDown = (val: unknown) => Math.floor(Number(val) || 0);
 
