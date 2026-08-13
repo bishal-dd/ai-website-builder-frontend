@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Phone, User, Globe2, FileText } from "lucide-react";
+import { Mail, Phone, User, Globe2, FileText, Eye } from "lucide-react";
 
 import { WebsiteByType } from "../api/getWebsitesByType";
 import {
@@ -114,6 +114,7 @@ export const WebsitesByTypeTable = ({
                 <TableHead>Status</TableHead>
                 <TableHead>Country</TableHead>
                 <TableHead>Contact</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -167,6 +168,17 @@ export const WebsitesByTypeTable = ({
                       >
                         <User className="size-4" />
                         <span className="text-xs">View Info</span>
+                      </Button>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push(`/preview/${site.id}`)}
+                        className="gap-2"
+                      >
+                        <Eye className="h-4 w-4" />
+                        Preview
                       </Button>
                     </TableCell>
                   </TableRow>
