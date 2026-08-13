@@ -3,7 +3,6 @@ export interface PaymentInput {
   hostingPrice: number;
   generationPrice: number;
   totalAmount: number;
-  paidAmount: number;
   paymentDate?: string;
 }
 
@@ -13,7 +12,6 @@ export interface Payment {
   hostingPrice: number;
   generationPrice: number;
   totalAmount: number;
-  paidAmount: number;
   paymentDate?: string;
 }
 

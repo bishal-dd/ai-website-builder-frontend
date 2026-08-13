@@ -38,6 +38,7 @@ import useWebsitePayment from "../hooks/useWebsitePayment";
 import useUpdateWebsitePayment from "../hooks/useUpdateWebsitePayment";
 import useCreateWebsitePayment from "../hooks/useCreateWebsitePayment";
 import { toast } from "sonner";
+import useUpdateDomainPrice from "@/features/preview/domain/hooks/useUpdateDomainPrice";
 
 interface ApprovedWebsitesTableProps {
   websites: Website[];
@@ -48,10 +49,9 @@ interface ApprovedWebsitesTableProps {
 }
 
 const emptyPaymentForm = {
+  domainPrice: "",
   hostingPrice: "",
   generationPrice: "",
-  totalAmount: "",
-  paidAmount: "",
   paymentDate: new Date().toISOString().split("T")[0],
 };
 
@@ -72,10 +72,14 @@ export const ApprovedWebsitesTable = ({
 
   const [isEditingPayment, setIsEditingPayment] = useState(false);
   const [editValues, setEditValues] = useState({
+    domainPrice: "",
     hostingPrice: "",
     generationPrice: "",
     totalAmount: "",
   });
+
+  const { payment: priceBreakdownPayment, isLoading: isPriceBreakdownLoading } =
+    useWebsitePayment(selectedPrice?.id);
 
   const [createValues, setCreateValues] = useState(emptyPaymentForm);
 
@@ -94,6 +98,9 @@ export const ApprovedWebsitesTable = ({
     refresh();
   });
 
+  const { mutate: updateDomainPrice, isPending: isUpdatingDomainPrice } =
+    useUpdateDomainPrice();
+
   const { createPayment, isCreating } = useCreateWebsitePayment(() => {
     toast.success("Payment created successfully");
     setCreateValues(emptyPaymentForm);
@@ -103,8 +110,9 @@ export const ApprovedWebsitesTable = ({
 
   // Sync edit form values whenever the fetched payment changes
   useEffect(() => {
-    if (payment) {
+    if (payment && selectedPayment) {
       setEditValues({
+        domainPrice: String(selectedPayment.domainPrice ?? ""),
         hostingPrice: String(payment.hostingPrice ?? ""),
         generationPrice: String(payment.generationPrice ?? ""),
         totalAmount: String(payment.totalAmount ?? ""),
@@ -114,7 +122,17 @@ export const ApprovedWebsitesTable = ({
 
   // Reset the create form whenever a different website's modal opens
   useEffect(() => {
-    setCreateValues(emptyPaymentForm);
+    if (!selectedPayment) {
+      setCreateValues(emptyPaymentForm);
+      return;
+    }
+
+    setCreateValues({
+      domainPrice: String(selectedPayment.domainPrice ?? ""),
+      hostingPrice: "",
+      generationPrice: "",
+      paymentDate: new Date().toISOString().split("T")[0],
+    });
   }, [selectedPayment?.id]);
 
   const roundDown = (val: unknown) => Math.floor(Number(val) || 0);
@@ -125,6 +143,32 @@ export const ApprovedWebsitesTable = ({
       : `Nu. ${roundDown(amount)}`;
   };
 
+  const calculateTotal = ({
+    domainPrice,
+    hostingPrice,
+    generationPrice,
+  }: {
+    domainPrice: string | number;
+    hostingPrice: string | number;
+    generationPrice: string | number;
+  }) => {
+    return (
+      Number(domainPrice || 0) +
+      Number(hostingPrice || 0) +
+      Number(generationPrice || 0)
+    );
+  };
+
+  const calculatedTotal = calculateTotal({
+    domainPrice: editValues.domainPrice,
+    hostingPrice: editValues.hostingPrice,
+    generationPrice: editValues.generationPrice,
+  });
+
+  const calculatedCreateTotal =
+    Number(createValues.domainPrice || 0) +
+    Number(createValues.hostingPrice || 0) +
+    Number(createValues.generationPrice || 0);
   const updateQuery = useDebouncedCallback((key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value) params.set(key, value);
@@ -140,28 +184,72 @@ export const ApprovedWebsitesTable = ({
     setIsEditingPayment(false);
   };
 
-  const handleSavePayment = () => {
+  const handleSavePayment = async () => {
     if (!selectedPayment) return;
 
-    updatePayment({
-      websiteId: selectedPayment.id,
-      data: {
-        hostingPrice: Number(editValues.hostingPrice) || 0,
-        generationPrice: Number(editValues.generationPrice) || 0,
-        totalAmount: Number(editValues.totalAmount) || 0,
+    const price = Number(editValues.domainPrice);
+
+    if (!Number.isFinite(price) || price < 0) {
+      toast.error("Please enter a valid domain price");
+      return;
+    }
+
+    if (!selectedPayment.domainId) {
+      toast.error("Domain ID is missing");
+      return;
+    }
+
+    updateDomainPrice(
+      { domainId: selectedPayment.domainId, domainPrice: price },
+      {
+        onSuccess: () => {
+          setSelectedPayment((prev) =>
+            prev ? { ...prev, domainPrice: price } : null,
+          );
+          updatePayment({
+            websiteId: selectedPayment.id,
+            data: {
+              hostingPrice: Number(editValues.hostingPrice) || 0,
+              generationPrice: Number(editValues.generationPrice) || 0,
+              totalAmount: calculatedTotal,
+            },
+          });
+        },
+        onError: (error) => {
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to update domain price",
+          );
+        },
       },
-    });
+    );
   };
 
   const handleCreatePayment = () => {
     if (!selectedPayment) return;
 
+    const domainPrice = Number(createValues.domainPrice) || 0;
+    const hostingPrice = Number(createValues.hostingPrice) || 0;
+    const generationPrice = Number(createValues.generationPrice) || 0;
+
+    const totalAmount = domainPrice + hostingPrice + generationPrice;
+
+    if (domainPrice < 0) {
+      toast.error("Please enter a valid domain price");
+      return;
+    }
+
+    if (!selectedPayment.domainId) {
+      toast.error("Domain ID is missing");
+      return;
+    }
+
     createPayment({
       websiteId: selectedPayment.id,
-      hostingPrice: Number(createValues.hostingPrice) || 0,
-      generationPrice: Number(createValues.generationPrice) || 0,
-      totalAmount: Number(createValues.totalAmount) || 0,
-      paidAmount: Number(createValues.paidAmount) || 0,
+      hostingPrice,
+      generationPrice,
+      totalAmount,
       paymentDate: createValues.paymentDate || undefined,
     });
   };
@@ -214,10 +302,9 @@ export const ApprovedWebsitesTable = ({
               ) : (
                 websites.map((site, index) => {
                   const serialNumber = (currentPage - 1) * 10 + index + 1;
-                  const total =
-                    Number(site.domainPrice || 0) +
-                    Number(site.hostingPrice || 0) +
-                    Number(site.websitePrice || 0);
+                  const total = Number(site.totalAmount || 0);
+                  const hostingPrice = Number(site.hostingPrice || 0);
+                  const generationPrice = Number(site.websitePrice || 0);
 
                   return (
                     <TableRow key={site.id}>
@@ -334,22 +421,30 @@ export const ApprovedWebsitesTable = ({
             <div className="flex justify-between border-b pb-2 text-sm">
               <span className="text-muted-foreground">Hosting Plan</span>
               <span className="tabular-nums font-medium">
-                {roundDown(selectedPrice?.hostingPrice)}
+                {roundDown(
+                  priceBreakdownPayment?.hostingPrice ??
+                    selectedPrice?.hostingPrice,
+                )}
               </span>
             </div>
             <div className="flex justify-between border-b pb-2 text-sm">
               <span className="text-muted-foreground">AI Generation Fee</span>
               <span className="tabular-nums font-medium">
-                {roundDown(selectedPrice?.websitePrice)}
+                {roundDown(
+                  priceBreakdownPayment?.generationPrice ??
+                    selectedPrice?.websitePrice,
+                )}
               </span>
             </div>
             <div className="flex justify-between pt-2 text-lg font-bold">
               <span>Total Amount</span>
               <span className="text-green-600">
                 {formatCurrency(
-                  Number(selectedPrice?.domainPrice || 0) +
-                    Number(selectedPrice?.hostingPrice || 0) +
-                    Number(selectedPrice?.websitePrice || 0),
+                  Number(
+                    priceBreakdownPayment?.totalAmount ??
+                      selectedPrice?.totalAmount ??
+                      0,
+                  ),
                   selectedPrice?.country !== "BT",
                 )}
               </span>
@@ -434,6 +529,23 @@ export const ApprovedWebsitesTable = ({
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Domain Price
+                      </p>
+                      <Input
+                        type="number"
+                        min="0"
+                        className="mt-1 h-8"
+                        value={createValues.domainPrice}
+                        onChange={(e) =>
+                          setCreateValues((prev) => ({
+                            ...prev,
+                            domainPrice: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
                         Hosting Price
                       </p>
                       <Input
@@ -475,30 +587,8 @@ export const ApprovedWebsitesTable = ({
                       <Input
                         type="number"
                         className="mt-1 h-8"
-                        value={createValues.totalAmount}
-                        onChange={(e) =>
-                          setCreateValues((prev) => ({
-                            ...prev,
-                            totalAmount: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                        Paid Amount
-                      </p>
-                      <Input
-                        type="number"
-                        className="mt-1 h-8"
-                        value={createValues.paidAmount}
-                        onChange={(e) =>
-                          setCreateValues((prev) => ({
-                            ...prev,
-                            paidAmount: e.target.value,
-                          }))
-                        }
+                        value={calculatedCreateTotal}
+                        readOnly
                       />
                     </div>
                   </div>
@@ -525,6 +615,33 @@ export const ApprovedWebsitesTable = ({
               <>
                 <div className="rounded-xl border bg-muted/30 p-4 space-y-4">
                   <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Domain Price
+                      </p>
+
+                      {isEditingPayment ? (
+                        <Input
+                          type="number"
+                          min="0"
+                          className="mt-1 h-8"
+                          value={editValues.domainPrice}
+                          onChange={(e) =>
+                            setEditValues((prev) => ({
+                              ...prev,
+                              domainPrice: e.target.value,
+                            }))
+                          }
+                        />
+                      ) : (
+                        <p className="text-sm font-medium mt-1">
+                          {formatCurrency(
+                            Number(selectedPayment?.domainPrice || 0),
+                            selectedPayment?.country !== "BT",
+                          )}
+                        </p>
+                      )}
+                    </div>
                     <div>
                       <p className="text-xs uppercase tracking-wide text-muted-foreground">
                         Hosting Price
@@ -586,13 +703,8 @@ export const ApprovedWebsitesTable = ({
                       <Input
                         type="number"
                         className="h-8 w-32 text-right"
-                        value={editValues.totalAmount}
-                        onChange={(e) =>
-                          setEditValues((prev) => ({
-                            ...prev,
-                            totalAmount: e.target.value,
-                          }))
-                        }
+                        value={calculatedTotal}
+                        readOnly
                       />
                     ) : (
                       <span className="text-sm font-semibold">
@@ -665,6 +777,7 @@ export const ApprovedWebsitesTable = ({
                 onClick={() => {
                   setIsEditingPayment(false);
                   setEditValues({
+                    domainPrice: String(selectedPayment?.domainPrice ?? ""),
                     hostingPrice: String(payment.hostingPrice ?? ""),
                     generationPrice: String(payment.generationPrice ?? ""),
                     totalAmount: String(payment.totalAmount ?? ""),

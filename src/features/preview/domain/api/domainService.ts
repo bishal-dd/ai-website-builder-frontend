@@ -100,3 +100,28 @@ export async function createCustomPreOrder(data: {
 
   return res.json();
 }
+
+export async function updateDomainPriceAPI(data: {
+  id: string;
+  domainPrice: number;
+}) {
+  const res = await fetch(`${BASE_URL}/domains/${data.id}/price`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      domainPrice: data.domainPrice,
+    }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+
+    throw new Error(
+      errorData?.error || `Failed to update domain price: ${res.status}`,
+    );
+  }
+
+  return res.json();
+}

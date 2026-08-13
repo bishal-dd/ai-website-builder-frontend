@@ -8,6 +8,7 @@ export interface Website {
   country?: string;
   createdAt: string;
   deploymentStatus: string;
+  domainId?: string | null;
   domainPrice?: number | null;
   hostingPrice?: number | null;
   websitePrice?: number | null;
