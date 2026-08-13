@@ -1,10 +1,9 @@
 export type PaymentInput = {
   websiteId: string;
-  paymentType: "full" | "installments";
+  hostingPrice: number;
+  generationPrice: number;
   totalAmount: number;
   paidAmount: number;
-  installmentNumber?: number;
-  totalRemainingAmount?: number;
   paymentDate?: string;
 };
 
