@@ -98,8 +98,7 @@ export const ApprovedWebsitesTable = ({
     refresh();
   });
 
-  const { mutate: updateDomainPrice, isPending: isUpdatingDomainPrice } =
-    useUpdateDomainPrice();
+  const { mutate: updateDomainPrice } = useUpdateDomainPrice();
 
   const { createPayment, isCreating } = useCreateWebsitePayment(() => {
     toast.success("Payment created successfully");
@@ -118,7 +117,7 @@ export const ApprovedWebsitesTable = ({
         totalAmount: String(payment.totalAmount ?? ""),
       });
     }
-  }, [payment]);
+  }, [payment, selectedPayment?.domainPrice]);
 
   // Reset the create form whenever a different website's modal opens
   useEffect(() => {
@@ -133,7 +132,7 @@ export const ApprovedWebsitesTable = ({
       generationPrice: "",
       paymentDate: new Date().toISOString().split("T")[0],
     });
-  }, [selectedPayment?.id]);
+  }, [selectedPayment?.id, selectedPayment?.domainPrice]);
 
   const roundDown = (val: unknown) => Math.floor(Number(val) || 0);
 
@@ -303,8 +302,6 @@ export const ApprovedWebsitesTable = ({
                 websites.map((site, index) => {
                   const serialNumber = (currentPage - 1) * 10 + index + 1;
                   const total = Number(site.totalAmount || 0);
-                  const hostingPrice = Number(site.hostingPrice || 0);
-                  const generationPrice = Number(site.websitePrice || 0);
 
                   return (
                     <TableRow key={site.id}>
@@ -411,45 +408,53 @@ export const ApprovedWebsitesTable = ({
               Costs for {selectedPrice?.title}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-4">
-            <div className="flex justify-between border-b pb-2 text-sm">
-              <span className="text-muted-foreground">Domain Registration</span>
-              <span className="tabular-nums font-medium">
-                {roundDown(selectedPrice?.domainPrice)}
-              </span>
+          {isPriceBreakdownLoading ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Loading...
+            </p>
+          ) : (
+            <div className="space-y-3 py-4">
+              <div className="flex justify-between border-b pb-2 text-sm">
+                <span className="text-muted-foreground">
+                  Domain Registration
+                </span>
+                <span className="tabular-nums font-medium">
+                  {roundDown(selectedPrice?.domainPrice)}
+                </span>
+              </div>
+              <div className="flex justify-between border-b pb-2 text-sm">
+                <span className="text-muted-foreground">Hosting Plan</span>
+                <span className="tabular-nums font-medium">
+                  {roundDown(
+                    priceBreakdownPayment?.hostingPrice ??
+                      selectedPrice?.hostingPrice,
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between border-b pb-2 text-sm">
+                <span className="text-muted-foreground">AI Generation Fee</span>
+                <span className="tabular-nums font-medium">
+                  {roundDown(
+                    priceBreakdownPayment?.generationPrice ??
+                      selectedPrice?.websitePrice,
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between pt-2 text-lg font-bold">
+                <span>Total Amount</span>
+                <span className="text-green-600">
+                  {formatCurrency(
+                    Number(
+                      priceBreakdownPayment?.totalAmount ??
+                        selectedPrice?.totalAmount ??
+                        0,
+                    ),
+                    selectedPrice?.country !== "BT",
+                  )}
+                </span>
+              </div>
             </div>
-            <div className="flex justify-between border-b pb-2 text-sm">
-              <span className="text-muted-foreground">Hosting Plan</span>
-              <span className="tabular-nums font-medium">
-                {roundDown(
-                  priceBreakdownPayment?.hostingPrice ??
-                    selectedPrice?.hostingPrice,
-                )}
-              </span>
-            </div>
-            <div className="flex justify-between border-b pb-2 text-sm">
-              <span className="text-muted-foreground">AI Generation Fee</span>
-              <span className="tabular-nums font-medium">
-                {roundDown(
-                  priceBreakdownPayment?.generationPrice ??
-                    selectedPrice?.websitePrice,
-                )}
-              </span>
-            </div>
-            <div className="flex justify-between pt-2 text-lg font-bold">
-              <span>Total Amount</span>
-              <span className="text-green-600">
-                {formatCurrency(
-                  Number(
-                    priceBreakdownPayment?.totalAmount ??
-                      selectedPrice?.totalAmount ??
-                      0,
-                  ),
-                  selectedPrice?.country !== "BT",
-                )}
-              </span>
-            </div>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
 
