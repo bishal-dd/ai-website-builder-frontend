@@ -35,7 +35,6 @@ import { useApprovePayment } from "@/features/admin/hooks/useApprovePayment";
 import { useDebouncedCallback } from "../hooks/useDebounce";
 import { PaymentInput } from "../api/approvePayment";
 import { toast } from "sonner";
-import { usePayInstallment } from "../hooks/usePayInstallment";
 
 interface AdminWebsitesTableProps {
   websites: Website[];
@@ -65,12 +64,6 @@ export const AdminWebsitesTable = ({
   const { mutate: approvePaymentMutate } = useApprovePayment(refresh);
   const currentSearch = searchParams.get("websiteId") || "";
 
-  const { mutate: payInstallmentMutate, isPending: isPayingInstallment } =
-    usePayInstallment(() => {
-      refresh();
-      toast.success("Installment paid successfully");
-    });
-
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentData, setPaymentData] = useState<Partial<PaymentInput>>({});
   const [currentSite, setCurrentSite] = useState<Website | null>(null);
@@ -78,9 +71,6 @@ export const AdminWebsitesTable = ({
   const totalAmount = Number(selectedPayment?.totalAmount || 0);
   const paidAmount = Number(selectedPayment?.paidAmount || 0);
   const remainingAmount = Math.max(0, totalAmount - paidAmount);
-
-  const isInstallment = selectedPayment?.paymentType === "installments";
-
   const isFullyPaid = paidAmount >= totalAmount || remainingAmount === 0;
 
   const formatPrice = (val: string | number | null | undefined) => {
@@ -99,22 +89,17 @@ export const AdminWebsitesTable = ({
   const buildPaymentPayload = (): PaymentInput | null => {
     if (!currentSite || !paymentData) return null;
 
-    const total = Math.round(paymentData.totalAmount || 0);
-    let paid = Math.round(paymentData.paidAmount || 0);
-    let remaining = total - paid;
-
-    if (paymentData.paymentType === "full") {
-      paid = total;
-      remaining = 0;
-    }
+    const hostingPrice = Math.round(paymentData.hostingPrice || 0);
+    const generationPrice = Math.round(paymentData.generationPrice || 0);
+    const totalAmount = Math.round(paymentData.totalAmount || 0);
+    const paidAmount = Math.round(paymentData.paidAmount || 0);
 
     return {
       websiteId: currentSite.id,
-      totalAmount: total,
-      paidAmount: paid,
-      totalRemainingAmount: remaining,
-      paymentType: paymentData.paymentType || "full",
-      installmentNumber: 4,
+      hostingPrice,
+      generationPrice,
+      totalAmount,
+      paidAmount,
       paymentDate:
         paymentData.paymentDate || new Date().toISOString().split("T")[0],
     };
@@ -124,7 +109,7 @@ export const AdminWebsitesTable = ({
     <Card className="mt-6">
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4">
         <CardTitle className="capitalize">
-          {status === "pending" ? "Pending pendings" : `${status} Websites`}
+          {status === "pending" ? "Pending Websites" : `${status} Websites`}
         </CardTitle>
 
         <div className="text-sm text-muted-foreground">
@@ -164,7 +149,9 @@ export const AdminWebsitesTable = ({
               {websites.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={
+                      status === "approved" || status === "pending" ? 6 : 5
+                    }
                     className="h-24 text-center text-muted-foreground"
                   >
                     No results found.
@@ -244,15 +231,23 @@ export const AdminWebsitesTable = ({
                             size="sm"
                             className="bg-green-600 hover:bg-green-700 text-white"
                             onClick={() => {
+                              const hostingPrice = Number(
+                                site.hostingPrice || 0,
+                              );
+                              const generationPrice = Number(
+                                site.websitePrice || 0,
+                              );
+                              const domainPrice = Number(site.domainPrice || 0);
+                              const total =
+                                hostingPrice + generationPrice + domainPrice;
+
                               setCurrentSite(site);
                               setPaymentData({
                                 websiteId: site.id,
-                                totalAmount:
-                                  Number(site.websitePrice) +
-                                  Number(site.hostingPrice) +
-                                  Number(site.domainPrice),
-                                paymentType: "full",
-                                paidAmount: Number(site.domainPrice || 0),
+                                hostingPrice,
+                                generationPrice,
+                                totalAmount: total,
+                                paidAmount: total,
                                 paymentDate: new Date()
                                   .toISOString()
                                   .split("T")[0],
@@ -388,6 +383,7 @@ export const AdminWebsitesTable = ({
         </DialogContent>
       </Dialog>
 
+      {/* --- APPROVE PAYMENT MODAL --- */}
       <Dialog
         open={paymentModalOpen}
         onOpenChange={() => setPaymentModalOpen(false)}
@@ -399,28 +395,11 @@ export const AdminWebsitesTable = ({
 
           <div className="space-y-3 py-4">
             <div>
-              <label className="text-xs font-semibold">Payment Type</label>
-              <select
-                className="w-full border rounded px-2 py-1"
-                value={paymentData.paymentType}
-                onChange={(e) =>
-                  setPaymentData({
-                    ...paymentData,
-                    paymentType: e.target.value as "full" | "installments",
-                  })
-                }
-              >
-                <option value="full">Full</option>
-                <option value="installments">Installments</option>
-              </select>
-            </div>
-
-            <div>
               <label className="text-xs font-semibold">Payment Date</label>
               <input
                 type="date"
                 className="w-full border rounded px-2 py-1"
-                value={paymentData.paymentDate}
+                value={paymentData.paymentDate as unknown as string}
                 onChange={(e) =>
                   setPaymentData({
                     ...paymentData,
@@ -429,44 +408,47 @@ export const AdminWebsitesTable = ({
                 }
               />
             </div>
-            {paymentData.paymentType === "installments" && (
-              <>
-                <div>
-                  <label className="text-xs font-semibold">Paid Amount</label>
-                  <input
-                    type="number"
-                    className="w-full border rounded px-2 py-1"
-                    value={
-                      paymentData.paidAmount === 0 ? "" : paymentData.paidAmount
-                    }
-                    onChange={(e) =>
-                      setPaymentData({
-                        ...paymentData,
-                        paidAmount:
-                          e.target.value === "" ? 0 : Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-              </>
-            )}
 
-            {paymentData.paymentType === "installments" && (
-              <div>
-                <label className="text-xs font-semibold">
-                  Total Remaining Amount
-                </label>
-                <input
-                  type="number"
-                  className="w-full border rounded px-2 py-1 bg-gray-100"
-                  value={
-                    (paymentData.totalAmount || 0) -
-                    (paymentData.paidAmount || 0)
-                  }
-                  disabled
-                />
-              </div>
-            )}
+            <div>
+              <label className="text-xs font-semibold">Hosting Price</label>
+              <input
+                type="number"
+                className="w-full border rounded px-2 py-1"
+                value={
+                  paymentData.hostingPrice === 0 ? "" : paymentData.hostingPrice
+                }
+                onChange={(e) =>
+                  setPaymentData({
+                    ...paymentData,
+                    hostingPrice:
+                      e.target.value === "" ? 0 : Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold">
+                AI Generation Price
+              </label>
+              <input
+                type="number"
+                className="w-full border rounded px-2 py-1"
+                value={
+                  paymentData.generationPrice === 0
+                    ? ""
+                    : paymentData.generationPrice
+                }
+                onChange={(e) =>
+                  setPaymentData({
+                    ...paymentData,
+                    generationPrice:
+                      e.target.value === "" ? 0 : Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+
             <div>
               <label className="text-xs font-semibold">Total Amount</label>
               <input
@@ -479,6 +461,24 @@ export const AdminWebsitesTable = ({
                   setPaymentData({
                     ...paymentData,
                     totalAmount:
+                      e.target.value === "" ? 0 : Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold">Paid Amount</label>
+              <input
+                type="number"
+                className="w-full border rounded px-2 py-1"
+                value={
+                  paymentData.paidAmount === 0 ? "" : paymentData.paidAmount
+                }
+                onChange={(e) =>
+                  setPaymentData({
+                    ...paymentData,
+                    paidAmount:
                       e.target.value === "" ? 0 : Number(e.target.value),
                   })
                 }
@@ -525,6 +525,7 @@ export const AdminWebsitesTable = ({
           </div>
         </DialogContent>
       </Dialog>
+
       {/* --- VIEW PAYMENT DETAILS MODAL --- */}
       <Dialog
         open={!!selectedPayment}
@@ -538,7 +539,7 @@ export const AdminWebsitesTable = ({
                 Payment Details
               </DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground mt-1">
-                Transaction records for{" "}
+                Transaction record for{" "}
                 <span className="font-medium text-foreground">
                   {selectedPayment?.title}
                 </span>
@@ -547,22 +548,20 @@ export const AdminWebsitesTable = ({
           </div>
 
           <div className="px-6 py-5 space-y-6">
-            {/* Payment Type + Status */}
+            {/* Status */}
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
                   Payment Type
                 </p>
-                <p className="text-sm font-medium mt-1">
-                  {isInstallment ? "Installments" : "Full Payment"}
-                </p>
+                <p className="text-sm font-medium mt-1">One-time Payment</p>
               </div>
 
               <Badge
                 variant="outline"
                 className="rounded-full px-3 py-1 text-xs font-medium"
               >
-                {isFullyPaid ? "Paid" : "Active"}
+                {isFullyPaid ? "Paid" : "Balance Due"}
               </Badge>
             </div>
 
@@ -588,8 +587,7 @@ export const AdminWebsitesTable = ({
                 </div>
               </div>
 
-              {/* Remaining Balance */}
-              {isInstallment && remainingAmount > 0 && (
+              {!isFullyPaid && (
                 <div className="mt-4 pt-4 border-t flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Remaining Balance
@@ -601,52 +599,10 @@ export const AdminWebsitesTable = ({
               )}
             </div>
 
-            {/* Next Installment */}
-            {isInstallment && !isFullyPaid && (
-              <div className="rounded-xl border p-4 space-y-4">
-                <p className="text-sm font-medium">Next Installment</p>
-
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      Amount
-                    </p>
-                    <p className="text-sm font-medium mt-1">
-                      Nu. {formatPrice(selectedPayment?.installmentAmount || 0)}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      Due Date
-                    </p>
-                    <p className="text-sm font-medium mt-1">
-                      {selectedPayment?.nextInstallmentDate
-                        ? new Date(
-                            selectedPayment.nextInstallmentDate,
-                          ).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "N/A"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Completed Payment Message */}
-            {isFullyPaid && isInstallment && (
-              <div className="rounded-xl border p-4 text-sm font-medium text-center">
-                All installments have been paid
-              </div>
-            )}
-
             {/* Footer */}
             <div className="pt-2 border-t">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Last Payment Date
+                Payment Date
               </p>
               <p className="text-sm mt-1">
                 {selectedPayment?.paymentDate
@@ -664,39 +620,6 @@ export const AdminWebsitesTable = ({
           </div>
 
           <div className="border-t px-6 py-4 flex justify-end gap-2 bg-muted/20">
-            {isInstallment && !isFullyPaid && (
-              <Button
-                className="bg-green-600 hover:bg-green-700 text-white"
-                disabled={isPayingInstallment}
-                onClick={() => {
-                  if (!selectedPayment) return;
-
-                  payInstallmentMutate(
-                    {
-                      websiteId: selectedPayment.id,
-                      paymentDate: new Date().toISOString().split("T")[0],
-                    },
-                    {
-                      onSuccess: () => {
-                        setSelectedPayment(null);
-                        refresh();
-                      },
-                      onError: (err: unknown) => {
-                        const message =
-                          err instanceof Error
-                            ? err.message
-                            : "Failed to pay installment";
-
-                        toast.error(message);
-                      },
-                    },
-                  );
-                }}
-              >
-                {isPayingInstallment ? "Processing..." : "Pay Installment"}
-              </Button>
-            )}
-
             <Button
               variant="outline"
               className="rounded-lg"
