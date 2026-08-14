@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Website } from "../api/getAdminWebsites";
 import {
@@ -12,7 +12,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,10 +30,15 @@ import {
   Phone,
   User,
   Eye,
+  Pencil,
+  Plus,
 } from "lucide-react";
 import { useDebouncedCallback } from "../hooks/useDebounce";
+import useWebsitePayment from "../hooks/useWebsitePayment";
+import useUpdateWebsitePayment from "../hooks/useUpdateWebsitePayment";
+import useCreateWebsitePayment from "../hooks/useCreateWebsitePayment";
 import { toast } from "sonner";
-import { usePayInstallment } from "../hooks/usePayInstallment";
+import useUpdateDomainPrice from "@/features/preview/domain/hooks/useUpdateDomainPrice";
 
 interface ApprovedWebsitesTableProps {
   websites: Website[];
@@ -43,6 +47,13 @@ interface ApprovedWebsitesTableProps {
   totalPages: number;
   totalCount: number;
 }
+
+const emptyPaymentForm = {
+  domainPrice: "",
+  hostingPrice: "",
+  generationPrice: "",
+  paymentDate: new Date().toISOString().split("T")[0],
+};
 
 export const ApprovedWebsitesTable = ({
   websites,
@@ -59,19 +70,74 @@ export const ApprovedWebsitesTable = ({
   const [selectedPrice, setSelectedPrice] = useState<Website | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<Website | null>(null);
 
+  const [isEditingPayment, setIsEditingPayment] = useState(false);
+  const [editValues, setEditValues] = useState({
+    domainPrice: "",
+    hostingPrice: "",
+    generationPrice: "",
+    totalAmount: "",
+  });
+
+  const { payment: priceBreakdownPayment, isLoading: isPriceBreakdownLoading } =
+    useWebsitePayment(selectedPrice?.id);
+
+  const [createValues, setCreateValues] = useState(emptyPaymentForm);
+
   const currentSearch = searchParams.get("websiteId") || "";
 
-  const { mutate: payInstallmentMutate, isPending: isPayingInstallment } =
-    usePayInstallment(() => {
-      refresh();
-      toast.success("Installment paid successfully");
-    });
+  const {
+    payment,
+    isLoading: isPaymentLoading,
+    refetch: refetchPayment,
+  } = useWebsitePayment(selectedPayment?.id);
 
-  const totalAmount = Number(selectedPayment?.totalAmount || 0);
-  const paidAmount = Number(selectedPayment?.paidAmount || 0);
-  const remainingAmount = Math.max(0, totalAmount - paidAmount);
-  const isInstallment = selectedPayment?.paymentType === "installments";
-  const isFullyPaid = paidAmount >= totalAmount || remainingAmount === 0;
+  const { updatePayment, isUpdating } = useUpdateWebsitePayment(() => {
+    toast.success("Payment updated successfully");
+    setIsEditingPayment(false);
+    refetchPayment();
+    refresh();
+  });
+
+  const { mutate: updateDomainPrice } = useUpdateDomainPrice();
+
+  const { createPayment, isCreating } = useCreateWebsitePayment(() => {
+    toast.success("Payment created successfully");
+    setCreateValues(emptyPaymentForm);
+    refetchPayment();
+    refresh();
+  });
+
+  // Sync edit form values whenever the fetched payment changes
+  const selectedPaymentDomainPrice = selectedPayment?.domainPrice;
+  const hasSelectedPayment = !!selectedPayment;
+
+  useEffect(() => {
+    if (payment && hasSelectedPayment) {
+      setEditValues({
+        domainPrice: String(selectedPaymentDomainPrice ?? ""),
+        hostingPrice: String(payment.hostingPrice ?? ""),
+        generationPrice: String(payment.generationPrice ?? ""),
+        totalAmount: String(payment.totalAmount ?? ""),
+      });
+    }
+  }, [payment, hasSelectedPayment, selectedPaymentDomainPrice]);
+
+  // Reset the create form whenever a different website's modal opens
+  const selectedPaymentId = selectedPayment?.id;
+
+  useEffect(() => {
+    if (selectedPaymentId === undefined) {
+      setCreateValues(emptyPaymentForm);
+      return;
+    }
+
+    setCreateValues({
+      domainPrice: String(selectedPaymentDomainPrice ?? ""),
+      hostingPrice: "",
+      generationPrice: "",
+      paymentDate: new Date().toISOString().split("T")[0],
+    });
+  }, [selectedPaymentId, selectedPaymentDomainPrice]);
 
   const roundDown = (val: unknown) => Math.floor(Number(val) || 0);
 
@@ -81,6 +147,32 @@ export const ApprovedWebsitesTable = ({
       : `Nu. ${roundDown(amount)}`;
   };
 
+  const calculateTotal = ({
+    domainPrice,
+    hostingPrice,
+    generationPrice,
+  }: {
+    domainPrice: string | number;
+    hostingPrice: string | number;
+    generationPrice: string | number;
+  }) => {
+    return (
+      Number(domainPrice || 0) +
+      Number(hostingPrice || 0) +
+      Number(generationPrice || 0)
+    );
+  };
+
+  const calculatedTotal = calculateTotal({
+    domainPrice: editValues.domainPrice,
+    hostingPrice: editValues.hostingPrice,
+    generationPrice: editValues.generationPrice,
+  });
+
+  const calculatedCreateTotal =
+    Number(createValues.domainPrice || 0) +
+    Number(createValues.hostingPrice || 0) +
+    Number(createValues.generationPrice || 0);
   const updateQuery = useDebouncedCallback((key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value) params.set(key, value);
@@ -90,6 +182,81 @@ export const ApprovedWebsitesTable = ({
 
     router.push(`${pathname}?${params.toString()}`);
   }, 400);
+
+  const closePaymentModal = () => {
+    setSelectedPayment(null);
+    setIsEditingPayment(false);
+  };
+
+  const handleSavePayment = async () => {
+    if (!selectedPayment) return;
+
+    const price = Number(editValues.domainPrice);
+
+    if (!Number.isFinite(price) || price < 0) {
+      toast.error("Please enter a valid domain price");
+      return;
+    }
+
+    if (!selectedPayment.domainId) {
+      toast.error("Domain ID is missing");
+      return;
+    }
+
+    updateDomainPrice(
+      { domainId: selectedPayment.domainId, domainPrice: price },
+      {
+        onSuccess: () => {
+          setSelectedPayment((prev) =>
+            prev ? { ...prev, domainPrice: price } : null,
+          );
+          updatePayment({
+            websiteId: selectedPayment.id,
+            data: {
+              hostingPrice: Number(editValues.hostingPrice) || 0,
+              generationPrice: Number(editValues.generationPrice) || 0,
+              totalAmount: calculatedTotal,
+            },
+          });
+        },
+        onError: (error) => {
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to update domain price",
+          );
+        },
+      },
+    );
+  };
+
+  const handleCreatePayment = () => {
+    if (!selectedPayment) return;
+
+    const domainPrice = Number(createValues.domainPrice) || 0;
+    const hostingPrice = Number(createValues.hostingPrice) || 0;
+    const generationPrice = Number(createValues.generationPrice) || 0;
+
+    const totalAmount = domainPrice + hostingPrice + generationPrice;
+
+    if (domainPrice < 0) {
+      toast.error("Please enter a valid domain price");
+      return;
+    }
+
+    if (!selectedPayment.domainId) {
+      toast.error("Domain ID is missing");
+      return;
+    }
+
+    createPayment({
+      websiteId: selectedPayment.id,
+      hostingPrice,
+      generationPrice,
+      totalAmount,
+      paymentDate: createValues.paymentDate || undefined,
+    });
+  };
 
   return (
     <Card className="mt-6">
@@ -139,10 +306,7 @@ export const ApprovedWebsitesTable = ({
               ) : (
                 websites.map((site, index) => {
                   const serialNumber = (currentPage - 1) * 10 + index + 1;
-                  const total =
-                    Number(site.domainPrice || 0) +
-                    Number(site.hostingPrice || 0) +
-                    Number(site.websitePrice || 0);
+                  const total = Number(site.totalAmount || 0);
 
                   return (
                     <TableRow key={site.id}>
@@ -249,37 +413,53 @@ export const ApprovedWebsitesTable = ({
               Costs for {selectedPrice?.title}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-4">
-            <div className="flex justify-between border-b pb-2 text-sm">
-              <span className="text-muted-foreground">Domain Registration</span>
-              <span className="tabular-nums font-medium">
-                {roundDown(selectedPrice?.domainPrice)}
-              </span>
+          {isPriceBreakdownLoading ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Loading...
+            </p>
+          ) : (
+            <div className="space-y-3 py-4">
+              <div className="flex justify-between border-b pb-2 text-sm">
+                <span className="text-muted-foreground">
+                  Domain Registration
+                </span>
+                <span className="tabular-nums font-medium">
+                  {roundDown(selectedPrice?.domainPrice)}
+                </span>
+              </div>
+              <div className="flex justify-between border-b pb-2 text-sm">
+                <span className="text-muted-foreground">Hosting Plan</span>
+                <span className="tabular-nums font-medium">
+                  {roundDown(
+                    priceBreakdownPayment?.hostingPrice ??
+                      selectedPrice?.hostingPrice,
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between border-b pb-2 text-sm">
+                <span className="text-muted-foreground">AI Generation Fee</span>
+                <span className="tabular-nums font-medium">
+                  {roundDown(
+                    priceBreakdownPayment?.generationPrice ??
+                      selectedPrice?.websitePrice,
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between pt-2 text-lg font-bold">
+                <span>Total Amount</span>
+                <span className="text-green-600">
+                  {formatCurrency(
+                    Number(
+                      priceBreakdownPayment?.totalAmount ??
+                        selectedPrice?.totalAmount ??
+                        0,
+                    ),
+                    selectedPrice?.country !== "BT",
+                  )}
+                </span>
+              </div>
             </div>
-            <div className="flex justify-between border-b pb-2 text-sm">
-              <span className="text-muted-foreground">Hosting Plan</span>
-              <span className="tabular-nums font-medium">
-                {roundDown(selectedPrice?.hostingPrice)}
-              </span>
-            </div>
-            <div className="flex justify-between border-b pb-2 text-sm">
-              <span className="text-muted-foreground">AI Generation Fee</span>
-              <span className="tabular-nums font-medium">
-                {roundDown(selectedPrice?.websitePrice)}
-              </span>
-            </div>
-            <div className="flex justify-between pt-2 text-lg font-bold">
-              <span>Total Amount</span>
-              <span className="text-green-600">
-                {formatCurrency(
-                  Number(selectedPrice?.domainPrice || 0) +
-                    Number(selectedPrice?.hostingPrice || 0) +
-                    Number(selectedPrice?.websitePrice || 0),
-                  selectedPrice?.country !== "BT",
-                )}
-              </span>
-            </div>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -327,11 +507,8 @@ export const ApprovedWebsitesTable = ({
         </DialogContent>
       </Dialog>
 
-      {/* --- VIEW PAYMENT DETAILS MODAL --- */}
-      <Dialog
-        open={!!selectedPayment}
-        onOpenChange={() => setSelectedPayment(null)}
-      >
+      {/* --- VIEW / EDIT / CREATE PAYMENT MODAL --- */}
+      <Dialog open={!!selectedPayment} onOpenChange={closePaymentModal}>
         <DialogContent className="sm:max-w-lg rounded-2xl p-0 overflow-hidden border shadow-xl">
           <div className="border-b px-6 py-5">
             <DialogHeader>
@@ -339,7 +516,7 @@ export const ApprovedWebsitesTable = ({
                 Payment Details
               </DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground mt-1">
-                Transaction records for{" "}
+                Transaction record for{" "}
                 <span className="font-medium text-foreground">
                   {selectedPayment?.title}
                 </span>
@@ -348,168 +525,298 @@ export const ApprovedWebsitesTable = ({
           </div>
 
           <div className="px-6 py-5 space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Payment Type
+            {isPaymentLoading ? (
+              <p className="text-sm text-muted-foreground text-center py-6">
+                Loading payment details...
+              </p>
+            ) : !payment ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  No payment record found for this website. Add one below.
                 </p>
-                <p className="text-sm font-medium mt-1">
-                  {isInstallment ? "Installments" : "Full Payment"}
-                </p>
-              </div>
 
-              <Badge
-                variant="outline"
-                className="rounded-full px-3 py-1 text-xs font-medium"
-              >
-                {isFullyPaid ? "Paid" : "Active"}
-              </Badge>
-            </div>
+                <div className="rounded-xl border bg-muted/30 p-4 space-y-4">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Domain Price
+                      </p>
+                      <Input
+                        type="number"
+                        min="0"
+                        className="mt-1 h-8"
+                        value={createValues.domainPrice}
+                        onChange={(e) =>
+                          setCreateValues((prev) => ({
+                            ...prev,
+                            domainPrice: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Hosting Price
+                      </p>
+                      <Input
+                        type="number"
+                        className="mt-1 h-8"
+                        value={createValues.hostingPrice}
+                        onChange={(e) =>
+                          setCreateValues((prev) => ({
+                            ...prev,
+                            hostingPrice: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
 
-            <div className="rounded-xl border bg-muted/30 p-4">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                    Paid Amount
-                  </p>
-                  <p className="text-xl font-semibold mt-1">
-                    {formatCurrency(
-                      paidAmount,
-                      selectedPayment?.country !== "BT",
-                    )}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                    Total Amount
-                  </p>
-                  <p className="text-xl font-semibold mt-1">
-                    {formatCurrency(
-                      totalAmount,
-                      selectedPayment?.country !== "BT",
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              {isInstallment && remainingAmount > 0 && (
-                <div className="mt-4 pt-4 border-t flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Remaining Balance
-                  </span>
-                  <span className="text-sm font-semibold">
-                    {formatCurrency(
-                      remainingAmount,
-                      selectedPayment?.country !== "BT",
-                    )}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {isInstallment && !isFullyPaid && (
-              <div className="rounded-xl border p-4 space-y-4">
-                <p className="text-sm font-medium">Next Installment</p>
-
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      Amount
-                    </p>
-                    <p className="text-sm font-medium mt-1">
-                      {formatCurrency(
-                        selectedPayment?.installmentAmount || 0,
-                        selectedPayment?.country !== "BT",
-                      )}
-                    </p>
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Generation Price
+                      </p>
+                      <Input
+                        type="number"
+                        className="mt-1 h-8"
+                        value={createValues.generationPrice}
+                        onChange={(e) =>
+                          setCreateValues((prev) => ({
+                            ...prev,
+                            generationPrice: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      Due Date
-                    </p>
-                    <p className="text-sm font-medium mt-1">
-                      {selectedPayment?.nextInstallmentDate
-                        ? new Date(
-                            selectedPayment.nextInstallmentDate,
-                          ).toLocaleDateString("en-GB", {
+                  <div className="grid grid-cols-2 gap-6 pt-4 border-t">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Total Amount
+                      </p>
+                      <Input
+                        type="number"
+                        className="mt-1 h-8"
+                        value={calculatedCreateTotal}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Payment Date
+                  </p>
+                  <Input
+                    type="date"
+                    className="mt-1 h-8"
+                    value={createValues.paymentDate}
+                    onChange={(e) =>
+                      setCreateValues((prev) => ({
+                        ...prev,
+                        paymentDate: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="rounded-xl border bg-muted/30 p-4 space-y-4">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Domain Price
+                      </p>
+
+                      {isEditingPayment ? (
+                        <Input
+                          type="number"
+                          min="0"
+                          className="mt-1 h-8"
+                          value={editValues.domainPrice}
+                          onChange={(e) =>
+                            setEditValues((prev) => ({
+                              ...prev,
+                              domainPrice: e.target.value,
+                            }))
+                          }
+                        />
+                      ) : (
+                        <p className="text-sm font-medium mt-1">
+                          {formatCurrency(
+                            Number(selectedPayment?.domainPrice || 0),
+                            selectedPayment?.country !== "BT",
+                          )}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Hosting Price
+                      </p>
+                      {isEditingPayment ? (
+                        <Input
+                          type="number"
+                          className="mt-1 h-8"
+                          value={editValues.hostingPrice}
+                          onChange={(e) =>
+                            setEditValues((prev) => ({
+                              ...prev,
+                              hostingPrice: e.target.value,
+                            }))
+                          }
+                        />
+                      ) : (
+                        <p className="text-sm font-medium mt-1">
+                          {formatCurrency(
+                            payment.hostingPrice,
+                            selectedPayment?.country !== "BT",
+                          )}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Generation Price
+                      </p>
+                      {isEditingPayment ? (
+                        <Input
+                          type="number"
+                          className="mt-1 h-8"
+                          value={editValues.generationPrice}
+                          onChange={(e) =>
+                            setEditValues((prev) => ({
+                              ...prev,
+                              generationPrice: e.target.value,
+                            }))
+                          }
+                        />
+                      ) : (
+                        <p className="text-sm font-medium mt-1">
+                          {formatCurrency(
+                            payment.generationPrice,
+                            selectedPayment?.country !== "BT",
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      Total Amount
+                    </span>
+                    {isEditingPayment ? (
+                      <Input
+                        type="number"
+                        className="h-8 w-32 text-right"
+                        value={calculatedTotal}
+                        readOnly
+                      />
+                    ) : (
+                      <span className="text-sm font-semibold">
+                        {formatCurrency(
+                          payment.totalAmount,
+                          selectedPayment?.country !== "BT",
+                        )}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Payment Date
+                  </p>
+                  <p className="text-sm mt-1">
+                    {payment.paymentDate
+                      ? new Date(payment.paymentDate).toLocaleDateString(
+                          "en-GB",
+                          {
                             day: "2-digit",
                             month: "short",
                             year: "numeric",
-                          })
-                        : "N/A"}
-                    </p>
-                  </div>
+                          },
+                        )
+                      : "N/A"}
+                  </p>
                 </div>
-              </div>
+              </>
             )}
-
-            {isFullyPaid && isInstallment && (
-              <div className="rounded-xl border p-4 text-sm font-medium text-center">
-                All installments have been paid
-              </div>
-            )}
-
-            <div className="pt-2 border-t">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Last Payment Date
-              </p>
-              <p className="text-sm mt-1">
-                {selectedPayment?.paymentDate
-                  ? new Date(selectedPayment.paymentDate).toLocaleDateString(
-                      "en-GB",
-                      {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      },
-                    )
-                  : "N/A"}
-              </p>
-            </div>
           </div>
 
           <div className="border-t px-6 py-4 flex justify-end gap-2 bg-muted/20">
-            {isInstallment && !isFullyPaid && (
-              <Button
-                className="bg-green-600 hover:bg-green-700 text-white"
-                disabled={isPayingInstallment}
-                onClick={() => {
-                  if (!selectedPayment) return;
+            {!isPaymentLoading && !payment && (
+              <>
+                <Button
+                  variant="outline"
+                  className="rounded-lg"
+                  onClick={closePaymentModal}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                  disabled={isCreating}
+                  onClick={handleCreatePayment}
+                >
+                  <Plus className="h-4 w-4" />
+                  {isCreating ? "Adding..." : "Add Payment"}
+                </Button>
+              </>
+            )}
 
-                  payInstallmentMutate(
-                    {
-                      websiteId: selectedPayment.id,
-                      paymentDate: new Date().toISOString().split("T")[0],
-                    },
-                    {
-                      onSuccess: () => {
-                        setSelectedPayment(null);
-                        refresh();
-                      },
-                      onError: (err: unknown) => {
-                        const message =
-                          err instanceof Error
-                            ? err.message
-                            : "Failed to pay installment";
-                        toast.error(message);
-                      },
-                    },
-                  );
-                }}
+            {payment && !isEditingPayment && (
+              <Button
+                variant="outline"
+                className="rounded-lg gap-2"
+                onClick={() => setIsEditingPayment(true)}
               >
-                {isPayingInstallment ? "Processing..." : "Pay Installment"}
+                <Pencil className="h-4 w-4" />
+                Edit
               </Button>
             )}
 
-            <Button
-              variant="outline"
-              className="rounded-lg"
-              onClick={() => setSelectedPayment(null)}
-            >
-              Close
-            </Button>
+            {payment && isEditingPayment && (
+              <Button
+                variant="outline"
+                className="rounded-lg"
+                onClick={() => {
+                  setIsEditingPayment(false);
+                  setEditValues({
+                    domainPrice: String(selectedPayment?.domainPrice ?? ""),
+                    hostingPrice: String(payment.hostingPrice ?? ""),
+                    generationPrice: String(payment.generationPrice ?? ""),
+                    totalAmount: String(payment.totalAmount ?? ""),
+                  });
+                }}
+              >
+                Cancel
+              </Button>
+            )}
+
+            {payment && isEditingPayment && (
+              <Button
+                className="bg-green-600 hover:bg-green-700 text-white"
+                disabled={isUpdating}
+                onClick={handleSavePayment}
+              >
+                {isUpdating ? "Saving..." : "Save"}
+              </Button>
+            )}
+
+            {payment && !isEditingPayment && (
+              <Button
+                variant="outline"
+                className="rounded-lg"
+                onClick={closePaymentModal}
+              >
+                Close
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>

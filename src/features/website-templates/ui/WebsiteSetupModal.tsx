@@ -28,7 +28,11 @@ export function WebsiteSetupModal({ open, onOpenChange, onSubmit }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-120">
+      <DialogContent
+        className="sm:max-w-120"
+        onPointerDownOutside={(event) => event.preventDefault()}
+        onEscapeKeyDown={(event) => event.preventDefault()}
+      >
         <DialogHeader className="space-y-4">
           <div className="space-y-2">
             <DialogTitle className="text-xl">

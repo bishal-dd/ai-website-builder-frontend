@@ -84,27 +84,14 @@ export const PendingWebsitesTable = ({
   const buildPaymentPayload = (): PaymentInput | null => {
     if (!currentSite || !paymentData) return null;
 
-    const total = roundDown(paymentData.totalAmount);
-    let paid = roundDown(paymentData.paidAmount);
-    let remaining = total - paid;
-
-    if (paymentData.paymentType === "full") {
-      paid = total;
-      remaining = 0;
-    }
-
     return {
       websiteId: currentSite.id,
-      totalAmount: total,
-      paidAmount: paid,
-      totalRemainingAmount: remaining,
-      paymentType: paymentData.paymentType || "full",
+      hostingPrice: roundDown(paymentData.hostingPrice),
+      generationPrice: roundDown(paymentData.generationPrice),
+      totalAmount: roundDown(paymentData.totalAmount),
+      paidAmount: roundDown(paymentData.paidAmount),
       paymentDate:
         paymentData.paymentDate || new Date().toISOString().split("T")[0],
-
-      ...(paymentData.paymentType === "installments" && {
-        installmentNumber: 3,
-      }),
     };
   };
 
@@ -209,12 +196,21 @@ export const PendingWebsitesTable = ({
                             size="sm"
                             className="bg-green-600 hover:bg-green-700 text-white"
                             onClick={() => {
+                              const hostingPrice = roundDown(site.hostingPrice);
+                              const generationPrice = roundDown(
+                                site.websitePrice,
+                              );
+                              const domainPrice = roundDown(site.domainPrice);
+                              const total =
+                                hostingPrice + generationPrice + domainPrice;
+
                               setCurrentSite(site);
                               setPaymentData({
                                 websiteId: site.id,
+                                hostingPrice,
+                                generationPrice,
                                 totalAmount: total,
-                                paymentType: "full",
-                                paidAmount: roundDown(site.domainPrice),
+                                paidAmount: total,
                                 paymentDate: new Date()
                                   .toISOString()
                                   .split("T")[0],
@@ -326,7 +322,7 @@ export const PendingWebsitesTable = ({
                 <span className="text-xs font-semibold text-muted-foreground uppercase">
                   Email
                 </span>
-                <span className="text-sm tabular-nums font-medium">
+                <span className="text-sm font-medium">
                   {selectedUser?.userEmail || "N/A"}
                 </span>
               </div>
@@ -362,27 +358,11 @@ export const PendingWebsitesTable = ({
           </DialogHeader>
           <div className="space-y-3 py-4">
             <div>
-              <label className="text-xs font-semibold">Payment Type</label>
-              <select
-                className="w-full border rounded px-2 py-1 text-sm"
-                value={paymentData.paymentType}
-                onChange={(e) =>
-                  setPaymentData({
-                    ...paymentData,
-                    paymentType: e.target.value as "full" | "installments",
-                  })
-                }
-              >
-                <option value="full">Full Payment</option>
-                <option value="installments">Installments</option>
-              </select>
-            </div>
-            <div>
               <label className="text-xs font-semibold">Payment Date</label>
               <input
                 type="date"
                 className="w-full border rounded px-2 py-1 text-sm"
-                value={paymentData.paymentDate}
+                value={paymentData.paymentDate || ""}
                 onChange={(e) =>
                   setPaymentData({
                     ...paymentData,
@@ -391,49 +371,53 @@ export const PendingWebsitesTable = ({
                 }
               />
             </div>
-            {paymentData.paymentType === "installments" && (
-              <>
-                <div>
-                  <label className="text-xs font-semibold">
-                    Initial Paid Amount (Nu.)
-                  </label>
-                  <input
-                    type="number"
-                    className="w-full border rounded px-2 py-1 text-sm"
-                    value={
-                      paymentData.paidAmount === 0 ? "" : paymentData.paidAmount
-                    }
-                    onChange={(e) =>
-                      setPaymentData({
-                        ...paymentData,
-                        paidAmount:
-                          e.target.value === "" ? 0 : roundDown(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground">
-                    Remaining Amount
-                  </label>
-                  <div className="w-full border rounded px-2 py-1 text-sm bg-gray-50 tabular-nums font-medium">
-                    {formatCurrency(
-                      (paymentData.totalAmount || 0) -
-                        (paymentData.paidAmount || 0),
-                      currentSite?.country !== "BT",
-                    )}{" "}
-                    {roundDown(
-                      (paymentData.totalAmount || 0) -
-                        (paymentData.paidAmount || 0),
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
+
             <div>
               <label className="text-xs font-semibold">
-                Total Amount ({currentSite?.country !== "BT" ? "$" : "Nu."}
-                ){" "}
+                Hosting Price ({currentSite?.country !== "BT" ? "$" : "Nu."})
+              </label>
+              <input
+                type="number"
+                className="w-full border rounded px-2 py-1 text-sm"
+                value={
+                  paymentData.hostingPrice === 0 ? "" : paymentData.hostingPrice
+                }
+                onChange={(e) =>
+                  setPaymentData({
+                    ...paymentData,
+                    hostingPrice:
+                      e.target.value === "" ? 0 : roundDown(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold">
+                AI Generation Price (
+                {currentSite?.country !== "BT" ? "$" : "Nu."})
+              </label>
+              <input
+                type="number"
+                className="w-full border rounded px-2 py-1 text-sm"
+                value={
+                  paymentData.generationPrice === 0
+                    ? ""
+                    : paymentData.generationPrice
+                }
+                onChange={(e) =>
+                  setPaymentData({
+                    ...paymentData,
+                    generationPrice:
+                      e.target.value === "" ? 0 : roundDown(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold">
+                Total Amount ({currentSite?.country !== "BT" ? "$" : "Nu."})
               </label>
               <input
                 type="number"
@@ -445,6 +429,26 @@ export const PendingWebsitesTable = ({
                   setPaymentData({
                     ...paymentData,
                     totalAmount:
+                      e.target.value === "" ? 0 : roundDown(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold">
+                Paid Amount ({currentSite?.country !== "BT" ? "$" : "Nu."})
+              </label>
+              <input
+                type="number"
+                className="w-full border rounded px-2 py-1 text-sm"
+                value={
+                  paymentData.paidAmount === 0 ? "" : paymentData.paidAmount
+                }
+                onChange={(e) =>
+                  setPaymentData({
+                    ...paymentData,
+                    paidAmount:
                       e.target.value === "" ? 0 : roundDown(e.target.value),
                   })
                 }
