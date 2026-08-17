@@ -87,8 +87,7 @@ export const ApprovedWebsitesTable = ({
   const { payment: priceBreakdownPayment, isLoading: isPriceBreakdownLoading } =
     useWebsitePayment(selectedPrice?.id);
 
-  const { mutate: generateReceipt, isPending: isGeneratingReceipt } =
-    useGenerateWebsiteReceipt();
+  const { mutate: generateReceipt } = useGenerateWebsiteReceipt();
 
   const [createValues, setCreateValues] = useState(emptyPaymentForm);
 
