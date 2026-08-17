@@ -32,6 +32,7 @@ import {
   Eye,
   Pencil,
   Plus,
+  Download,
 } from "lucide-react";
 import { useDebouncedCallback } from "../hooks/useDebounce";
 import useWebsitePayment from "../hooks/useWebsitePayment";
@@ -39,6 +40,7 @@ import useUpdateWebsitePayment from "../hooks/useUpdateWebsitePayment";
 import useCreateWebsitePayment from "../hooks/useCreateWebsitePayment";
 import { toast } from "sonner";
 import useUpdateDomainPrice from "@/features/preview/domain/hooks/useUpdateDomainPrice";
+import { useGenerateWebsiteReceipt } from "../hooks/useGenerateWebsiteReceipt";
 
 interface ApprovedWebsitesTableProps {
   websites: Website[];
@@ -69,6 +71,9 @@ export const ApprovedWebsitesTable = ({
   const [selectedUser, setSelectedUser] = useState<Website | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<Website | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<Website | null>(null);
+  const [generatingReceiptWebsiteId, setGeneratingReceiptWebsiteId] = useState<
+    string | null
+  >(null);
 
   const [isEditingPayment, setIsEditingPayment] = useState(false);
   const [editValues, setEditValues] = useState({
@@ -76,10 +81,14 @@ export const ApprovedWebsitesTable = ({
     hostingPrice: "",
     generationPrice: "",
     totalAmount: "",
+    paymentDate: "",
   });
 
   const { payment: priceBreakdownPayment, isLoading: isPriceBreakdownLoading } =
     useWebsitePayment(selectedPrice?.id);
+
+  const { mutate: generateReceipt, isPending: isGeneratingReceipt } =
+    useGenerateWebsiteReceipt();
 
   const [createValues, setCreateValues] = useState(emptyPaymentForm);
 
@@ -118,6 +127,9 @@ export const ApprovedWebsitesTable = ({
         hostingPrice: String(payment.hostingPrice ?? ""),
         generationPrice: String(payment.generationPrice ?? ""),
         totalAmount: String(payment.totalAmount ?? ""),
+        paymentDate: payment.paymentDate
+          ? new Date(payment.paymentDate).toISOString().split("T")[0]
+          : "",
       });
     }
   }, [payment, hasSelectedPayment, selectedPaymentDomainPrice]);
@@ -216,6 +228,7 @@ export const ApprovedWebsitesTable = ({
               hostingPrice: Number(editValues.hostingPrice) || 0,
               generationPrice: Number(editValues.generationPrice) || 0,
               totalAmount: calculatedTotal,
+              paymentDate: editValues.paymentDate || undefined,
             },
           });
         },
@@ -228,6 +241,38 @@ export const ApprovedWebsitesTable = ({
         },
       },
     );
+  };
+
+  const handleGenerateReceipt = (websiteId: string) => {
+    setGeneratingReceiptWebsiteId(websiteId);
+
+    generateReceipt(websiteId, {
+      onSuccess: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `Receipt-${websiteId}.pdf`;
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        window.URL.revokeObjectURL(url);
+
+        toast.success("Receipt generated successfully");
+      },
+
+      onError: (error) => {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to generate receipt",
+        );
+      },
+
+      onSettled: () => {
+        setGeneratingReceiptWebsiteId(null);
+      },
+    });
   };
 
   const handleCreatePayment = () => {
@@ -289,7 +334,7 @@ export const ApprovedWebsitesTable = ({
                 <TableHead>Contact</TableHead>
                 <TableHead>Website Title</TableHead>
                 <TableHead>Total Price</TableHead>
-                <TableHead className="text-right">Action</TableHead>
+                <TableHead className="text-center">Action</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -363,6 +408,20 @@ export const ApprovedWebsitesTable = ({
                             className="h-8 gap-2 hover:bg-blue-50 hover:text-blue-700"
                           >
                             View Payment
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleGenerateReceipt(site.id)}
+                            disabled={generatingReceiptWebsiteId === site.id}
+                            className="gap-2"
+                          >
+                            <Download className="h-4 w-4" />
+
+                            {generatingReceiptWebsiteId === site.id
+                              ? "Generating..."
+                              : "Receipt"}
                           </Button>
                         </div>
                       </TableCell>
@@ -604,7 +663,7 @@ export const ApprovedWebsitesTable = ({
                   </div>
                 </div>
 
-                <div>
+                <div className="pt-2 border-t">
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">
                     Payment Date
                   </p>
@@ -731,18 +790,32 @@ export const ApprovedWebsitesTable = ({
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">
                     Payment Date
                   </p>
-                  <p className="text-sm mt-1">
-                    {payment.paymentDate
-                      ? new Date(payment.paymentDate).toLocaleDateString(
-                          "en-GB",
-                          {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          },
-                        )
-                      : "N/A"}
-                  </p>
+                  {isEditingPayment ? (
+                    <Input
+                      type="date"
+                      className="mt-1 h-8"
+                      value={editValues.paymentDate}
+                      onChange={(e) =>
+                        setEditValues((prev) => ({
+                          ...prev,
+                          paymentDate: e.target.value,
+                        }))
+                      }
+                    />
+                  ) : (
+                    <p className="text-sm mt-1">
+                      {payment.paymentDate
+                        ? new Date(payment.paymentDate).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )
+                        : "N/A"}
+                    </p>
+                  )}
                 </div>
               </>
             )}
@@ -791,6 +864,11 @@ export const ApprovedWebsitesTable = ({
                     hostingPrice: String(payment.hostingPrice ?? ""),
                     generationPrice: String(payment.generationPrice ?? ""),
                     totalAmount: String(payment.totalAmount ?? ""),
+                    paymentDate: payment.paymentDate
+                      ? new Date(payment.paymentDate)
+                          .toISOString()
+                          .split("T")[0]
+                      : "",
                   });
                 }}
               >
