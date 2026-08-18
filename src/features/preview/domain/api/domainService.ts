@@ -32,10 +32,10 @@ export async function searchDomainAPI(
 }
 
 export async function createPreOrder(data: {
-  name: string;
-  websiteId: string;
-  userId: string;
-  country: string;
+  name?: string;
+  websiteId?: string;
+  userId?: string;
+  country?: string;
 }) {
   const res = await fetch(`${BASE_URL}/domains`, {
     method: "POST",
