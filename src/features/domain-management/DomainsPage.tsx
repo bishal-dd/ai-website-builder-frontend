@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Globe, Loader2, Sparkles } from "lucide-react";
+import { Globe, Loader2 } from "lucide-react";
 
 import { useGetDomains } from "./hooks/useGetDomains";
 import { useTransferDomain } from "./hooks/useTransferDomain";
