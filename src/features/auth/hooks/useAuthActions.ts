@@ -4,12 +4,14 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 import { SignInFormValues, SignUpFormValues } from "@/features/auth/utils/form";
 import { useSessionStore } from "@/shared/session";
 import posthog from "posthog-js";
+import { useUpdateUserCountry } from "../hooks/useUpdateUserCountry";
 
 export const useAuthActions = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { setLoading, setError } = useAuthStore();
   const { fetchSession } = useSessionStore();
+  const { mutateAsync: saveUserCountry } = useUpdateUserCountry();
   const isSignInPage = pathname === "/auth/login";
 
   const handleEmailAuth = async (data: SignInFormValues | SignUpFormValues) => {
@@ -54,9 +56,26 @@ export const useAuthActions = () => {
             auth_method: "email",
           });
         }
-      }
+        const session = await fetchSession();
 
-      await fetchSession();
+        console.log("🔐 Session after authentication:", session);
+
+        if (!session?.user.countryCode) {
+          console.log("🌍 No country code found. Calling saveUserCountry...");
+
+          try {
+            await saveUserCountry();
+            console.log("✅ User country saved");
+
+            await fetchSession();
+            console.log("🔄 Session refreshed after saving country");
+          } catch (error) {
+            console.error("❌ Failed to save user country:", error);
+          }
+        } else {
+          console.log("✅ User already has country:", session.user.countryCode);
+        }
+      }
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
