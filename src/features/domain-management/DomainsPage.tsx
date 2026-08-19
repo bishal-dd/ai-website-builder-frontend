@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Loader2, Globe } from "lucide-react";
+import { Globe, Loader2 } from "lucide-react";
 
 import { useGetDomains } from "./hooks/useGetDomains";
 import { useTransferDomain } from "./hooks/useTransferDomain";
@@ -9,18 +9,26 @@ import { DomainTransferDialog } from "./ui/DomainTransferDialog";
 import { DomainList } from "./ui/DomainList";
 import { useSessionStore } from "@/shared/session";
 import { Domain } from "./types/domain";
+import { DomainSearch } from "./ui/DomainSearch";
 
 export default function DomainsPage() {
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
 
   const { domains, isLoading } = useGetDomains();
+
   const { mutate: transfer, isPending: isSubmitting } = useTransferDomain();
+
   const userEmail = useSessionStore((state) => state.session?.user.email);
 
-  const handleInitiateClick = (domain: Domain) => {
+  const handleInitiateTransfer = (domain: Domain) => {
     setSelectedDomain(domain);
     setTransferDialogOpen(true);
+  };
+
+  const handleCloseTransferDialog = () => {
+    setTransferDialogOpen(false);
+    setSelectedDomain(null);
   };
 
   const handleConfirmTransfer = () => {
@@ -33,32 +41,29 @@ export default function DomainsPage() {
         userEmail,
       },
       {
-        onSuccess: () => {
-          setTransferDialogOpen(false);
-          setSelectedDomain(null);
-        },
+        onSuccess: handleCloseTransferDialog,
       },
     );
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 md:p-10 space-y-10">
-      {/* Header Section */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-2 text-primary font-semibold text-sm tracking-wide uppercase">
-          <Sparkles className="size-4" />
-          Workspace Assets
-        </div>
+    <div className="mx-auto w-full max-w-7xl space-y-10 px-6 py-8 md:px-10">
+      {/* Header */}
+      <header className="mx-auto w-full max-w-4xl">
+        <h1 className="text-3xl font-bold">Your Domains</h1>
 
-        <h1 className="text-4xl font-extrabold tracking-tight">Your Domains</h1>
-
-        <p className="text-muted-foreground text-lg">
-          Manage your digital identity and registrar connections.
+        <p className="mt-2 text-muted-foreground">
+          Search, manage, and transfer your domains.
         </p>
-      </div>
+      </header>
 
-      {/* Domain List / Loading State */}
-      <div className="space-y-4">
+      {/* Domain Search */}
+      <section className="mx-auto w-full max-w-4xl">
+        <DomainSearch />
+      </section>
+
+      {/* Registered Domains */}
+      <section className="mx-auto w-full max-w-4xl space-y-4">
         <div className="flex items-center justify-between px-2">
           <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
             Registered Assets ({domains.length})
@@ -66,39 +71,53 @@ export default function DomainsPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-4 border border-dashed rounded-3xl bg-muted/30">
-            <Loader2 className="size-8 animate-spin text-primary/60" />
-            <p className="text-sm text-muted-foreground font-medium text-center">
-              Fetching your domain assets...
-            </p>
-          </div>
+          <DomainListLoading />
         ) : domains.length > 0 ? (
           <DomainList
             domains={domains}
-            onInitiateTransfer={handleInitiateClick}
+            onInitiateTransfer={handleInitiateTransfer}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 border border-dashed rounded-3xl bg-muted/30 text-center px-4">
-            <div className="size-12 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Globe className="size-6 text-muted-foreground/60" />
-            </div>
-
-            <p className="font-bold text-lg">No domains found</p>
-
-            <p className="text-sm text-muted-foreground">
-              Purchase a new domain to see it here.
-            </p>
-          </div>
+          <EmptyDomainState />
         )}
-      </div>
+      </section>
 
+      {/* Transfer Dialog */}
       <DomainTransferDialog
         open={transferDialogOpen}
         domain={selectedDomain}
         isLoading={isSubmitting}
-        onClose={() => setTransferDialogOpen(false)}
+        onClose={handleCloseTransferDialog}
         onConfirm={handleConfirmTransfer}
       />
+    </div>
+  );
+}
+
+function DomainListLoading() {
+  return (
+    <div className="flex flex-col items-center justify-center space-y-4 rounded-3xl border border-dashed bg-muted/30 py-20">
+      <Loader2 className="size-8 animate-spin text-primary/60" />
+
+      <p className="text-center text-sm font-medium text-muted-foreground">
+        Fetching your domain assets...
+      </p>
+    </div>
+  );
+}
+
+function EmptyDomainState() {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed bg-muted/30 px-4 py-20 text-center">
+      <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-muted">
+        <Globe className="size-6 text-muted-foreground/60" />
+      </div>
+
+      <p className="text-lg font-bold">No domains found</p>
+
+      <p className="text-sm text-muted-foreground">
+        Search for a domain above to get started.
+      </p>
     </div>
   );
 }

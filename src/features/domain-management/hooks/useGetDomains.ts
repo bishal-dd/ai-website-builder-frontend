@@ -3,9 +3,8 @@ import { getUserDomains } from "../api/getUserDomains";
 
 export const useGetDomains = () => {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["user-domains"],
+    queryKey: ["domains"],
     queryFn: () => getUserDomains(),
-    // Keep data fresh for 1 minute, but allow background refetching
     staleTime: 1000 * 60,
   });
 

@@ -6,9 +6,9 @@ import { SelectedDomain, DomainContact } from "../types/domain";
 import { useWebsiteDeploymentStatus } from "../hooks/useWebsiteDeploymentStatus";
 
 interface PaymentSummaryProps {
-  websiteId: string;
+  websiteId?: string;
   selectedDomain: SelectedDomain;
-  contact: DomainContact;
+  contact?: DomainContact;
   onClose: () => void;
   onBack: () => void;
   handleWhatsAppPayment: () => void; // Updated type
