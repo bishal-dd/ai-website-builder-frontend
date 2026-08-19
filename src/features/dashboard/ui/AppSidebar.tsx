@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BarChart3,
   CircleHelp,
   Globe2,
   LayoutDashboard,
@@ -40,6 +41,11 @@ const navigationItems = [
     title: "Templates",
     icon: LayoutTemplate,
     href: "/dashboard/templates",
+  },
+  {
+    title: "Insights",
+    icon: BarChart3,
+    href: "/dashboard/insights",
   },
   {
     title: "Domains",
