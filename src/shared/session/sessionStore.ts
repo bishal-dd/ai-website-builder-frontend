@@ -16,6 +16,7 @@ export interface Session {
     emailVerified: boolean;
     role?: string; // <-- Add this here
     image?: string | null;
+    countryCode?: string | null;
   };
 }
 
@@ -23,7 +24,7 @@ interface SessionState {
   session: Session | null;
   loading: boolean;
   setSession: (session: Session | null) => void;
-  fetchSession: () => Promise<void>;
+  fetchSession: () => Promise<Session | null>;
 }
 
 export const useSessionStore = create<SessionState>((set) => ({
@@ -46,11 +47,15 @@ export const useSessionStore = create<SessionState>((set) => ({
         };
 
         set({ session: mappedSession, loading: false });
-      } else {
-        set({ session: null, loading: false });
+
+        return mappedSession;
       }
+
+      set({ session: null, loading: false });
+      return null;
     } catch {
       set({ session: null, loading: false });
+      return null;
     }
   },
 }));
