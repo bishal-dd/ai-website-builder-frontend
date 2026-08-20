@@ -27,12 +27,22 @@ export function InsightWebsiteCard({ website }: InsightWebsiteCardProps) {
       </div>
 
       {/* Insights */}
-      <div className="mt-5 border-t pt-4">
-        <p className="text-xs text-muted-foreground">Total Views</p>
+      <div className="mt-5 grid grid-cols-2 gap-4 border-t pt-4">
+        <div>
+          <p className="text-xs text-muted-foreground">Total Views</p>
 
-        <p className="mt-1 text-2xl font-semibold tracking-tight">
-          {website.pageReloads}
-        </p>
+          <p className="mt-1 text-2xl font-semibold tracking-tight">
+            {website.pageReloads}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground">Unique Viewers</p>
+
+          <p className="mt-1 text-2xl font-semibold tracking-tight">
+            {website.uniqueViewers}
+          </p>
+        </div>
       </div>
     </div>
   );
