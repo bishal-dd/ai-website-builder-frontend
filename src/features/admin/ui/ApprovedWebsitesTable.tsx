@@ -41,6 +41,7 @@ import useCreateWebsitePayment from "../hooks/useCreateWebsitePayment";
 import { toast } from "sonner";
 import useUpdateDomainPrice from "@/features/preview/domain/hooks/useUpdateDomainPrice";
 import { useGenerateWebsiteReceipt } from "../hooks/useGenerateWebsiteReceipt";
+import { useGenerateWebsiteInvoice } from "../hooks/useGenerateWebsiteInvoice";
 
 interface ApprovedWebsitesTableProps {
   websites: Website[];
@@ -74,6 +75,9 @@ export const ApprovedWebsitesTable = ({
   const [generatingReceiptWebsiteId, setGeneratingReceiptWebsiteId] = useState<
     string | null
   >(null);
+  const [generatingInvoiceWebsiteId, setGeneratingInvoiceWebsiteId] = useState<
+    string | null
+  >(null);
 
   const [isEditingPayment, setIsEditingPayment] = useState(false);
   const [editValues, setEditValues] = useState({
@@ -88,6 +92,8 @@ export const ApprovedWebsitesTable = ({
     useWebsitePayment(selectedPrice?.id);
 
   const { mutate: generateReceipt } = useGenerateWebsiteReceipt();
+
+  const { mutate: generateInvoice } = useGenerateWebsiteInvoice();
 
   const [createValues, setCreateValues] = useState(emptyPaymentForm);
 
@@ -274,6 +280,38 @@ export const ApprovedWebsitesTable = ({
     });
   };
 
+  const handleGenerateInvoice = (websiteId: string) => {
+    setGeneratingInvoiceWebsiteId(websiteId);
+
+    generateInvoice(websiteId, {
+      onSuccess: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `Invoice-${websiteId}.pdf`;
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        window.URL.revokeObjectURL(url);
+
+        toast.success("Invoice generated successfully");
+      },
+
+      onError: (error) => {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to generate invoice",
+        );
+      },
+
+      onSettled: () => {
+        setGeneratingInvoiceWebsiteId(null);
+      },
+    });
+  };
+
   const handleCreatePayment = () => {
     if (!selectedPayment) return;
 
@@ -421,6 +459,19 @@ export const ApprovedWebsitesTable = ({
                             {generatingReceiptWebsiteId === site.id
                               ? "Generating..."
                               : "Receipt"}
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleGenerateInvoice(site.id)}
+                            disabled={generatingInvoiceWebsiteId === site.id}
+                            className="gap-2"
+                          >
+                            <Download className="h-4 w-4" />
+                            {generatingInvoiceWebsiteId === site.id
+                              ? "Generating..."
+                              : "Invoice"}
                           </Button>
                         </div>
                       </TableCell>
