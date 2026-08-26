@@ -20,6 +20,8 @@ import {
   resolveImageSrc,
 } from "./imageUtils";
 
+type ImageUploadStatus = "optimizing" | "uploading";
+
 interface ImageElementRendererProps {
   element: WebElement;
   props: RendererElementProps;
@@ -27,6 +29,7 @@ interface ImageElementRendererProps {
   componentKey?: ComponentKey;
   fileInputRefs: FileInputRefs;
   uploadingImageId: number | null;
+  uploadStatus: ImageUploadStatus | null;
   onImageChange: ImageChangeHandler;
 }
 
@@ -37,6 +40,7 @@ export function ImageElementRenderer({
   componentKey,
   fileInputRefs,
   uploadingImageId,
+  uploadStatus,
   onImageChange,
 }: ImageElementRendererProps) {
   const { id, attributes } = element;
@@ -105,18 +109,24 @@ export function ImageElementRenderer({
         },
       })}
 
-      {!isLogo && !isIcon && (
+      {uploadingImageId === id && (
+        <div className="absolute inset-0 z-100 flex items-center justify-center bg-white">
+          <div className="flex flex-col items-center gap-2 text-sm font-medium text-black">
+            <span>Optimizing your image...</span>
+            <span>Uploading your image...</span>
+          </div>
+        </div>
+      )}
+
+      {!isLogo && !isIcon && uploadingImageId !== id && (
         <button
           onClick={(event) => {
             event.stopPropagation();
-
-            if (!uploadingImageId) {
-              fileInputRefs.current[String(id)]?.click();
-            }
+            fileInputRefs.current[String(id)]?.click();
           }}
-          className="absolute top-2 right-2 z-50 bg-yellow-400 text-black px-3 py-1.5 rounded-md shadow-md text-xs font-semibold"
+          className="absolute top-2 right-2 z-50 rounded-md bg-yellow-400 px-3 py-1.5 text-xs font-semibold text-black shadow-md"
         >
-          {uploadingImageId === id ? "Uploading..." : "Change"}
+          Change
         </button>
       )}
 
