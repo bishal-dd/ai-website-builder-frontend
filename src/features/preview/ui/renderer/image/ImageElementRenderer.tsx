@@ -20,8 +20,6 @@ import {
   resolveImageSrc,
 } from "./imageUtils";
 
-type ImageUploadStatus = "optimizing" | "uploading";
-
 interface ImageElementRendererProps {
   element: WebElement;
   props: RendererElementProps;
@@ -29,7 +27,6 @@ interface ImageElementRendererProps {
   componentKey?: ComponentKey;
   fileInputRefs: FileInputRefs;
   uploadingImageId: number | null;
-  uploadStatus: ImageUploadStatus | null;
   onImageChange: ImageChangeHandler;
 }
 
