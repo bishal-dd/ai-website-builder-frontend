@@ -1,6 +1,12 @@
 "use client";
 
+import { prepareImageForUpload } from "@/lib/prepareImageForUpload";
+import {
+  MAX_IMAGE_SIZE_BYTES,
+  MAX_IMAGE_SIZE_MB,
+} from "@/shared/constants/upload";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface UsePreviewImageUploadParams {
   userId?: string;
@@ -23,6 +29,16 @@ export function usePreviewImageUpload({ userId }: UsePreviewImageUploadParams) {
     try {
       setUploadingImageId(elementId);
 
+      if (file.size > MAX_IMAGE_SIZE_BYTES) {
+        throw new Error(`Image must be smaller than ${MAX_IMAGE_SIZE_MB} MB`);
+      }
+
+      const preparedImage = await prepareImageForUpload(file);
+
+      if (preparedImage.file.size > 300 * 1024) {
+        throw new Error("Unable to compress image below 300 KB");
+      }
+
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
       if (!backendUrl) {
@@ -39,8 +55,7 @@ export function usePreviewImageUpload({ userId }: UsePreviewImageUploadParams) {
         throw new Error("User id is required to upload preview image");
       }
 
-      const fileExtension = file.name.split(".").pop() || "png";
-      const fileKey = `${crypto.randomUUID()}.${fileExtension}`;
+      const fileKey = `${crypto.randomUUID()}.webp`;
 
       const presignUrlResponse = await fetch(`${backendUrl}/presign`, {
         method: "POST",
@@ -50,7 +65,7 @@ export function usePreviewImageUpload({ userId }: UsePreviewImageUploadParams) {
         body: JSON.stringify({
           userId,
           fileName: fileKey,
-          fileType: file.type,
+          fileType: preparedImage.fileType,
         }),
       });
 
@@ -63,14 +78,16 @@ export function usePreviewImageUpload({ userId }: UsePreviewImageUploadParams) {
       await fetch(presignedUrl, {
         method: "PUT",
         headers: {
-          "Content-Type": file.type,
+          "Content-Type": preparedImage.fileType,
         },
-        body: file,
+        body: preparedImage.file,
       });
 
       onUploaded(`${cloudfront}/${userId}/previews/images/${fileKey}`);
     } catch (error) {
-      console.error("Upload failed", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to upload image",
+      );
     } finally {
       setUploadingImageId(null);
     }
