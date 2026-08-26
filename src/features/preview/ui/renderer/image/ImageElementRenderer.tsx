@@ -40,7 +40,6 @@ export function ImageElementRenderer({
   componentKey,
   fileInputRefs,
   uploadingImageId,
-  uploadStatus,
   onImageChange,
 }: ImageElementRendererProps) {
   const { id, attributes } = element;
