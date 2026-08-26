@@ -78,7 +78,7 @@ export function ImageElementRenderer({
       key={id}
       data-tour={isLogo ? "site-logo" : undefined}
       className={cn(
-        "relative leading-none",
+        "relative leading-none overflow-hidden",
         isIcon ? "inline-block" : "block",
         isIcon || isAvatar ? null : "w-full",
         isLogo ? "h-full" : "h-auto",
@@ -106,8 +106,8 @@ export function ImageElementRenderer({
       })}
 
       {uploadingImageId === id && (
-        <div className="absolute inset-0 z-100 flex items-center justify-center bg-white">
-          <div className="flex flex-col items-center gap-2 text-sm font-medium text-black">
+        <div className="absolute inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-2 text-sm font-medium text-white">
             <span>Optimizing your image...</span>
             <span>Uploading your image...</span>
           </div>
