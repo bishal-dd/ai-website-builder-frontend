@@ -176,7 +176,7 @@ Currency: ${selectedDomain.currency}
 `,
     );
 
-    window.open(`https://wa.me/17959259?text=${message}`, "_blank");
+    window.open(`https://wa.me/16176961?text=${message}`, "_blank");
   };
 
   /**
