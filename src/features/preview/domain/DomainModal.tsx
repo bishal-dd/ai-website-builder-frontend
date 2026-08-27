@@ -229,7 +229,7 @@ export function DomainModal({
   `,
     );
 
-    window.open(`https://wa.me/17959259?text=${message}`);
+    window.open(`https://wa.me/16176961?text=${message}`);
   };
 
   // Payment placeholder
