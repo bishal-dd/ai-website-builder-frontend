@@ -341,14 +341,14 @@ export function DomainModal({
             .uk)
           </div>
 
-          <div className="flex items-center gap-2 text-sm">
+          {/* <div className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
               checked={hasOwnDomain}
               onChange={(e) => setHasOwnDomain(e.target.checked)}
             />
             <span>I already have a domain</span>
-          </div>
+          </div> */}
           {selectedDomain && (
             <div className="p-3 border rounded-md bg-green-500/10 border-green-500/30 text-sm">
               <div className="flex items-center justify-between gap-3">
