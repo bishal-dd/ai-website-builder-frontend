@@ -1,10 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { InsightWebsiteCard } from "./ui/InsightWebsiteCard";
 import { useWebsitesInsight } from "./hooks/useWebsitesInsight";
+import type { InsightPeriod } from "./api/getWebsitesInsight";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 export function InsightsContent() {
-  const { websites, isLoading, error } = useWebsitesInsight();
+  const [period, setPeriod] = useState<InsightPeriod>("month");
+
+  const { websites, isLoading, error } = useWebsitesInsight(period);
 
   const hasWebsites = websites.length > 0;
 
@@ -12,15 +24,33 @@ export function InsightsContent() {
     <div className="flex min-h-svh flex-col">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
-        <div className="flex h-16 items-center gap-4 px-6">
+        <div className="flex min-h-16 items-center gap-4 px-6">
           <SidebarTrigger className="-ml-2" />
 
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">Insights</h1>
+          <div className="flex flex-1 items-center justify-between gap-4">
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight">Insights</h1>
 
-            <p className="text-sm text-muted-foreground">
-              Track your website performance and visitor activity.
-            </p>
+              <p className="text-sm text-muted-foreground">
+                Track your website performance and visitor activity.
+              </p>
+            </div>
+
+            <Select
+              value={period}
+              onValueChange={(value) => setPeriod(value as InsightPeriod)}
+            >
+              <SelectTrigger className="w-36">
+                <SelectValue />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">This Week</SelectItem>
+                <SelectItem value="month">This Month</SelectItem>
+                <SelectItem value="year">This Year</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </header>
@@ -28,11 +58,11 @@ export function InsightsContent() {
       {/* Main Content */}
       <main className="flex-1 p-6">
         {isLoading ? (
-          <div className="flex justify-center mt-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+          <div className="mt-20 flex justify-center">
+            <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
           </div>
         ) : error ? (
-          <div className="flex justify-center mt-20 text-red-500">
+          <div className="mt-20 flex justify-center text-red-500">
             Error loading websites: {error.message}
           </div>
         ) : hasWebsites ? (
