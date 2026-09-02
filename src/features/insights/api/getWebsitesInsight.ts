@@ -1,6 +1,4 @@
-import { InsightWebsite } from "../types";
-
-export type InsightPeriod = "today" | "week" | "month" | "year";
+import { InsightPeriod, InsightWebsite } from "../types";
 
 export async function getWebsitesInsight(
   period: InsightPeriod,
