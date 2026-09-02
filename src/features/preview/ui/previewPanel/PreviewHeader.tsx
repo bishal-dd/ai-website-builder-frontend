@@ -4,6 +4,7 @@ import {
   CircleHelp,
   FilePlus,
   LayoutDashboard,
+  Loader2,
   Monitor,
   MoveUpRight,
   RefreshCw,
@@ -31,6 +32,7 @@ interface PreviewHeaderProps {
   isFetchingData: boolean;
   isDeployed: boolean;
   isGeneratingPreview: boolean;
+  isCreatingTemplate: boolean;
   isAdmin: boolean;
   onDeviceChange: (device: DeviceType) => void;
   onSharePreview: () => void;
@@ -44,6 +46,7 @@ export function PreviewHeader({
   isFetchingData,
   isDeployed,
   isGeneratingPreview,
+  isCreatingTemplate,
   isAdmin,
   onDeviceChange,
   onSharePreview,
@@ -121,13 +124,22 @@ export function PreviewHeader({
           <Button
             variant="outline"
             onClick={onCreateTemplate}
+            disabled={isCreatingTemplate}
             className="flex items-center gap-2"
           >
-            <FilePlus className="h-4 w-4" />
+            {isCreatingTemplate ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FilePlus className="h-4 w-4" />
+            )}
 
-            <span className="hidden sm:inline">Create Template</span>
+            <span className="hidden sm:inline">
+              {isCreatingTemplate ? "Creating Template..." : "Create Template"}
+            </span>
 
-            <span className="sm:hidden">Template</span>
+            <span className="sm:hidden">
+              {isCreatingTemplate ? "Creating..." : "Template"}
+            </span>
           </Button>
         )}
 
