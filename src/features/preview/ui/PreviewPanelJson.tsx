@@ -209,6 +209,7 @@ export function PreviewPanelJson({
         isFetchingData={isFetchingData}
         isDeployed={isDeployed}
         isGeneratingPreview={isGeneratingPreview}
+        isCreatingTemplate={createTemplateMutation.isPending}
         isAdmin={isAdmin}
         onDeviceChange={setDevice}
         onSharePreview={handleSharePreview}

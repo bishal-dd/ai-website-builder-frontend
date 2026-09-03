@@ -4,7 +4,6 @@ import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { InsightWebsiteCard } from "./ui/InsightWebsiteCard";
 import { useWebsitesInsight } from "./hooks/useWebsitesInsight";
-import type { InsightPeriod } from "./api/getWebsitesInsight";
 import {
   Select,
   SelectContent,
@@ -12,9 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { InsightPeriod } from "./types";
 
 export function InsightsContent() {
-  const [period, setPeriod] = useState<InsightPeriod>("month");
+  const [period, setPeriod] = useState<InsightPeriod>("this_month");
 
   const { websites, isLoading, error } = useWebsitesInsight(period);
 
@@ -45,10 +45,9 @@ export function InsightsContent() {
               </SelectTrigger>
 
               <SelectContent>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-                <SelectItem value="year">This Year</SelectItem>
+                <SelectItem value="all_time">All Time</SelectItem>
+                <SelectItem value="this_month">This Month</SelectItem>
+                <SelectItem value="last_month">Last Month</SelectItem>
               </SelectContent>
             </Select>
           </div>
