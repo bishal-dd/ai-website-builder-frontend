@@ -34,7 +34,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { findElementById } from "../utils/findElementById";
 import { FloatingTextToolbar } from "./controls/FloatingTextToolbar";
 import { FONT_SIZES } from "@/features/preview/types/fontSize";
 
@@ -179,14 +178,6 @@ export function JsonRenderer({
 
   const activeImageId = useRendererStore((state) => state.activeImageId);
 
-  const selectedElementId = useRendererStore(
-    (state) => state.selectedElementId,
-  );
-
-  const selectedComponentKey = useRendererStore(
-    (state) => state.selectedComponentKey,
-  );
-
   const setIsEditingText = useRendererStore((state) => state.setIsEditingText);
 
   const setSelectedElementId = useRendererStore(
@@ -240,15 +231,6 @@ export function JsonRenderer({
       hoverTimeoutRef.current = null;
     }, 300);
   }, []);
-
-  const selectedElement =
-    selectedElementId === null
-      ? null
-      : selectedComponentKey === "navbar"
-        ? findElementById(sharedComponents?.navbar ?? [], selectedElementId)
-        : selectedComponentKey === "footer"
-          ? findElementById(sharedComponents?.footer ?? [], selectedElementId)
-          : findElementById(elements, selectedElementId);
 
   const getCurrentFontSize = useCallback(
     (className: string | undefined) => {

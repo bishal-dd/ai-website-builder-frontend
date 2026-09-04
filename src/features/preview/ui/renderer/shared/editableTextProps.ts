@@ -15,7 +15,12 @@ interface ApplyEditableTextPropsParams {
   setIsEditingText: (isEditing: boolean) => void;
   setSelectedElementId: (id: number | null) => void;
   setSelectedComponentKey: (componentKey: ComponentKey | null) => void;
-  setHoveredTextElement: (element: HTMLElement) => void;
+  setHoveredTextElement: (
+    element: HTMLElement,
+    id: number,
+    componentKey?: ComponentKey,
+    className?: string,
+  ) => void;
   onTextMouseLeave: () => void;
 }
 
@@ -85,7 +90,7 @@ export function applyEditableTextProps({
   };
 
   props.onMouseEnter = (event) => {
-    setHoveredTextElement(event.currentTarget);
+    setHoveredTextElement(event.currentTarget, id, componentKey, element.class);
 
     setSelectedElementId(id);
     setSelectedComponentKey(componentKey ?? null);
