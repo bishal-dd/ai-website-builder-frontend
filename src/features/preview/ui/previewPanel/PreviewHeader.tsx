@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Smartphone,
   Tablet,
+  History,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ interface PreviewHeaderProps {
   onRepublish: () => void;
   onPublish: () => void;
   onCreateTemplate: () => void;
+  onVersionHistory: () => void;
 }
 
 export function PreviewHeader({
@@ -53,6 +55,7 @@ export function PreviewHeader({
   onRepublish,
   onPublish,
   onCreateTemplate,
+  onVersionHistory,
 }: PreviewHeaderProps) {
   return (
     <div className="flex items-center justify-between border-b bg-card px-4 py-3">
@@ -148,6 +151,15 @@ export function PreviewHeader({
             <LayoutDashboard className="h-4 w-4" />
             <span className="sm:inline">Dashboard</span>
           </Link>
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={onVersionHistory}
+          className="flex items-center gap-2"
+        >
+          <History className="h-4 w-4" />
+          <span className="hidden sm:inline">History</span>
         </Button>
 
         <Button
