@@ -36,22 +36,8 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { findElementById } from "../utils/findElementById";
 import { FloatingTextToolbar } from "./controls/FloatingTextToolbar";
+import { FONT_SIZES } from "@/features/preview/types/fontSize";
 
-const FONT_SIZE_ORDER = [
-  "text-xs",
-  "text-sm",
-  "text-base",
-  "text-lg",
-  "text-xl",
-  "text-2xl",
-  "text-3xl",
-  "text-4xl",
-  "text-5xl",
-  "text-6xl",
-  "text-7xl",
-  "text-8xl",
-  "text-9xl",
-];
 interface JsonRendererProps {
   elements: WebElement[];
   sharedComponents?: SharedComponents;
@@ -211,19 +197,38 @@ export function JsonRenderer({
     (state) => state.setSelectedComponentKey,
   );
 
-  const [hoveredTextElement, setHoveredTextElement] =
-    useState<HTMLElement | null>(null);
+  interface HoveredText {
+    element: HTMLElement;
+    id: number;
+    componentKey?: ComponentKey;
+    className?: string;
+  }
+
+  const [hoveredText, setHoveredText] = useState<HoveredText | null>(null);
 
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleTextMouseEnter = useCallback((element: HTMLElement) => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
+  const handleTextMouseEnter = useCallback(
+    (
+      element: HTMLElement,
+      id: number,
+      componentKey?: ComponentKey,
+      className?: string,
+    ) => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
+      }
 
-    setHoveredTextElement(element);
-  }, []);
+      setHoveredText({
+        element,
+        id,
+        componentKey,
+        className,
+      });
+    },
+    [],
+  );
 
   const handleTextMouseLeave = useCallback(() => {
     if (hoverTimeoutRef.current) {
@@ -231,8 +236,9 @@ export function JsonRenderer({
     }
 
     hoverTimeoutRef.current = setTimeout(() => {
-      setHoveredTextElement(null);
-    }, 500);
+      setHoveredText(null);
+      hoverTimeoutRef.current = null;
+    }, 300);
   }, []);
 
   const selectedElement =
@@ -255,11 +261,13 @@ export function JsonRenderer({
         if (prefix) {
           return (
             className.startsWith(prefix) &&
-            FONT_SIZE_ORDER.includes(className.slice(prefix.length))
+            FONT_SIZES.some(
+              (size) => size.value === className.slice(prefix.length),
+            )
           );
         }
 
-        return FONT_SIZE_ORDER.includes(className);
+        return FONT_SIZES.some((size) => size.value === className);
       });
 
       if (!matchingClass) {
@@ -272,60 +280,54 @@ export function JsonRenderer({
   );
 
   const handleFontSizeIncrease = useCallback(() => {
-    if (!selectedElement) {
+    if (!hoveredText) {
       return;
     }
 
-    const currentFontSize = getCurrentFontSize(selectedElement.class);
+    const currentFontSize = getCurrentFontSize(hoveredText.className);
 
-    const currentIndex = FONT_SIZE_ORDER.indexOf(currentFontSize);
+    const currentIndex = FONT_SIZES.findIndex(
+      (size) => size.value === currentFontSize,
+    );
 
-    if (currentIndex === -1 || currentIndex >= FONT_SIZE_ORDER.length - 1) {
+    if (currentIndex === -1 || currentIndex >= FONT_SIZES.length - 1) {
       return;
     }
 
-    const newFontSize = FONT_SIZE_ORDER[currentIndex + 1];
+    const newFontSize = FONT_SIZES[currentIndex + 1].value;
 
     onFontSizeChange?.(
-      selectedElement.id,
-      selectedComponentKey ?? undefined,
+      hoveredText.id,
+      hoveredText.componentKey,
       newFontSize,
-      selectedElement.class,
+      hoveredText.className,
     );
-  }, [
-    selectedElement,
-    selectedComponentKey,
-    getCurrentFontSize,
-    onFontSizeChange,
-  ]);
+  }, [hoveredText, getCurrentFontSize, onFontSizeChange]);
 
   const handleFontSizeDecrease = useCallback(() => {
-    if (!selectedElement) {
+    if (!hoveredText) {
       return;
     }
 
-    const currentFontSize = getCurrentFontSize(selectedElement.class);
+    const currentFontSize = getCurrentFontSize(hoveredText.className);
 
-    const currentIndex = FONT_SIZE_ORDER.indexOf(currentFontSize);
+    const currentIndex = FONT_SIZES.findIndex(
+      (size) => size.value === currentFontSize,
+    );
 
     if (currentIndex <= 0) {
       return;
     }
 
-    const newFontSize = FONT_SIZE_ORDER[currentIndex - 1];
+    const newFontSize = FONT_SIZES[currentIndex - 1].value;
 
     onFontSizeChange?.(
-      selectedElement.id,
-      selectedComponentKey ?? undefined,
+      hoveredText.id,
+      hoveredText.componentKey,
       newFontSize,
-      selectedElement.class,
+      hoveredText.className,
     );
-  }, [
-    selectedElement,
-    selectedComponentKey,
-    getCurrentFontSize,
-    onFontSizeChange,
-  ]);
+  }, [hoveredText, getCurrentFontSize, onFontSizeChange]);
 
   const { uploadingImageId, uploadImage } = usePreviewImageUpload({
     userId: user?.id,
@@ -574,10 +576,10 @@ export function JsonRenderer({
       {floatingWhatsappEnabled && (
         <FloatingWhatsApp phone={contactPhone ?? ""} />
       )}
-      {hoveredTextElement && selectedElement && (
+      {hoveredText && !isEditingText && (
         <SelectedTextToolbar
-          element={hoveredTextElement}
-          fontSize={getCurrentFontSize(selectedElement.class)}
+          element={hoveredText.element}
+          fontSize={getCurrentFontSize(hoveredText.className)}
           onIncrease={handleFontSizeIncrease}
           onDecrease={handleFontSizeDecrease}
           onMouseEnter={() => {
