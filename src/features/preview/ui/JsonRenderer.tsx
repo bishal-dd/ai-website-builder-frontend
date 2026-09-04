@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useRef } from "react";
-
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { SharedComponents, WebElement } from "@/features/preview/types";
 import { usePreviewImageUpload } from "@/features/preview/hooks/usePreviewImageUpload";
 import { useRendererActions } from "@/features/preview/hooks/useRendererActions";
@@ -34,7 +34,24 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { findElementById } from "../utils/findElementById";
+import { FloatingTextToolbar } from "./controls/FloatingTextToolbar";
 
+const FONT_SIZE_ORDER = [
+  "text-xs",
+  "text-sm",
+  "text-base",
+  "text-lg",
+  "text-xl",
+  "text-2xl",
+  "text-3xl",
+  "text-4xl",
+  "text-5xl",
+  "text-6xl",
+  "text-7xl",
+  "text-8xl",
+  "text-9xl",
+];
 interface JsonRendererProps {
   elements: WebElement[];
   sharedComponents?: SharedComponents;
@@ -48,6 +65,12 @@ interface JsonRendererProps {
     componentKey: ComponentKey,
     elementId: number,
     updates: Partial<WebElement>,
+  ) => void;
+  onFontSizeChange?: (
+    id: number,
+    componentKey: ComponentKey | undefined,
+    newFontSize: string,
+    currentClassName?: string,
   ) => void;
 }
 
@@ -86,6 +109,71 @@ function SortablePreviewSection({
   );
 }
 
+function SelectedTextToolbar({
+  element,
+  fontSize,
+  onIncrease,
+  onDecrease,
+  onMouseEnter,
+  onMouseLeave,
+}: {
+  element: HTMLElement;
+  fontSize: string;
+  onIncrease: () => void;
+  onDecrease: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+}) {
+  const [position, setPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const updatePosition = () => {
+      const rect = element.getBoundingClientRect();
+      const win = element.ownerDocument.defaultView;
+
+      if (!win) {
+        return;
+      }
+
+      setPosition({
+        top: rect.top + win.scrollY + rect.height / 2,
+        left: rect.right + win.scrollX + 6,
+      });
+    };
+
+    updatePosition();
+
+    const win = element.ownerDocument.defaultView;
+
+    win?.addEventListener("scroll", updatePosition);
+    win?.addEventListener("resize", updatePosition);
+
+    return () => {
+      win?.removeEventListener("scroll", updatePosition);
+      win?.removeEventListener("resize", updatePosition);
+    };
+  }, [element]);
+
+  if (!position) {
+    return null;
+  }
+
+  return createPortal(
+    <FloatingTextToolbar
+      position={position}
+      fontSize={fontSize}
+      onIncrease={onIncrease}
+      onDecrease={onDecrease}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    />,
+    element.ownerDocument.body,
+  );
+}
+
 export function JsonRenderer({
   elements,
   sharedComponents,
@@ -96,19 +184,155 @@ export function JsonRenderer({
   onUpdateSharedElement,
   onReorderSections,
   onDeleteSection,
+  onFontSizeChange,
 }: JsonRendererProps) {
   const { user } = useSession();
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const isEditingText = useRendererStore((state) => state.isEditingText);
+
   const activeImageId = useRendererStore((state) => state.activeImageId);
+
+  const selectedElementId = useRendererStore(
+    (state) => state.selectedElementId,
+  );
+
+  const selectedComponentKey = useRendererStore(
+    (state) => state.selectedComponentKey,
+  );
+
   const setIsEditingText = useRendererStore((state) => state.setIsEditingText);
+
+  const setSelectedElementId = useRendererStore(
+    (state) => state.setSelectedElementId,
+  );
+
+  const setSelectedComponentKey = useRendererStore(
+    (state) => state.setSelectedComponentKey,
+  );
+
+  const [hoveredTextElement, setHoveredTextElement] =
+    useState<HTMLElement | null>(null);
+
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTextMouseEnter = useCallback((element: HTMLElement) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+
+    setHoveredTextElement(element);
+  }, []);
+
+  const handleTextMouseLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredTextElement(null);
+    }, 500);
+  }, []);
+
+  const selectedElement =
+    selectedElementId === null
+      ? null
+      : selectedComponentKey === "navbar"
+        ? findElementById(sharedComponents?.navbar ?? [], selectedElementId)
+        : selectedComponentKey === "footer"
+          ? findElementById(sharedComponents?.footer ?? [], selectedElementId)
+          : findElementById(elements, selectedElementId);
+
+  const getCurrentFontSize = useCallback(
+    (className: string | undefined) => {
+      const classes = (className ?? "").split(/\s+/);
+
+      const prefix =
+        device === "desktop" ? "lg:" : device === "tablet" ? "sm:" : "";
+
+      const matchingClass = classes.find((className) => {
+        if (prefix) {
+          return (
+            className.startsWith(prefix) &&
+            FONT_SIZE_ORDER.includes(className.slice(prefix.length))
+          );
+        }
+
+        return FONT_SIZE_ORDER.includes(className);
+      });
+
+      if (!matchingClass) {
+        return "text-base";
+      }
+
+      return prefix ? matchingClass.slice(prefix.length) : matchingClass;
+    },
+    [device],
+  );
+
+  const handleFontSizeIncrease = useCallback(() => {
+    if (!selectedElement) {
+      return;
+    }
+
+    const currentFontSize = getCurrentFontSize(selectedElement.class);
+
+    const currentIndex = FONT_SIZE_ORDER.indexOf(currentFontSize);
+
+    if (currentIndex === -1 || currentIndex >= FONT_SIZE_ORDER.length - 1) {
+      return;
+    }
+
+    const newFontSize = FONT_SIZE_ORDER[currentIndex + 1];
+
+    onFontSizeChange?.(
+      selectedElement.id,
+      selectedComponentKey ?? undefined,
+      newFontSize,
+      selectedElement.class,
+    );
+  }, [
+    selectedElement,
+    selectedComponentKey,
+    getCurrentFontSize,
+    onFontSizeChange,
+  ]);
+
+  const handleFontSizeDecrease = useCallback(() => {
+    if (!selectedElement) {
+      return;
+    }
+
+    const currentFontSize = getCurrentFontSize(selectedElement.class);
+
+    const currentIndex = FONT_SIZE_ORDER.indexOf(currentFontSize);
+
+    if (currentIndex <= 0) {
+      return;
+    }
+
+    const newFontSize = FONT_SIZE_ORDER[currentIndex - 1];
+
+    onFontSizeChange?.(
+      selectedElement.id,
+      selectedComponentKey ?? undefined,
+      newFontSize,
+      selectedElement.class,
+    );
+  }, [
+    selectedElement,
+    selectedComponentKey,
+    getCurrentFontSize,
+    onFontSizeChange,
+  ]);
 
   const { uploadingImageId, uploadImage } = usePreviewImageUpload({
     userId: user?.id,
   });
 
   const { handleTextSave, handleImageChange } = useRendererActions({
+    device,
     onUpdateElement,
     onUpdateSharedElement,
     uploadImage,
@@ -137,6 +361,10 @@ export function JsonRenderer({
         canEdit,
         onTextSave: handleTextSave,
         setIsEditingText,
+        setSelectedElementId,
+        setSelectedComponentKey,
+        setHoveredTextElement: handleTextMouseEnter,
+        onTextMouseLeave: handleTextMouseLeave,
       });
 
       switch (elementKind) {
@@ -215,9 +443,13 @@ export function JsonRenderer({
       canEdit,
       device,
       handleImageChange,
+      handleTextMouseEnter,
+      handleTextMouseLeave,
       handleTextSave,
       isPaused,
       setIsEditingText,
+      setSelectedElementId,
+      setSelectedComponentKey,
       uploadingImageId,
     ],
   );
@@ -341,6 +573,21 @@ export function JsonRenderer({
       )}
       {floatingWhatsappEnabled && (
         <FloatingWhatsApp phone={contactPhone ?? ""} />
+      )}
+      {hoveredTextElement && selectedElement && (
+        <SelectedTextToolbar
+          element={hoveredTextElement}
+          fontSize={getCurrentFontSize(selectedElement.class)}
+          onIncrease={handleFontSizeIncrease}
+          onDecrease={handleFontSizeDecrease}
+          onMouseEnter={() => {
+            if (hoverTimeoutRef.current) {
+              clearTimeout(hoverTimeoutRef.current);
+              hoverTimeoutRef.current = null;
+            }
+          }}
+          onMouseLeave={handleTextMouseLeave}
+        />
       )}
     </>
   );
