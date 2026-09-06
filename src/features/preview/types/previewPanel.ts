@@ -23,4 +23,11 @@ export interface PreviewPanelJsonProps {
   currentPageId: string;
   onReorderSections: (pageId: string, reorderedSections: WebElement[]) => void;
   onDeleteSection?: (pageId: string, sectionId: number) => void;
+  onDeviceChange?: (device: DeviceType) => void;
+  onFontSizeChange?: (
+    id: number,
+    componentKey: "navbar" | "footer" | undefined,
+    newFontSize: string,
+    currentClassName?: string,
+  ) => void;
 }

@@ -36,6 +36,8 @@ export function PreviewPanelJson({
   onReorderSections,
   onDeleteSection,
   currentPageId,
+  onDeviceChange,
+  onFontSizeChange,
 }: PreviewPanelJsonProps) {
   const [device, setDevice] = useState<DeviceType>("desktop");
 
@@ -211,7 +213,10 @@ export function PreviewPanelJson({
         isGeneratingPreview={isGeneratingPreview}
         isCreatingTemplate={createTemplateMutation.isPending}
         isAdmin={isAdmin}
-        onDeviceChange={setDevice}
+        onDeviceChange={(newDevice) => {
+          setDevice(newDevice);
+          onDeviceChange?.(newDevice);
+        }}
         onSharePreview={handleSharePreview}
         onRepublish={handleRepublish}
         onPublish={() => router.push(`/domain/${websiteId}`)}
@@ -238,6 +243,7 @@ export function PreviewPanelJson({
         onUpdateSharedElement={onUpdateSharedElement}
         onReorderSections={onReorderSections}
         onDeleteSection={onDeleteSection}
+        onFontSizeChange={onFontSizeChange}
       />
 
       <CreateTemplateDialog
