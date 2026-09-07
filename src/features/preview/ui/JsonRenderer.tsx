@@ -36,6 +36,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { FloatingTextToolbar } from "./controls/FloatingTextToolbar";
 import { FONT_SIZES } from "@/features/preview/types/fontSize";
+import { updateFontSizeClass } from "../utils/updateFontSizeClass";
 
 interface JsonRendererProps {
   elements: WebElement[];
@@ -278,13 +279,28 @@ export function JsonRenderer({
 
     const newFontSize = FONT_SIZES[currentIndex + 1].value;
 
+    const updatedClassName = updateFontSizeClass(
+      hoveredText.className,
+      newFontSize,
+      device,
+    );
+
+    setHoveredText((current) =>
+      current
+        ? {
+            ...current,
+            className: updatedClassName,
+          }
+        : null,
+    );
+
     onFontSizeChange?.(
       hoveredText.id,
       hoveredText.componentKey,
       newFontSize,
       hoveredText.className,
     );
-  }, [hoveredText, getCurrentFontSize, onFontSizeChange]);
+  }, [hoveredText, getCurrentFontSize, device, onFontSizeChange]);
 
   const handleFontSizeDecrease = useCallback(() => {
     if (!hoveredText) {
@@ -303,13 +319,28 @@ export function JsonRenderer({
 
     const newFontSize = FONT_SIZES[currentIndex - 1].value;
 
+    const updatedClassName = updateFontSizeClass(
+      hoveredText.className,
+      newFontSize,
+      device,
+    );
+
+    setHoveredText((current) =>
+      current
+        ? {
+            ...current,
+            className: updatedClassName,
+          }
+        : null,
+    );
+
     onFontSizeChange?.(
       hoveredText.id,
       hoveredText.componentKey,
       newFontSize,
       hoveredText.className,
     );
-  }, [hoveredText, getCurrentFontSize, onFontSizeChange]);
+  }, [hoveredText, getCurrentFontSize, device, onFontSizeChange]);
 
   const { uploadingImageId, uploadImage } = usePreviewImageUpload({
     userId: user?.id,
