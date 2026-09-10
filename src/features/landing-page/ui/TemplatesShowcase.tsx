@@ -102,17 +102,23 @@ export function TemplatesShowcase() {
     setActiveIndex((current) => mod(current - 1));
   };
 
+  const nextRef = useRef(next);
+
+  useEffect(() => {
+    nextRef.current = next;
+  });
+
   useEffect(() => {
     if (isPaused) return;
 
-    timerRef.current = setInterval(next, AUTOPLAY_DELAY);
+    timerRef.current = setInterval(() => nextRef.current(), AUTOPLAY_DELAY);
 
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
     };
-  }, [isPaused, activeIndex]);
+  }, [isPaused]);
 
   const handleDragEnd = (
     _event: MouseEvent | TouchEvent | PointerEvent,
