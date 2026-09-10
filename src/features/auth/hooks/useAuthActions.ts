@@ -78,17 +78,22 @@ export const useAuthActions = () => {
         }
       }
 
-      const creationIntent = searchParams.get("intent");
+      const intent = searchParams.get("intent");
       const creationData = searchParams.get("data");
+      const templateId = searchParams.get("templateId");
 
-      if (creationIntent === "create" && creationData) {
+      if (intent === "create" && creationData) {
         const wizardUrl = new URL("/wizard", window.location.origin);
-
         wizardUrl.searchParams.set("data", creationData);
-
         router.push(wizardUrl.toString());
         return;
       }
+
+      if (intent === "template" && templateId) {
+        router.push(`/dashboard/templates/apply?templateId=${templateId}`);
+        return;
+      }
+
       router.push("/dashboard");
     } catch (err) {
       setError("An unexpected error occurred");
@@ -108,18 +113,26 @@ export const useAuthActions = () => {
       provider: provider,
     });
 
-    const creationIntent = searchParams.get("intent");
+    const intent = searchParams.get("intent");
     const creationData = searchParams.get("data");
+    const templateId = searchParams.get("templateId");
 
     try {
       let callbackURL = `${window.location.origin}/dashboard`;
 
-      if (creationIntent === "create" && creationData) {
+      if (intent === "create" && creationData) {
         const wizardUrl = new URL("/wizard", window.location.origin);
-
         wizardUrl.searchParams.set("data", creationData);
-
         callbackURL = wizardUrl.toString();
+      }
+
+      if (intent === "template" && templateId) {
+        const applyUrl = new URL(
+          "/dashboard/templates/apply",
+          window.location.origin,
+        );
+        applyUrl.searchParams.set("templateId", templateId);
+        callbackURL = applyUrl.toString();
       }
       const result = await authClient.signIn.social({
         provider,
