@@ -1,5 +1,5 @@
 import { authClient } from "@/shared/helper/auth/authClient";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { SignInFormValues, SignUpFormValues } from "@/features/auth/utils/form";
 import { useSessionStore } from "@/shared/session";
@@ -9,6 +9,7 @@ import { useUpdateUserCountry } from "../hooks/useUpdateUserCountry";
 export const useAuthActions = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { setLoading, setError } = useAuthStore();
   const { fetchSession } = useSessionStore();
   const { mutateAsync: saveUserCountry } = useUpdateUserCountry();
@@ -76,6 +77,19 @@ export const useAuthActions = () => {
           console.log("✅ User already has country:", session.user.countryCode);
         }
       }
+
+      const creationIntent = searchParams.get("intent");
+      const creationData = searchParams.get("data");
+
+      if (creationIntent === "create" && creationData) {
+        const wizardUrl = new URL("/wizard", window.location.origin);
+
+        wizardUrl.searchParams.set("data", creationData);
+
+        router.push(wizardUrl.toString());
+        return;
+      }
+      router.push("/dashboard");
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
@@ -94,10 +108,22 @@ export const useAuthActions = () => {
       provider: provider,
     });
 
+    const creationIntent = searchParams.get("intent");
+    const creationData = searchParams.get("data");
+
     try {
+      let callbackURL = `${window.location.origin}/dashboard`;
+
+      if (creationIntent === "create" && creationData) {
+        const wizardUrl = new URL("/wizard", window.location.origin);
+
+        wizardUrl.searchParams.set("data", creationData);
+
+        callbackURL = wizardUrl.toString();
+      }
       const result = await authClient.signIn.social({
         provider,
-        callbackURL: `${window.location.origin}/dashboard`,
+        callbackURL,
       });
 
       if (result?.error) {
