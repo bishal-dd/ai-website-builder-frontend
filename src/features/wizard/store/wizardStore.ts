@@ -20,6 +20,7 @@ const defaultState: Omit<
   | "setWebsiteId"
   | "setCurrentStep"
   | "setWebsiteType"
+  | "hydrateWizard"
   | "togglePage"
   | "setWebsiteInfo"
   | "addSection"
@@ -51,6 +52,31 @@ export const useWizardStore = create<WizardState>((set) => ({
   setWebsiteId: (id: string) => set({ websiteId: id }),
 
   setCurrentStep: (step) => set({ currentStep: step }),
+
+  hydrateWizard: (data) =>
+    set((state) => {
+      const selectedPages: WizardState["selectedPages"] = [
+        ...new Set(
+          (data.selectedPages ?? []).map(
+            (page) =>
+              page.toLowerCase() as WizardState["selectedPages"][number],
+          ),
+        ),
+      ];
+
+      const pageContents = selectedPages.map((page) => ({
+        page,
+        sections: getInitialSections(page),
+      }));
+
+      return {
+        ...state,
+        ...data,
+        selectedPages,
+        pageContents,
+        currentStep: 3,
+      };
+    }),
 
   setWebsiteType: (type) =>
     set(() => {
