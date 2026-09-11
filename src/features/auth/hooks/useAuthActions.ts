@@ -1,5 +1,5 @@
 import { authClient } from "@/shared/helper/auth/authClient";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { SignInFormValues, SignUpFormValues } from "@/features/auth/utils/form";
 import { useSessionStore } from "@/shared/session";
@@ -9,7 +9,6 @@ import { useUpdateUserCountry } from "../hooks/useUpdateUserCountry";
 export const useAuthActions = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { setLoading, setError } = useAuthStore();
   const { fetchSession } = useSessionStore();
   const { mutateAsync: saveUserCountry } = useUpdateUserCountry();
@@ -78,6 +77,8 @@ export const useAuthActions = () => {
         }
       }
 
+      const searchParams = new URLSearchParams(window.location.search);
+
       const intent = searchParams.get("intent");
       const creationData = searchParams.get("data");
       const templateId = searchParams.get("templateId");
@@ -112,6 +113,7 @@ export const useAuthActions = () => {
     posthog.capture("social_auth_clicked", {
       provider: provider,
     });
+    const searchParams = new URLSearchParams(window.location.search);
 
     const intent = searchParams.get("intent");
     const creationData = searchParams.get("data");
