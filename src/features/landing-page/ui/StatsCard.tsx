@@ -8,27 +8,11 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-
-const STATS = [
-  {
-    value: 630,
-    suffix: "+",
-    label: "websites created",
-  },
-  {
-    value: 30,
-    suffix: "+",
-    label: "countries reached",
-  },
-  {
-    value: 100,
-    suffix: "%",
-    label: "customer satisfaction",
-  },
-];
+import useAdminAnalytics from "@/features/admin/hooks/useAdminAnalytics";
 
 function NumberTicker({ value }: { value: number }) {
   const ref = useRef<HTMLSpanElement>(null);
+
   const isInView = useInView(ref, {
     once: true,
     margin: "-100px",
@@ -55,6 +39,26 @@ function NumberTicker({ value }: { value: number }) {
 }
 
 export function StatsBanner() {
+  const { stats, countries, isLoading } = useAdminAnalytics();
+
+  const STATS = [
+    {
+      value: stats?.totalWebsites ?? 0,
+      suffix: "+",
+      label: "websites created",
+    },
+    {
+      value: countries.length,
+      suffix: "+",
+      label: "countries reached",
+    },
+    {
+      value: 100,
+      suffix: "%",
+      label: "customer satisfaction",
+    },
+  ];
+
   return (
     <section className="px-6 py-12 sm:py-16">
       <motion.div
@@ -83,7 +87,7 @@ export function StatsBanner() {
             >
               <div className="flex items-baseline tracking-tight">
                 <span className="text-5xl font-semibold text-zinc-950 sm:text-6xl">
-                  <NumberTicker value={stat.value} />
+                  {isLoading ? "—" : <NumberTicker value={stat.value} />}
                 </span>
 
                 <span className="ml-1 text-2xl font-semibold text-primary sm:text-3xl">

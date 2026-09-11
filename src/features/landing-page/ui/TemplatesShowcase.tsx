@@ -18,7 +18,7 @@ type Template = {
 const templates: Template[] = [
   {
     id: "9dfefd38-a34f-49ae-996d-58bcee9bd806",
-    title: "AXIS",
+    title: "Travel Agency",
     category: "Travel",
     description: "A modern website for travel agencies and tour operators.",
     image: "/images/templates/AXIS.webp",

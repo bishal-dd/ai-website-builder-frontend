@@ -64,13 +64,12 @@ export function CTA() {
                 delay: 0.2,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl md:text-5xl lg:text-6xl"
+              className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl"
             >
               Your website is closer
               <br className="hidden sm:block" />
               <span className="text-primary"> than you think.</span>
             </motion.h2>
-
             {/* Description */}
             <motion.p
               initial={{ opacity: 0, y: 16 }}
@@ -81,13 +80,12 @@ export function CTA() {
                 delay: 0.3,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="mx-auto mt-5 max-w-2xl text-pretty text-sm leading-6 text-zinc-600 sm:text-base"
+              className="mx-auto mt-4 max-w-2xl text-pretty text-sm leading-relaxed text-zinc-600 sm:text-base"
             >
               Tell Sencill what you need, and let AI turn your idea into a
               professional website without the complexity of traditional
               development.
             </motion.p>
-
             {/* CTA button */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
@@ -125,7 +123,6 @@ export function CTA() {
                 </Button>
               </motion.div>
             </motion.div>
-
             {/* Trust line */}
             <motion.p
               initial={{ opacity: 0 }}

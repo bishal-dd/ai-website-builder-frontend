@@ -4,12 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-
 import { Button } from "@/components/ui/button";
 
 const navigation = [
-  { label: "Templates", href: "#templates" },
-  { label: "How it works", href: "#how-it-works" },
+  { label: "Features", href: "#features" },
   { label: "Pricing", href: "#pricing" },
 ];
 
@@ -26,7 +24,11 @@ export function Header() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <nav className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" onClick={closeMenu} className="flex items-center">
+          <Link
+            href="/"
+            onClick={closeMenu}
+            className="flex shrink-0 items-center"
+          >
             <Image
               src="/images/Sencill_AI_logo.png"
               alt="Sencill AI"
@@ -65,7 +67,7 @@ export function Header() {
           <button
             type="button"
             onClick={() => setIsMenuOpen((open) => !open)}
-            className="rounded-md p-2 hover:bg-muted md:hidden"
+            className="rounded-md p-2 transition-colors hover:bg-muted md:hidden"
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMenuOpen}
           >
@@ -86,7 +88,7 @@ export function Header() {
                   key={item.label}
                   href={item.href}
                   onClick={closeMenu}
-                  className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground"
+                  className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
                 >
                   {item.label}
                 </Link>
