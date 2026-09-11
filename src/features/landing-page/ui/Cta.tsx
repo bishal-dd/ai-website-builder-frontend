@@ -112,11 +112,7 @@ export function CTA() {
                   size="lg"
                   className="h-12 rounded-xl bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/25"
                 >
-                  <Link
-                    href={process.env.NEXT_PUBLIC_APP_URL!}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <Link href="/auth/login">
                     Get started
                     <ArrowUpRight className="ml-2 h-4 w-4" />
                   </Link>

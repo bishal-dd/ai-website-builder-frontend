@@ -11,9 +11,6 @@ const navigation = [
   { label: "Pricing", href: "#pricing" },
 ];
 
-const LOGIN_URL = `${process.env.NEXT_PUBLIC_APP_URL}/auth/login`;
-const SIGNUP_URL = `${process.env.NEXT_PUBLIC_APP_URL}/auth/signup`;
-
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -55,11 +52,11 @@ export function Header() {
           {/* Desktop Actions */}
           <div className="hidden items-center gap-2 md:flex">
             <Button variant="ghost" size="sm" asChild>
-              <a href={LOGIN_URL}>Log in</a>
+              <Link href="/auth/login">Log in</Link>
             </Button>
 
             <Button size="sm" asChild>
-              <a href={SIGNUP_URL}>Get started</a>
+              <Link href="/auth/signup">Get started</Link>
             </Button>
           </div>
 
@@ -98,15 +95,15 @@ export function Header() {
 
               <div className="flex flex-col gap-2">
                 <Button variant="ghost" asChild className="w-full">
-                  <a href={LOGIN_URL} onClick={closeMenu}>
+                  <Link href="/auth/login" onClick={closeMenu}>
                     Log in
-                  </a>
+                  </Link>
                 </Button>
 
                 <Button asChild className="w-full">
-                  <a href={SIGNUP_URL} onClick={closeMenu}>
+                  <Link href="/auth/signup" onClick={closeMenu}>
                     Get started
-                  </a>
+                  </Link>
                 </Button>
               </div>
             </div>

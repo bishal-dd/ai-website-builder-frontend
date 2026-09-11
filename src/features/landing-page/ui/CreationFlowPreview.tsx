@@ -50,8 +50,6 @@ const websiteTypes = [
 
 const availablePages = ["home", "about", "services", "contact"];
 
-const LOGIN_URL = `${process.env.NEXT_PUBLIC_APP_URL}/auth/login`;
-
 type CreationData = {
   websiteType: string;
   pages: string[];
@@ -150,7 +148,7 @@ export function CreationFlowPreview() {
       description: creationData.businessInfo.description,
     };
 
-    const loginUrl = new URL(LOGIN_URL);
+    const loginUrl = new URL("/auth/login", window.location.origin);
 
     loginUrl.searchParams.set("intent", "create");
     loginUrl.searchParams.set("data", JSON.stringify(wizardData));
