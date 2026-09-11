@@ -31,7 +31,9 @@ export default function ApplyTemplate() {
         const redirectUrl = `${data.redirectUrl}?setup=true`;
 
         router.replace(redirectUrl);
-      } catch {
+      } catch (error) {
+        console.error("Failed to use template:", error);
+
         toast.error("Failed to use template");
         router.replace("/dashboard");
       }
