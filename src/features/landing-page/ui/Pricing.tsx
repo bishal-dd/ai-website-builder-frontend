@@ -3,17 +3,30 @@
 import { motion } from "framer-motion";
 import { Check, ArrowUpRight } from "lucide-react";
 
-import { PRICING } from "@/lib/pricing";
+import { PRICING_PLANS } from "@/lib/pricing";
 import { useUserCountry } from "@/features/preview/domain/api/geo";
+import { usePricing } from "../hooks/useGetPricing";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 export function Pricing() {
   const countryCode = useUserCountry();
+  const { pricing, isLoading } = usePricing();
 
   const isBhutan = countryCode === "BT";
-  const costs = isBhutan ? PRICING.BT : PRICING.INTL;
+  const costs = isBhutan ? PRICING_PLANS.BT : PRICING_PLANS.INTL;
   const currency = isBhutan ? "Nu." : "$";
+
+  const currentPricing = isBhutan ? pricing?.BTN : pricing?.USD;
+
+  const generationPrice = currentPricing?.generation ?? 0;
+  const hostingPrice = currentPricing?.hosting ?? 0;
+
+  const domainPrice = isBhutan ? 1500 : 15;
+
+  const firstYearTotal = generationPrice + domainPrice + hostingPrice;
+
+  const annualRenewal = domainPrice + hostingPrice;
 
   return (
     <section
@@ -55,6 +68,13 @@ export function Pricing() {
         <div className="mt-16 grid gap-6 md:grid-cols-3">
           {costs.map((cost, index) => {
             const isFeatured = index === 0;
+
+            const price =
+              cost.key === "generation"
+                ? generationPrice
+                : cost.key === "hosting"
+                  ? hostingPrice
+                  : (cost.price ?? 0);
 
             return (
               <motion.div
@@ -121,7 +141,9 @@ export function Pricing() {
                       isFeatured ? "text-white" : "text-zinc-950"
                     }`}
                   >
-                    {currency} {cost.price}
+                    {isLoading
+                      ? "..."
+                      : `${currency} ${price.toLocaleString()}`}{" "}
                   </span>
 
                   <span
@@ -185,7 +207,9 @@ export function Pricing() {
                 </p>
 
                 <p className="mt-1 text-3xl font-semibold tracking-tight text-zinc-950">
-                  {isBhutan ? "Nu. 8,500" : "USD 100"}
+                  {isLoading
+                    ? "..."
+                    : `${currency} ${firstYearTotal.toLocaleString()}`}{" "}
                 </p>
 
                 <p className="mt-1 text-xs text-zinc-400">
@@ -201,7 +225,9 @@ export function Pricing() {
                 </p>
 
                 <p className="mt-1 text-lg font-semibold text-zinc-950">
-                  {isBhutan ? "Nu. 5,500" : "USD 60"}
+                  {isLoading
+                    ? "..."
+                    : `${currency} ${annualRenewal.toLocaleString()}`}{" "}
                   <span className="ml-1 text-sm font-normal text-zinc-400">
                     /year
                   </span>

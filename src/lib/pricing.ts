@@ -1,8 +1,8 @@
-export const PRICING = {
+export const PRICING_PLANS = {
   BT: [
     {
+      key: "generation",
       name: "Website Generation",
-      price: 5000,
       period: "one-time",
       description: "Professional website development tailored to your business",
       features: [
@@ -13,6 +13,7 @@ export const PRICING = {
       ],
     },
     {
+      key: "domain",
       name: "Domain",
       price: 1500,
       period: "year",
@@ -20,8 +21,8 @@ export const PRICING = {
       features: ["Custom domain name", "Domain registration", "DNS management"],
     },
     {
+      key: "hosting",
       name: "Hosting",
-      price: 2000,
       period: "year",
       description: "Reliable and secure hosting",
       features: [
@@ -34,10 +35,11 @@ export const PRICING = {
       ],
     },
   ],
+
   INTL: [
     {
+      key: "generation",
       name: "Website Generation",
-      price: 50, // USD
       period: "one-time",
       description: "Professional website development tailored to your business",
       features: [
@@ -48,6 +50,7 @@ export const PRICING = {
       ],
     },
     {
+      key: "domain",
       name: "Domain",
       price: 15,
       period: "year",
@@ -55,8 +58,8 @@ export const PRICING = {
       features: ["Custom domain name", "Domain registration", "DNS management"],
     },
     {
+      key: "hosting",
       name: "Hosting",
-      price: 30,
       period: "year",
       description: "Reliable and secure hosting",
       features: [
