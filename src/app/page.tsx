@@ -5,20 +5,23 @@ import { Header } from "@/features/landing-page/ui/Header";
 import { Pricing } from "@/features/landing-page/ui/Pricing";
 import { StatsBanner } from "@/features/landing-page/ui/StatsCard";
 import { TemplatesShowcase } from "@/features/landing-page/ui/TemplatesShowcase";
+import { RedirectIfAuthenticatedRoute } from "@/shared/routes/RedirectIfAuthenticatedRoute";
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen">
-      <Header />
-      {/* <Hero /> */}
-      <TemplatesShowcase />
-      <StatsBanner />
-      <Features />
-      {/* <HowItWorks /> */}
-      <Pricing />
-      {/*<Testimonials />*/}
-      <CTA />
-      <Footer />
-    </main>
+    <RedirectIfAuthenticatedRoute>
+      <main className="min-h-screen">
+        <Header />
+        {/* <Hero /> */}
+        <TemplatesShowcase />
+        <StatsBanner />
+        <Features />
+        {/* <HowItWorks /> */}
+        <Pricing />
+        {/* <Testimonials /> */}
+        <CTA />
+        <Footer />
+      </main>
+    </RedirectIfAuthenticatedRoute>
   );
 }
