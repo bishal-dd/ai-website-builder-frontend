@@ -17,7 +17,7 @@ type Template = {
 
 const templates: Template[] = [
   {
-    id: "9e61ee10-ba71-4e03-8dc7-be27a60b8925",
+    id: "9dfefd38-a34f-49ae-996d-58bcee9bd806",
     title: "Travel Agency",
     category: "Travel",
     description: "A modern website for travel agencies and tour operators.",
