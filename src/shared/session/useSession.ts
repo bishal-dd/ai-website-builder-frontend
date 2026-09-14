@@ -12,7 +12,7 @@ export function useSession() {
   const signOut = async () => {
     await authClient.signOut();
     setSession(null);
-    window.location.href = "/auth/login";
+    window.location.href = "/";
   };
   return {
     session,

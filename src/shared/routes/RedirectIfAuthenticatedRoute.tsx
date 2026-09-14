@@ -23,6 +23,7 @@ export const RedirectIfAuthenticatedRoute = ({
       }
     }
   }, [authenticated, loading, router, session]);
+
   if (loading || authenticated) return null;
 
   return <>{children}</>;
