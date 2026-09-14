@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 export async function getUserCountry() {
   try {
     const res = await fetch("https://ipapi.co/json/");
@@ -9,4 +11,14 @@ export async function getUserCountry() {
     console.error("Location detection failed:", e);
     return "BT"; // fallback
   }
+}
+
+export function useUserCountry() {
+  const [countryCode, setCountryCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    getUserCountry().then(setCountryCode);
+  }, []);
+
+  return countryCode;
 }

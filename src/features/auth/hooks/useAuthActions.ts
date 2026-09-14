@@ -76,6 +76,26 @@ export const useAuthActions = () => {
           console.log("✅ User already has country:", session.user.countryCode);
         }
       }
+
+      const searchParams = new URLSearchParams(window.location.search);
+
+      const intent = searchParams.get("intent");
+      const creationData = searchParams.get("data");
+      const templateId = searchParams.get("templateId");
+
+      if (intent === "create" && creationData) {
+        const wizardUrl = new URL("/wizard", window.location.origin);
+        wizardUrl.searchParams.set("data", creationData);
+        router.push(wizardUrl.toString());
+        return;
+      }
+
+      if (intent === "template" && templateId) {
+        router.push(`/dashboard/templates/apply?templateId=${templateId}`);
+        return;
+      }
+
+      router.push("/dashboard");
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
@@ -93,11 +113,32 @@ export const useAuthActions = () => {
     posthog.capture("social_auth_clicked", {
       provider: provider,
     });
+    const searchParams = new URLSearchParams(window.location.search);
+
+    const intent = searchParams.get("intent");
+    const creationData = searchParams.get("data");
+    const templateId = searchParams.get("templateId");
 
     try {
+      let callbackURL = `${window.location.origin}/dashboard`;
+
+      if (intent === "create" && creationData) {
+        const wizardUrl = new URL("/wizard", window.location.origin);
+        wizardUrl.searchParams.set("data", creationData);
+        callbackURL = wizardUrl.toString();
+      }
+
+      if (intent === "template" && templateId) {
+        const applyUrl = new URL(
+          "/dashboard/templates/apply",
+          window.location.origin,
+        );
+        applyUrl.searchParams.set("templateId", templateId);
+        callbackURL = applyUrl.toString();
+      }
       const result = await authClient.signIn.social({
         provider,
-        callbackURL: `${window.location.origin}/dashboard`,
+        callbackURL,
       });
 
       if (result?.error) {

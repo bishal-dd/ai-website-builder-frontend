@@ -6,3 +6,5 @@ export type InsightWebsite = {
   pageReloads: number;
   uniqueViewers: number;
 };
+
+export type InsightPeriod = "all_time" | "this_month" | "last_month";

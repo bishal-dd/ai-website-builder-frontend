@@ -1,5 +1,4 @@
 import type React from "react";
-
 import type { WebElement } from "@/features/preview/types";
 import {
   ComponentKey,
@@ -14,6 +13,15 @@ interface ApplyEditableTextPropsParams {
   canEdit: boolean;
   onTextSave: TextSaveHandler;
   setIsEditingText: (isEditing: boolean) => void;
+  setSelectedElementId: (id: number | null) => void;
+  setSelectedComponentKey: (componentKey: ComponentKey | null) => void;
+  setHoveredTextElement: (
+    element: HTMLElement,
+    id: number,
+    componentKey?: ComponentKey,
+    className?: string,
+  ) => void;
+  onTextMouseLeave: () => void;
 }
 
 export function applyEditableTextProps({
@@ -23,6 +31,10 @@ export function applyEditableTextProps({
   canEdit,
   onTextSave,
   setIsEditingText,
+  setSelectedElementId,
+  setSelectedComponentKey,
+  setHoveredTextElement,
+  onTextMouseLeave,
 }: ApplyEditableTextPropsParams): RendererElementProps {
   const { id, tag, content, children } = element;
 
@@ -36,6 +48,18 @@ export function applyEditableTextProps({
   if (!isEditable) {
     return props;
   }
+
+  (
+    props as unknown as React.HTMLAttributes<HTMLElement> &
+      Record<string, unknown>
+  )["data-editable-text-id"] = id;
+
+  props.onClick = (event) => {
+    event.stopPropagation();
+
+    setSelectedElementId(id);
+    setSelectedComponentKey(componentKey ?? null);
+  };
 
   props.contentEditable = true;
   props.suppressContentEditableWarning = true;
@@ -61,17 +85,27 @@ export function applyEditableTextProps({
   props.onBlur = (event) => {
     setIsEditingText(false);
     event.currentTarget.style.outline = "none";
+
     onTextSave(id, componentKey, event.currentTarget.innerText);
   };
 
   props.onMouseEnter = (event) => {
-    event.currentTarget.style.outline = "2px dashed rgba(250,204,21,0.7)";
+    setHoveredTextElement(event.currentTarget, id, componentKey, element.class);
+
+    setSelectedElementId(id);
+    setSelectedComponentKey(componentKey ?? null);
+
+    if (document.activeElement !== event.currentTarget) {
+      event.currentTarget.style.outline = "2px dashed rgba(250,204,21,0.7)";
+    }
   };
 
   props.onMouseLeave = (event) => {
     if (document.activeElement !== event.currentTarget) {
       event.currentTarget.style.outline = "none";
     }
+
+    onTextMouseLeave();
   };
 
   props.onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {

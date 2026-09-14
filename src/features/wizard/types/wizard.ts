@@ -22,6 +22,7 @@ export interface WizardState {
   setWebsiteId: (id: string) => void;
   setCurrentStep: (step: number) => void;
   setWebsiteType: (type: WebsiteType) => void;
+  hydrateWizard: (data: Partial<WizardState>) => void;
   togglePage: (page: PageType) => void;
   setWebsiteInfo: (
     info: Partial<{

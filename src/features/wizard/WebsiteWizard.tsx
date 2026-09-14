@@ -1,5 +1,5 @@
 "use client";
-
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,9 +31,29 @@ export default function WebsiteWizard() {
     window.scrollTo(0, 0);
   }, [currentStep]);
 
-  const state = useWizardStore();
+  const searchParams = useSearchParams();
 
+  const state = useWizardStore();
+  const hydrateWizard = useWizardStore((state) => state.hydrateWizard);
   const resetWizard = useWizardStore((state) => state.resetWizard);
+
+  useEffect(() => {
+    const data = searchParams.get("data");
+
+    if (!data) {
+      return;
+    }
+
+    try {
+      const parsedData = JSON.parse(data);
+
+      console.log("Restoring wizard data:", parsedData);
+
+      hydrateWizard(parsedData);
+    } catch (error) {
+      console.error("Failed to restore wizard data:", error);
+    }
+  }, [searchParams, hydrateWizard]);
 
   const validateStep = useCallback((): boolean => {
     const errors: Record<string, string[]> = {};

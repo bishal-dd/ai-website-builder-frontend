@@ -24,6 +24,7 @@ import type {
 } from "@/features/preview/types/previewPanel";
 import { useCreateTemplateFromWebsite } from "@/features/website-templates/hooks/useCreateTemplateFromWebsite";
 import { CreateTemplateDialog } from "@/features/website-templates/ui/CreateTemplateDialog";
+import { VersionHistorySheet } from "./previewPanel/VersionHistorySheet";
 
 export function PreviewPanelJson({
   websiteId,
@@ -36,8 +37,12 @@ export function PreviewPanelJson({
   onReorderSections,
   onDeleteSection,
   currentPageId,
+  onDeviceChange,
+  onFontSizeChange,
 }: PreviewPanelJsonProps) {
   const [device, setDevice] = useState<DeviceType>("desktop");
+
+  const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
 
   const router = useRouter();
   const didInitPageRef = useRef(false);
@@ -97,6 +102,10 @@ export function PreviewPanelJson({
     didInitPageRef.current = true;
     onPageChange(homePage.page_id);
   }, [sortedPages, onPageChange]);
+
+  const handleOpenVersionHistory = () => {
+    setVersionHistoryOpen(true);
+  };
 
   const handleRepublish = async () => {
     await toast.promise(redeployWebsite(websiteId), {
@@ -205,16 +214,27 @@ export function PreviewPanelJson({
   return (
     <div className="flex h-screen flex-col bg-muted">
       <PreviewHeader
+        onVersionHistory={handleOpenVersionHistory}
         device={device}
         isFetchingData={isFetchingData}
         isDeployed={isDeployed}
         isGeneratingPreview={isGeneratingPreview}
+        isCreatingTemplate={createTemplateMutation.isPending}
         isAdmin={isAdmin}
-        onDeviceChange={setDevice}
+        onDeviceChange={(newDevice) => {
+          setDevice(newDevice);
+          onDeviceChange?.(newDevice);
+        }}
         onSharePreview={handleSharePreview}
         onRepublish={handleRepublish}
         onPublish={() => router.push(`/domain/${websiteId}`)}
         onCreateTemplate={handleOpenCreateTemplateDialog}
+      />
+
+      <VersionHistorySheet
+        pageId={currentPageId}
+        open={versionHistoryOpen}
+        onOpenChange={setVersionHistoryOpen}
       />
 
       <PageSelector
@@ -237,6 +257,7 @@ export function PreviewPanelJson({
         onUpdateSharedElement={onUpdateSharedElement}
         onReorderSections={onReorderSections}
         onDeleteSection={onDeleteSection}
+        onFontSizeChange={onFontSizeChange}
       />
 
       <CreateTemplateDialog

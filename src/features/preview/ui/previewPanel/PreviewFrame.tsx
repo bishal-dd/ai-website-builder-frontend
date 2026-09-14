@@ -36,6 +36,12 @@ interface PreviewFrameProps {
   ) => void;
   onReorderSections?: (pageId: string, reorderedSections: WebElement[]) => void;
   onDeleteSection?: (pageId: string, sectionId: number) => void;
+  onFontSizeChange?: (
+    id: number,
+    componentKey: "navbar" | "footer" | undefined,
+    newFontSize: string,
+    currentClassName?: string,
+  ) => void;
 }
 
 export function PreviewFrame({
@@ -49,6 +55,7 @@ export function PreviewFrame({
   onUpdateSharedElement,
   onReorderSections,
   onDeleteSection,
+  onFontSizeChange,
 }: PreviewFrameProps) {
   const frameRef = useRef<HTMLIFrameElement | null>(null);
 
@@ -81,36 +88,40 @@ export function PreviewFrame({
               }
 
               const navbar = websiteData.sharedComponents?.navbar ?? [];
-                const footer = websiteData.sharedComponents?.footer ?? [];
+              const footer = websiteData.sharedComponents?.footer ?? [];
 
-                const scripts = [
-                  ...websiteData.elements.flatMap((page) => findScripts(page.pageContent)),
-                  ...findScripts(navbar),
-                  ...findScripts(footer),
-                ];
+              const scripts = [
+                ...websiteData.elements.flatMap((page) =>
+                  findScripts(page.pageContent),
+                ),
+                ...findScripts(navbar),
+                ...findScripts(footer),
+              ];
 
-                const styles = [
-                  ...websiteData.elements.flatMap((page) => findStyles(page.pageContent)),
-                  ...findStyles(navbar),
-                  ...findStyles(footer),
-                ];
+              const styles = [
+                ...websiteData.elements.flatMap((page) =>
+                  findStyles(page.pageContent),
+                ),
+                ...findStyles(navbar),
+                ...findStyles(footer),
+              ];
 
-                // styles can go in immediately, order doesn't matter for correctness
-                styles.forEach((styleEl) => {
-                  const style = doc.createElement("style");
-                  style.textContent = styleEl.content || "";
-                  doc.head.appendChild(style);
+              // styles can go in immediately, order doesn't matter for correctness
+              styles.forEach((styleEl) => {
+                const style = doc.createElement("style");
+                style.textContent = styleEl.content || "";
+                doc.head.appendChild(style);
+              });
+
+              // defer script injection one frame so the JsonRenderer portal has painted
+              requestAnimationFrame(() => {
+                scripts.forEach((scriptElement) => {
+                  const script = doc.createElement("script");
+                  script.type = "text/javascript";
+                  script.textContent = scriptElement.content || "";
+                  doc.body.appendChild(script);
                 });
-
-                // defer script injection one frame so the JsonRenderer portal has painted
-                requestAnimationFrame(() => {
-                  scripts.forEach((scriptElement) => {
-                    const script = doc.createElement("script");
-                    script.type = "text/javascript";
-                    script.textContent = scriptElement.content || "";
-                    doc.body.appendChild(script);
-                  });
-                });
+              });
             }}
             initialContent={`
   <!DOCTYPE html>
@@ -177,6 +188,7 @@ export function PreviewFrame({
                 onDeleteSection?.(currentPageId, sectionId)
               }
               floatingWhatsappEnabled={floatingWhatsappEnabled}
+              onFontSizeChange={onFontSizeChange}
             />
           </Frame>
         </div>

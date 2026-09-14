@@ -23,12 +23,16 @@ import { WebsiteSetupModal } from "../website-templates/ui/WebsiteSetupModal";
 import useDeletePageSection from "./hooks/useDeletePageSection";
 import { DeleteSectionDialog } from "./ui/previewPanel/DeleteSectionDialog";
 import { useSession } from "@/shared/session/useSession";
+import { DeviceType } from "./types/previewPanel";
+import { updateFontSizeClass } from "./utils/updateFontSizeClass";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [contactPhone, setContactPhone] = useState<string>("");
   const [currentPageId, setCurrentPageId] = useState<string>("");
+  const [device, setDevice] = useState<DeviceType>("desktop");
   const [showWebsiteSetup, setShowWebsiteSetup] = useState(false);
+
   const [websiteData, setWebsiteData] = useState<WebsiteData>({
     elements: [],
     sharedComponents: {
@@ -324,6 +328,34 @@ export default function Preview() {
     );
   }
 
+  const handleFloatingFontSizeChange = (
+    id: number,
+    componentKey: "navbar" | "footer" | undefined,
+    newFontSize: string,
+    currentClassName?: string,
+  ) => {
+    const updatedClassName = updateFontSizeClass(
+      currentClassName,
+      newFontSize,
+      device,
+    );
+
+    if (componentKey) {
+      handleUpdateSharedElement(componentKey, id, {
+        class: updatedClassName,
+      });
+      return;
+    }
+
+    if (!currentPageId) {
+      return;
+    }
+
+    handleUpdateElement(currentPageId, id, {
+      class: updatedClassName,
+    });
+  };
+
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
       <main className="relative flex-1 overflow-hidden">
@@ -337,7 +369,9 @@ export default function Preview() {
           onUpdateSharedElement={handleUpdateSharedElement}
           onPageChange={setCurrentPageId}
           onReorderSections={handleReorderSections}
+          onDeviceChange={setDevice}
           onDeleteSection={handleOpenDeleteDialog}
+          onFontSizeChange={handleFloatingFontSizeChange}
         />
 
         {!isChatOpen && (

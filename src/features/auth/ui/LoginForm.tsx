@@ -9,14 +9,17 @@ import { useAuthActions } from "@/features/auth/hooks/useAuthActions";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import Link from "next/link";
 import { useLoginForm } from "@/features/auth/hooks/useLoginForm";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginForm() {
+  const searchParams = useSearchParams();
+  const signupUrl = `/auth/signup?${searchParams.toString()}`;
   const { isLoading, error } = useAuthStore();
   const { handleEmailAuth, handleSocialAuth } = useAuthActions();
   const { register, handleSubmit, errors } = useLoginForm();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50">
+    <div className="min-h-screen bg-linear-to-br from-amber-50 via-yellow-50 to-orange-50">
       <div className="flex items-center justify-center p-4 pt-20">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
@@ -29,7 +32,7 @@ export default function LoginForm() {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="flex">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <svg
                     className="h-5 w-5 text-red-400"
                     viewBox="0 0 20 20"
@@ -172,7 +175,7 @@ export default function LoginForm() {
               <p className="text-gray-700 text-sm">
                 Don&#39;t have an account?
                 <Link
-                  href="/auth/signup"
+                  href={signupUrl}
                   className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
                 >
                   Sign up

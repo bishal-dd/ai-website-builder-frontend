@@ -3,9 +3,15 @@
 import { useCallback } from "react";
 
 import type { WebElement } from "@/features/preview/types";
-import type { ComponentKey } from "@/features/preview/ui/renderer/shared/rendererTypes";
+import type {
+  ComponentKey,
+  DeviceType,
+} from "@/features/preview/ui/renderer/shared/rendererTypes";
+import { updateFontSizeClass } from "../utils/updateFontSizeClass";
 
 interface UseRendererActionsParams {
+  device: DeviceType;
+
   onUpdateElement?: (id: number, updates: Partial<WebElement>) => void;
   onUpdateSharedElement?: (
     componentKey: ComponentKey,
@@ -20,6 +26,7 @@ interface UseRendererActionsParams {
 }
 
 export function useRendererActions({
+  device,
   onUpdateElement,
   onUpdateSharedElement,
   uploadImage,
@@ -48,6 +55,33 @@ export function useRendererActions({
     [onUpdateElement, onUpdateSharedElement],
   );
 
+  const handleFontSizeChange = useCallback(
+    (
+      id: number,
+      componentKey: ComponentKey | undefined,
+      newFontSize: string,
+      currentClassName: string | undefined,
+    ) => {
+      const updatedClassName = updateFontSizeClass(
+        currentClassName,
+        newFontSize,
+        device,
+      );
+
+      if (componentKey && onUpdateSharedElement) {
+        onUpdateSharedElement(componentKey, id, {
+          class: updatedClassName,
+        });
+
+        return;
+      }
+
+      onUpdateElement?.(id, {
+        class: updatedClassName,
+      });
+    },
+    [device, onUpdateElement, onUpdateSharedElement],
+  );
   const updateImageContent = useCallback(
     (id: number, componentKey?: ComponentKey) => {
       return (content: string) => {
@@ -91,6 +125,7 @@ export function useRendererActions({
 
   return {
     handleTextSave,
+    handleFontSizeChange,
     handleImageChange,
   };
 }
