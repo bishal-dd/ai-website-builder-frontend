@@ -28,6 +28,14 @@ import {
 import useAdminContacts from "@/features/admin/hooks/useAdminContacts";
 import { ContactsTable } from "./ui/ContactsTable";
 import { useDebouncedCallback } from "./hooks/useDebounce";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useExportAdminUserEmails } from "./hooks/useExportAdminUserEmails";
 
 export default function AdminContactsPage() {
   const router = useRouter();
@@ -37,6 +45,7 @@ export default function AdminContactsPage() {
   // --- URL State ---
   const page = Number(searchParams.get("page")) || 1;
   const searchQuery = searchParams.get("search") || "";
+  const status = searchParams.get("status") || "";
   const date = searchParams.get("date") || "";
   const startDate = searchParams.get("startDate") || "";
   const endDate = searchParams.get("endDate") || "";
@@ -111,10 +120,37 @@ export default function AdminContactsPage() {
     page,
     10,
     searchQuery,
+    status,
     date,
     startDate,
     endDate,
   );
+
+  const exportMutation = useExportAdminUserEmails();
+
+  const updateStatus = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (value === "all") {
+      params.delete("status");
+    } else {
+      params.set("status", value);
+    }
+
+    params.set("page", "1");
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleExport = () => {
+    exportMutation.mutate({
+      search: searchQuery,
+      status,
+      date,
+      startDate,
+      endDate,
+    });
+  };
 
   if (error) {
     return (
@@ -134,17 +170,20 @@ export default function AdminContactsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/50">
-      <div className="p-8 max-w-7xl mx-auto">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="mx-auto max-w-7xl p-8">
+        {/* Header */}
+        <header className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-primary p-2 rounded-lg text-primary-foreground shadow-md shadow-blue-100">
+            <div className="rounded-lg bg-primary p-2 text-primary-foreground shadow-md shadow-blue-100">
               <Users className="size-6" />
             </div>
+
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
                 User Contacts
               </h1>
-              <p className="text-muted-foreground text-sm">
+
+              <p className="text-sm text-muted-foreground">
                 Direct access to owner details and associated projects.
               </p>
             </div>
@@ -156,19 +195,40 @@ export default function AdminContactsPage() {
               {pagination?.totalCount ?? 0}
             </span>
           </div>
+        </header>
 
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <div className="relative w-full md:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                key={searchQuery}
-                placeholder="Search by name or email..."
-                className="pl-10 bg-white"
-                defaultValue={searchQuery}
-                onChange={(e) => updateQuery("search", e.target.value)}
-              />
-            </div>
+        {/* Filters */}
+        <section className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          {/* Search */}
+          <div className="relative w-full md:max-w-sm">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
+            <Input
+              key={searchQuery}
+              defaultValue={searchQuery}
+              placeholder="Search by name or email..."
+              className="bg-white pl-10"
+              onChange={(e) => updateQuery("search", e.target.value)}
+            />
+          </div>
+
+          {/* Filter controls */}
+          <div className="flex w-full items-center gap-2 md:w-auto">
+            {/* Website status */}
+            <Select value={status || "all"} onValueChange={updateStatus}>
+              <SelectTrigger className="w-full bg-white md:w-40">
+                <SelectValue placeholder="Website status" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="all">All users</SelectItem>
+                <SelectItem value="not_created">Not created</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Date filter */}
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -176,8 +236,8 @@ export default function AdminContactsPage() {
                 </Button>
               </PopoverTrigger>
 
-              <PopoverContent className="w-auto p-0" align="end">
-                <div className="p-3 border-b flex items-center justify-between">
+              <PopoverContent align="end" className="w-auto p-0">
+                <div className="flex items-center justify-between border-b p-3">
                   <span className="text-xs font-medium">Select Date Range</span>
 
                   <div className="flex gap-2">
@@ -187,7 +247,7 @@ export default function AdminContactsPage() {
                       onClick={clearDateFilters}
                       className="h-7 px-2 text-xs"
                     >
-                      <X className="size-3 mr-1" />
+                      <X className="mr-1 size-3" />
                       Clear
                     </Button>
 
@@ -197,7 +257,7 @@ export default function AdminContactsPage() {
                       disabled={!tempDate?.from || !tempDate?.to}
                       className="h-7 px-2 text-xs"
                     >
-                      <Check className="size-3 mr-1" />
+                      <Check className="mr-1 size-3" />
                       Apply
                     </Button>
                   </div>
@@ -212,11 +272,22 @@ export default function AdminContactsPage() {
                 />
               </PopoverContent>
             </Popover>
-          </div>
-        </header>
 
+            {/* Export */}
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              disabled={exportMutation.isPending}
+              className="bg-white"
+            >
+              {exportMutation.isPending ? "Exporting..." : "Export CSV"}
+            </Button>
+          </div>
+        </section>
+
+        {/* Active date filter */}
         {(date || (startDate && endDate)) && (
-          <div className="text-xs text-muted-foreground flex items-center gap-2">
+          <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
             <span>Filtered date:</span>
 
             <span className="font-semibold text-slate-900">
@@ -224,8 +295,9 @@ export default function AdminContactsPage() {
             </span>
 
             <button
+              type="button"
               onClick={clearDateFilters}
-              className="text-blue-600 hover:underline ml-2"
+              className="ml-1 text-blue-600 hover:underline"
             >
               Clear
             </button>
@@ -234,6 +306,7 @@ export default function AdminContactsPage() {
 
         <Separator className="mb-8" />
 
+        {/* Contacts */}
         <main className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           {isLoading ? (
             <div className="space-y-4">
