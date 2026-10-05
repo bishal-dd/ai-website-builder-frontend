@@ -25,6 +25,8 @@ import { DeleteSectionDialog } from "./ui/previewPanel/DeleteSectionDialog";
 import { useSession } from "@/shared/session/useSession";
 import { DeviceType } from "./types/previewPanel";
 import { updateFontSizeClass } from "./utils/updateFontSizeClass";
+import { useSetupWebsite } from "../website-templates/hooks/useSetupWebsite";
+import { WebsiteCustomizationGenerator } from "../website-templates/ui/WebsiteCustomizationGenerator";
 
 export default function Preview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -32,6 +34,11 @@ export default function Preview() {
   const [currentPageId, setCurrentPageId] = useState<string>("");
   const [device, setDevice] = useState<DeviceType>("desktop");
   const [showWebsiteSetup, setShowWebsiteSetup] = useState(false);
+  const [customizationJobId, setCustomizationJobId] = useState<string | null>(
+    null,
+  );
+  const [isCustomizationInProgress, setIsCustomizationInProgress] =
+    useState(false);
 
   const [websiteData, setWebsiteData] = useState<WebsiteData>({
     elements: [],
@@ -54,6 +61,7 @@ export default function Preview() {
 
   const updatePage = useUpdateWebsitePage();
   const updateWebsite = useUpdateWebsite();
+  const setupWebsite = useSetupWebsite();
   const router = useRouter();
   const searchParams = useSearchParams();
   const shouldShowSetup = searchParams.get("setup") === "true";
@@ -88,12 +96,17 @@ export default function Preview() {
     });
   }, [updateWebsite, websiteId]);
 
+  const handleCustomizationComplete = useCallback(() => {
+    setIsCustomizationInProgress(false);
+    setCustomizationJobId(null);
+  }, []);
+
   usePreviewOnboardingTour({
     websiteId,
     hasGeneratedWebsite: Boolean(generatedWebsite),
     hasWebsiteElements: websiteData.elements.length > 0,
     hasSeenTour: generatedWebsite?.is_congrats_modal_shown,
-    disabled: showWebsiteSetup,
+    disabled: shouldShowSetup || showWebsiteSetup || isCustomizationInProgress,
     onFinish: handleFinishOnboardingTour,
   });
 
@@ -281,27 +294,31 @@ export default function Preview() {
     setIsChatOpen(true);
   };
 
-  const handleWebsiteSetup = ({
+  const handleWebsiteSetup = async ({
     title,
     description,
   }: {
     title: string;
     description: string;
   }) => {
-    updateWebsite.mutate(
-      {
-        websiteId,
-        body: {
-          title: title,
-          description,
-        },
+    setIsCustomizationInProgress(true);
+
+    const result = await setupWebsite.mutateAsync({
+      websiteId,
+      title,
+      description,
+    });
+
+    await updateWebsite.mutateAsync({
+      websiteId,
+      body: {
+        title,
+        description,
       },
-      {
-        onSuccess: () => {
-          setShowWebsiteSetup(false);
-        },
-      },
-    );
+    });
+
+    setCustomizationJobId(result.jobId);
+    setShowWebsiteSetup(false);
   };
 
   if (isWebsiteLoading) {
@@ -422,6 +439,14 @@ export default function Preview() {
           setDeleteDialogOpen(false);
         }}
       />
+
+      {customizationJobId && (
+        <WebsiteCustomizationGenerator
+          websiteId={websiteId}
+          jobId={customizationJobId}
+          onComplete={handleCustomizationComplete}
+        />
+      )}
     </div>
   );
 }

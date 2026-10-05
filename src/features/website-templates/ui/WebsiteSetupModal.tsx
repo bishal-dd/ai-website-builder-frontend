@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
 import {
   Dialog,
   DialogContent,
@@ -9,7 +8,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -17,14 +15,30 @@ import { Button } from "@/components/ui/button";
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: { title: string; description: string }) => void;
+  onSubmit: (data: { title: string; description: string }) => Promise<void>;
 }
 
 export function WebsiteSetupModal({ open, onOpenChange, onSubmit }: Props) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isDisabled = !title.trim() || !description.trim();
+  const isDisabled = !title.trim() || !description.trim() || isSubmitting;
+
+  const handleSubmit = async () => {
+    if (isDisabled) return;
+
+    setIsSubmitting(true);
+
+    try {
+      await onSubmit({
+        title: title.trim(),
+        description: description.trim(),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -56,6 +70,7 @@ export function WebsiteSetupModal({ open, onOpenChange, onSubmit }: Props) {
               placeholder="Example: Sencill AI"
               className="h-11"
               maxLength={50}
+              disabled={isSubmitting}
             />
 
             <p className="text-xs text-muted-foreground">
@@ -72,6 +87,7 @@ export function WebsiteSetupModal({ open, onOpenChange, onSubmit }: Props) {
               placeholder="Describe what your website is about..."
               className="min-h-30 resize-none"
               maxLength={200}
+              disabled={isSubmitting}
             />
 
             <p className="text-xs text-muted-foreground">
@@ -82,16 +98,9 @@ export function WebsiteSetupModal({ open, onOpenChange, onSubmit }: Props) {
           <Button
             className="h-11 w-full"
             disabled={isDisabled}
-            onClick={() => {
-              onSubmit({
-                title,
-                description,
-              });
-
-              onOpenChange(false);
-            }}
+            onClick={handleSubmit}
           >
-            Continue to editor
+            {isSubmitting ? "Setting up..." : "Continue to editor"}
           </Button>
         </div>
       </DialogContent>
