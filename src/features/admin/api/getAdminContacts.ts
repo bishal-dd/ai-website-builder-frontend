@@ -33,6 +33,7 @@ export async function getAdminContacts({
   page = 1,
   pageSize = 10,
   search = "", // 👈 Add search parameter
+  status = "",
   date,
   startDate,
   endDate,
@@ -40,6 +41,7 @@ export async function getAdminContacts({
   page?: number;
   pageSize?: number;
   search?: string;
+  status?: string;
   date?: string;
   startDate?: string;
   endDate?: string;
@@ -53,6 +55,10 @@ export async function getAdminContacts({
 
   if (search.trim()) {
     url.searchParams.append("search", search.trim()); // 👈 Send to backend
+  }
+
+  if (status.trim()) {
+    url.searchParams.append("status", status.trim());
   }
 
   if (date?.trim()) {
