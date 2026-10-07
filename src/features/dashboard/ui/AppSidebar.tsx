@@ -106,7 +106,7 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu className="gap-2">
-          <SidebarMenuItem>
+          {/* <SidebarMenuItem>
             <SidebarMenuButton
               type="button"
               onClick={() => window.$sleek?.open?.()}
@@ -114,7 +114,7 @@ export function AppSidebar() {
               <MessageSquare />
               <span>Give feedback</span>
             </SidebarMenuButton>
-          </SidebarMenuItem>
+          </SidebarMenuItem> */}
 
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
