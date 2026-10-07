@@ -105,6 +105,16 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu className="gap-2">
+          {/* <SidebarMenuItem>
+            <SidebarMenuButton
+              type="button"
+              onClick={() => window.$sleek?.open?.()}
+            >
+              <MessageSquare />
+              <span>Give feedback</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem> */}
+
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link href="/help" target="_blank" rel="noopener noreferrer">
@@ -141,7 +151,12 @@ export function AppSidebar() {
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={signOut}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    window.$sleek?.resetUser?.();
+                    signOut();
+                  }}
+                >
                   <LogOut className="mr-2 size-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
