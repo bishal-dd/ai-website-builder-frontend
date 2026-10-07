@@ -2,10 +2,14 @@ export const generateSetupWebsite = async ({
   websiteId,
   title,
   description,
+  contact_phone,
+  social_links,
 }: {
   websiteId: string;
   title: string;
   description: string;
+  contact_phone: string | null;
+  social_links: string | null;
 }) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/websites/${websiteId}/setup`,
@@ -18,6 +22,8 @@ export const generateSetupWebsite = async ({
       body: JSON.stringify({
         title,
         description,
+        contact_phone,
+        social_links,
       }),
     },
   );

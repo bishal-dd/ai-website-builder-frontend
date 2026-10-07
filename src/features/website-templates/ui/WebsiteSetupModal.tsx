@@ -15,12 +15,19 @@ import { Button } from "@/components/ui/button";
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: { title: string; description: string }) => Promise<void>;
+  onSubmit: (data: {
+    title: string;
+    description: string;
+    contact_phone: string | null;
+    social_links: string | null;
+  }) => Promise<void>;
 }
 
 export function WebsiteSetupModal({ open, onOpenChange, onSubmit }: Props) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [socialLinks, setSocialLinks] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isDisabled = !title.trim() || !description.trim() || isSubmitting;
@@ -34,6 +41,8 @@ export function WebsiteSetupModal({ open, onOpenChange, onSubmit }: Props) {
       await onSubmit({
         title: title.trim(),
         description: description.trim(),
+        contact_phone: contactPhone.trim() || null,
+        social_links: socialLinks.trim() || null,
       });
     } finally {
       setIsSubmitting(false);
@@ -54,8 +63,8 @@ export function WebsiteSetupModal({ open, onOpenChange, onSubmit }: Props) {
             </DialogTitle>
 
             <DialogDescription>
-              Give your website a name and description. You can change these
-              details anytime from your dashboard.
+              Give your website a name, description, and contact details. You
+              can change these details anytime from your dashboard.
             </DialogDescription>
           </div>
         </DialogHeader>
@@ -93,6 +102,32 @@ export function WebsiteSetupModal({ open, onOpenChange, onSubmit }: Props) {
             <p className="text-xs text-muted-foreground">
               {description.length}/200 characters
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Phone number</label>
+
+            <Input
+              value={contactPhone}
+              onChange={(e) => setContactPhone(e.target.value)}
+              placeholder="Example: +975 17XXXXXX"
+              className="h-11"
+              disabled={isSubmitting}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Social links</label>
+
+            <Input
+              value={socialLinks}
+              onChange={(e) => setSocialLinks(e.target.value)}
+              placeholder="Example: Instagram, Facebook, or website links"
+              className="h-11"
+              disabled={isSubmitting}
+            />
+
+            <p className="text-xs text-muted-foreground">Optional</p>
           </div>
 
           <Button

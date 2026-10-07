@@ -297,9 +297,13 @@ export default function Preview() {
   const handleWebsiteSetup = async ({
     title,
     description,
+    contact_phone,
+    social_links,
   }: {
     title: string;
     description: string;
+    contact_phone: string | null;
+    social_links: string | null;
   }) => {
     setIsCustomizationInProgress(true);
 
@@ -307,14 +311,8 @@ export default function Preview() {
       websiteId,
       title,
       description,
-    });
-
-    await updateWebsite.mutateAsync({
-      websiteId,
-      body: {
-        title,
-        description,
-      },
+      contact_phone,
+      social_links,
     });
 
     setCustomizationJobId(result.jobId);

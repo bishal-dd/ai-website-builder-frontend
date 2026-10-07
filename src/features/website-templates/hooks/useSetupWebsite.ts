@@ -5,6 +5,8 @@ export interface SetupWebsiteParams {
   websiteId: string;
   title: string;
   description: string;
+  contact_phone: string | null;
+  social_links: string | null;
 }
 
 export function useSetupWebsite() {
