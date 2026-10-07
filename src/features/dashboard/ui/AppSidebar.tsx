@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LayoutTemplate,
   LogOut,
+  MessageSquare,
   User,
 } from "lucide-react";
 import {
@@ -105,6 +106,13 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu className="gap-2">
+          <SidebarMenuItem>
+            <SidebarMenuButton type="button" data-sleek-feedback>
+              <MessageSquare />
+              <span>Give feedback</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link href="/help" target="_blank" rel="noopener noreferrer">

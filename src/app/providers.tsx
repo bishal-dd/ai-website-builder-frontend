@@ -6,6 +6,7 @@ import { GeoProvider } from "@/features/preview/domain/hooks/useGeoContext";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 import { PostHogIdentify } from "@/shared/posthog/IdentifyUser";
+import { SleekplanProvider } from "@/components/sleekplan/SleekplanProvider";
 
 if (typeof window !== "undefined" && process.env.NEXT_ENV === "production") {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
@@ -18,12 +19,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <>
       <GeoProvider>
-        <PostHogProvider client={posthog}>
-          <PostHogIdentify />
-          <QueryClientProvider client={queryClient}>
-            <SessionProvider>{children}</SessionProvider>
-          </QueryClientProvider>
-        </PostHogProvider>
+        <SleekplanProvider>
+          <PostHogProvider client={posthog}>
+            <PostHogIdentify />
+            <QueryClientProvider client={queryClient}>
+              <SessionProvider>{children}</SessionProvider>
+            </QueryClientProvider>
+          </PostHogProvider>
+        </SleekplanProvider>
       </GeoProvider>
     </>
   );
