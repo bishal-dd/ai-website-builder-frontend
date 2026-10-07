@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   LayoutTemplate,
   LogOut,
-  MessageSquare,
   User,
 } from "lucide-react";
 import {
