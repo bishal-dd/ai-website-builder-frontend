@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 interface Props {
   open: boolean;
@@ -105,25 +106,27 @@ export function WebsiteSetupModal({ open, onOpenChange, onSubmit }: Props) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Phone number</label>
+            <label className="text-sm font-medium">WhatsApp Number</label>
 
-            <Input
-              value={contactPhone}
-              onChange={(e) => setContactPhone(e.target.value)}
-              placeholder="Example: +975 17XXXXXX"
-              className="h-11"
+            <PhoneInput
+              placeholder="Enter phone number"
+              defaultCountry="BT"
+              international
+              value={contactPhone || undefined}
+              onChange={(value) => setContactPhone(value || "")}
               disabled={isSubmitting}
+              className="h-11"
             />
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Social links</label>
 
-            <Input
+            <Textarea
               value={socialLinks}
               onChange={(e) => setSocialLinks(e.target.value)}
               placeholder="Example: Instagram, Facebook, or website links"
-              className="h-11"
+              className="min-h-24 resize-none"
               disabled={isSubmitting}
             />
 
