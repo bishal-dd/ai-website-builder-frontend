@@ -9,14 +9,12 @@ const useAdminWebsites = (
   const { data, isLoading, isPlaceholderData, error, refetch } =
     useQuery<WebsiteResponse>({
       queryKey: ["admin-websites", searchQuery, page, status],
-
       queryFn: () =>
         getAdminWebsites({
           websiteId: searchQuery,
           page,
           status,
         }),
-
       staleTime: 1000 * 60,
       placeholderData: (previousData) => previousData,
     });
@@ -24,6 +22,10 @@ const useAdminWebsites = (
   return {
     websites: data?.websites ?? [],
     pagination: data?.pagination,
+    totalRevenue: data?.totalRevenue ?? {
+      btn: 0,
+      usd: 0,
+    },
     isLoading,
     isPlaceholderData,
     error,

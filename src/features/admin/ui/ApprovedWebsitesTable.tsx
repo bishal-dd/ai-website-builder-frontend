@@ -49,6 +49,8 @@ interface ApprovedWebsitesTableProps {
   currentPage: number;
   totalPages: number;
   totalCount: number;
+  totalBtn: number;
+  totalUsd: number;
 }
 
 const emptyPaymentForm = {
@@ -64,6 +66,8 @@ export const ApprovedWebsitesTable = ({
   currentPage,
   totalPages,
   totalCount,
+  totalBtn,
+  totalUsd,
 }: ApprovedWebsitesTableProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -342,22 +346,43 @@ export const ApprovedWebsitesTable = ({
 
   return (
     <Card className="mt-6">
-      <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4">
+      <CardHeader className="flex flex-col gap-3 pb-4 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle>Approved Websites</CardTitle>
 
-        <div className="text-sm text-muted-foreground">
-          Total approved:{" "}
-          <span className="font-semibold text-foreground">{totalCount}</span>
-        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span>
+              Total approved:{" "}
+              <span className="font-semibold text-foreground">
+                {totalCount}
+              </span>
+            </span>
 
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by Website ID..."
-            defaultValue={currentSearch}
-            onChange={(e) => updateQuery("websiteId", e.target.value)}
-            className="pl-8"
-          />
+            <span>
+              BTN:{" "}
+              <span className="font-semibold text-green-600">
+                Nu. {Math.floor(totalBtn).toLocaleString()}
+              </span>
+            </span>
+
+            <span>
+              USD:{" "}
+              <span className="font-semibold text-green-600">
+                $ {Math.floor(totalUsd).toLocaleString()}
+              </span>
+            </span>
+          </div>
+
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+            <Input
+              placeholder="Search by Website ID..."
+              defaultValue={currentSearch}
+              onChange={(e) => updateQuery("websiteId", e.target.value)}
+              className="pl-8"
+            />
+          </div>
         </div>
       </CardHeader>
 
