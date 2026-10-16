@@ -14,11 +14,8 @@ export default function ApprovedWebsitesPage() {
   const websiteId = searchParams.get("websiteId") || "";
   const page = Number(searchParams.get("page")) || 1;
 
-  const { websites, pagination, isLoading, error, refetch } = useAdminWebsites(
-    websiteId,
-    page,
-    "approved",
-  );
+  const { websites, pagination, isLoading, error, refetch, totalRevenue } =
+    useAdminWebsites(websiteId, page, "approved");
 
   if (error) {
     return (
@@ -66,6 +63,8 @@ export default function ApprovedWebsitesPage() {
               currentPage={page}
               totalPages={pagination?.totalPages || 1}
               totalCount={pagination?.totalCount || 0}
+              totalBtn={totalRevenue.btn}
+              totalUsd={totalRevenue.usd}
             />
           )}
         </main>

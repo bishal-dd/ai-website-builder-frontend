@@ -141,7 +141,7 @@ export function AppSidebar() {
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={signOut}>
+                <DropdownMenuItem onClick={() => signOut()}>
                   <LogOut className="mr-2 size-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>

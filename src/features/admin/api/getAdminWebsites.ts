@@ -31,6 +31,10 @@ export interface WebsiteResponse {
     totalCount: number;
     totalPages: number;
   };
+  totalRevenue: {
+    btn: number;
+    usd: number;
+  };
 }
 
 export async function getAdminWebsites({
