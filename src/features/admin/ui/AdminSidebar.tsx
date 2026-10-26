@@ -6,6 +6,7 @@ import {
   FileEdit,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   ShieldCheck,
   Users,
 } from "lucide-react";
@@ -132,6 +133,20 @@ export function AdminSidebar() {
                   <Link href="/admin/contacts">
                     <Users className="size-4" />
                     <span>User Contacts</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* System Feedback */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === "/admin/feedback"}
+                  tooltip="System Feedback"
+                >
+                  <Link href="/admin/feedback">
+                    <MessageSquare className="size-4" />
+                    <span>Feedback</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
