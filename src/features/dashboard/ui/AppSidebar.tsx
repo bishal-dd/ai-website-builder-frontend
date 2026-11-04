@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LayoutTemplate,
   LogOut,
+  Upload,
   User,
 } from "lucide-react";
 import {
@@ -51,6 +52,11 @@ const navigationItems = [
     title: "Domains",
     icon: Globe2,
     href: "/dashboard/domain",
+  },
+  {
+    title: "Import Website",
+    icon: Upload,
+    href: "/dashboard/import",
   },
   {
     title: "Profile",
