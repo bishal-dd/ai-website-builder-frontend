@@ -90,7 +90,7 @@ export function PaymentSummary({
               <span>{formatPrice(hostingPrice)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>Website Generation</span>
+              <span>Website Generation (one time)</span>
               <span>
                 {isImported ? (
                   <span className="text-green-600 font-medium">
