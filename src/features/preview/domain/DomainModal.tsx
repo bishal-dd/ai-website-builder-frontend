@@ -28,6 +28,7 @@ interface DomainModalProps {
   contact: DomainContact;
   websiteId: string;
   userId: string;
+  isImported?: boolean;
 }
 
 export function DomainModal({
@@ -35,6 +36,7 @@ export function DomainModal({
   contact,
   websiteId,
   userId,
+  isImported = false,
 }: DomainModalProps) {
   const { user } = useSession();
   const [step, setStep] = useState<"selection" | "pricing">("selection");
@@ -65,11 +67,11 @@ export function DomainModal({
         domain: dbDomain.name,
         price: dbDomain.domainPrice ?? 0,
         hostingPrice: dbDomain.hostingPrice ?? 0,
-        websitePrice: dbDomain.websitePrice ?? 0,
+        websitePrice: isImported ? 0 : (dbDomain.websitePrice ?? 0),
         currency: dbDomain.currency ?? (countryCode === "BT" ? "BTN" : "USD"),
       });
     }
-  }, [existingDomains, countryCode]);
+  }, [existingDomains, countryCode, isImported]);
 
   useEffect(() => {
     if (!hasOwnDomain || geoLoading) return;
@@ -94,7 +96,7 @@ export function DomainModal({
           domain: domainData.name,
           price: pricingData.domainPrice,
           hostingPrice: pricingData.hostingPrice,
-          websitePrice: pricingData.websitePrice,
+          websitePrice: isImported ? 0 : pricingData.websitePrice,
           currency: pricingData.currency,
         });
 
@@ -106,7 +108,8 @@ export function DomainModal({
           country_code: countryCode,
           currency: pricingData.currency,
           hosting_price: pricingData.hostingPrice,
-          website_price: pricingData.websitePrice,
+          website_price: isImported ? 0 : pricingData.websitePrice,
+          is_imported: isImported,
         });
       } catch (err) {
         console.error(err);
@@ -118,7 +121,7 @@ export function DomainModal({
     };
 
     createCustomDomain();
-  }, [hasOwnDomain, geoLoading, countryCode, websiteId, userId]);
+  }, [hasOwnDomain, geoLoading, countryCode, websiteId, userId, isImported]);
 
   if (isLoadingExisting) {
     return (
@@ -170,7 +173,7 @@ export function DomainModal({
         domain: domainData.name,
         price: pricingData.domainPrice,
         hostingPrice: pricingData.hostingPrice,
-        websitePrice: pricingData.websitePrice,
+        websitePrice: isImported ? 0 : pricingData.websitePrice,
         currency: pricingData.currency,
       });
 
@@ -181,6 +184,7 @@ export function DomainModal({
         website_id: websiteId,
         country_code: countryCode,
         currency: countryCode === "BT" ? "BTN" : "USD",
+        is_imported: isImported,
       });
 
       setStep("pricing");
@@ -201,7 +205,7 @@ export function DomainModal({
 
     const domainPrice = selectedDomain.price;
     const hostingPrice = selectedDomain.hostingPrice ?? 0;
-    const websitePrice = selectedDomain.websitePrice ?? 0;
+    const websitePrice = isImported ? 0 : (selectedDomain.websitePrice ?? 0);
     const total = domainPrice + hostingPrice + websitePrice;
 
     posthog.capture("payment_initiated", {
@@ -214,7 +218,12 @@ export function DomainModal({
       total_amount: total,
       currency: selectedDomain.currency,
       website_id: websiteId,
+      is_imported: isImported,
     });
+
+    const websitePriceLine = isImported
+      ? `  Website Import: Free`
+      : `  Website Generation: ${websitePrice}`;
 
     const message = encodeURIComponent(
       `Hi! I'd like to purchase a website with full payment:
@@ -224,7 +233,7 @@ export function DomainModal({
   Domain: ${selectedDomain.domain}
   Domain Price: ${domainPrice} (per year)
   Hosting: ${hostingPrice} (per year)
-  Website Generation: ${websitePrice}
+${websitePriceLine}
   Total: ${total}
   `,
     );
@@ -234,22 +243,23 @@ export function DomainModal({
 
   // Payment placeholder
   const handleInternationalPayment = async () => {
-    // Capture payment initiated event for international payment
     if (selectedDomain) {
+      const websitePrice = isImported ? 0 : (selectedDomain.websitePrice ?? 0);
       const total =
         selectedDomain.price +
         (selectedDomain.hostingPrice ?? 0) +
-        (selectedDomain.websitePrice ?? 0);
+        websitePrice;
 
       posthog.capture("payment_initiated", {
         payment_method: "international",
         domain: selectedDomain.domain,
         domain_price: selectedDomain.price,
         hosting_price: selectedDomain.hostingPrice,
-        website_price: selectedDomain.websitePrice,
+        website_price: websitePrice,
         total_amount: total,
         currency: selectedDomain.currency,
         website_id: websiteId,
+        is_imported: isImported,
       });
     }
 
@@ -263,6 +273,7 @@ export function DomainModal({
           domain: selectedDomain?.domain,
           domainPrice: selectedDomain?.price,
           customerEmail: user?.email,
+          isImported,
         }),
       },
     );
@@ -277,6 +288,7 @@ export function DomainModal({
     const data = await res.json();
     window.location.href = data.url;
   };
+
   // Payment step
   if (step === "pricing" && selectedDomain) {
     return (
@@ -289,6 +301,7 @@ export function DomainModal({
         handleWhatsAppPayment={handleWhatsAppPayment}
         handleInternationalPayment={handleInternationalPayment}
         countryCode={countryCode}
+        isImported={isImported}
       />
     );
   }
@@ -309,7 +322,6 @@ export function DomainModal({
         h-[100dvh] sm:h-auto sm:max-h-[90vh]
         flex flex-col overflow-hidden"
       >
-        {" "}
         {/* HEADER */}
         <div className="flex items-center justify-between p-4 border-b shrink-0">
           <div className="flex items-center gap-2">
@@ -341,14 +353,6 @@ export function DomainModal({
             .uk)
           </div>
 
-          {/* <div className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={hasOwnDomain}
-              onChange={(e) => setHasOwnDomain(e.target.checked)}
-            />
-            <span>I already have a domain</span>
-          </div> */}
           {selectedDomain && (
             <div className="p-3 border rounded-md bg-green-500/10 border-green-500/30 text-sm">
               <div className="flex items-center justify-between gap-3">
