@@ -11,9 +11,10 @@ interface PaymentSummaryProps {
   contact?: DomainContact;
   onClose: () => void;
   onBack: () => void;
-  handleWhatsAppPayment: () => void; // Updated type
+  handleWhatsAppPayment: () => void;
   handleInternationalPayment: () => void;
   countryCode: string;
+  isImported?: boolean;
 }
 
 export function PaymentSummary({
@@ -24,11 +25,12 @@ export function PaymentSummary({
   handleWhatsAppPayment,
   handleInternationalPayment,
   countryCode,
+  isImported = false,
 }: PaymentSummaryProps) {
   const { setStatus } = useWebsiteDeploymentStatus(websiteId!);
 
   const hostingPrice = selectedDomain.hostingPrice ?? 0;
-  const websitePrice = selectedDomain.websitePrice ?? 0;
+  const websitePrice = isImported ? 0 : (selectedDomain.websitePrice ?? 0);
   const domainPrice = selectedDomain.price ?? 0;
 
   const totalPrice = domainPrice + hostingPrice + websitePrice;
@@ -89,7 +91,15 @@ export function PaymentSummary({
             </div>
             <div className="flex items-center justify-between">
               <span>Website Generation (one time)</span>
-              <span>{formatPrice(websitePrice)}</span>
+              <span>
+                {isImported ? (
+                  <span className="text-green-600 font-medium">
+                    Free (Imported)
+                  </span>
+                ) : (
+                  formatPrice(websitePrice)
+                )}
+              </span>
             </div>
 
             <div className="flex items-center justify-between font-bold text-lg pt-2 border-t">

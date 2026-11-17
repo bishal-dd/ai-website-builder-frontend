@@ -1,3 +1,4 @@
+import { FeedbackWidget } from "@/features/feedback/FeedbackWidget";
 import { ProtectedRoute } from "@/shared/routes";
 import Navbar from "@/shared/ui/Navbar";
 
@@ -11,6 +12,7 @@ export default function WizardLayout({
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-1">{children}</main>
+        <FeedbackWidget />
       </div>
     </ProtectedRoute>
   );

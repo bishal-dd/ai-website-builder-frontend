@@ -2,6 +2,7 @@ import type React from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/features/dashboard/ui/AppSidebar";
 import { ProtectedRoute } from "@/shared/routes"; // Import your guard
+import { FeedbackWidget } from "@/features/feedback/FeedbackWidget";
 
 export default function DashboardLayout({
   children,
@@ -14,6 +15,7 @@ export default function DashboardLayout({
         <SidebarProvider defaultOpen={true}>
           <AppSidebar />
           <SidebarInset>{children}</SidebarInset>
+          <FeedbackWidget />
         </SidebarProvider>
       </div>
     </ProtectedRoute>

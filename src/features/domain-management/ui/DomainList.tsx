@@ -133,7 +133,9 @@ export function DomainList({ domains, onInitiateTransfer }: DomainListProps) {
                 </div>
               </div>
 
-              {isExpanded && <DomainDnsPanel domainId={domain.id} />}
+              {isExpanded && (
+                <DomainDnsPanel domainId={domain.id} domainName={domain.name} />
+              )}
             </div>
           </Card>
         );
