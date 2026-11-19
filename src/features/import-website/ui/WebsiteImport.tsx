@@ -29,6 +29,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
 
 import { importWebsite } from "../api/importWebsite";
 import { usePreviewImportedWebsite } from "../hooks/usePreviewImportedWebsite";
@@ -244,13 +245,43 @@ export function WebsiteImport() {
   return (
     <div className="mx-auto w-full max-w-4xl space-y-8">
       {/* Page heading */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Imported websites</h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold">Imported websites</h1>
 
-        <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-          Import a static website from a ZIP archive, preview it, and return to
-          your previously imported websites whenever you need them.
-        </p>
+          <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+            Import a static website from a ZIP archive, preview it, and return
+            to your previously imported websites whenever you need them.
+          </p>
+        </div>
+
+        <div className="flex shrink-0 flex-col items-start gap-1.5 sm:items-end">
+          <Button
+            asChild
+            className="group h-10 gap-2.5 rounded-full bg-[#25D366] pl-1.5 pr-4 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#1ebe5b] hover:shadow-md focus-visible:ring-[#25D366]/40"
+          >
+            <a
+              href="https://wa.me/97516176961?text=Hi%20I%20need%20help%20with%20my%20website"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Ask for help on WhatsApp"
+            >
+              <span className="flex size-7 items-center justify-center rounded-full bg-white/20">
+                <Image
+                  src="/whatsapp-icon.svg"
+                  alt=""
+                  width={16}
+                  height={16}
+                />
+              </span>
+              <span className="text-sm font-semibold">Ask for help</span>
+            </a>
+          </Button>
+
+          <p className="text-xs text-muted-foreground">
+            Facing issues? Chat with us on WhatsApp.
+          </p>
+        </div>
       </div>
 
       {/* Upload section */}
