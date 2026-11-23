@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { WebsitesByTypeTable } from "@/features/admin/ui/WebsitesByTypeTable";
+import { useExportAdminWebsitePhoneNumbers } from "@/features/admin/hooks/useExportAdminWebsitePhoneNumbers";
 
 const formatTypeLabel = (type: string) => {
   return type
@@ -35,6 +36,15 @@ export default function WebsitesByTypePage() {
     page,
     status,
   );
+
+  const exportMutation = useExportAdminWebsitePhoneNumbers();
+
+  const handleExport = () => {
+    exportMutation.mutate({
+      type,
+      status,
+    });
+  };
 
   if (error) {
     return (
@@ -73,6 +83,15 @@ export default function WebsitesByTypePage() {
               </p>
             </div>
           </div>
+
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            disabled={exportMutation.isPending}
+            className="bg-white"
+          >
+            {exportMutation.isPending ? "Exporting..." : "Export CSV"}
+          </Button>
         </header>
 
         <Separator className="mb-8" />
